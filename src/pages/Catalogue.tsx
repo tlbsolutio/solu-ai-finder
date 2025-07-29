@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-react';
 
 const Catalogue = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
@@ -200,7 +202,11 @@ const Catalogue = () => {
                 </div>
 
                 {/* Action button */}
-                <Button className="w-full" variant="hero">
+                <Button 
+                  className="w-full" 
+                  variant="hero"
+                  onClick={() => navigate(`/saas/${saas.id}`)}
+                >
                   Voir le détail
                 </Button>
               </CardContent>
