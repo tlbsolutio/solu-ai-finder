@@ -70,8 +70,8 @@ const Catalogue = () => {
   const filteredSaaS = saasData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category === selectedCategory;
-    const matchesTarget = !selectedTarget || item.targets.includes(selectedTarget);
+    const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
     
     return matchesSearch && matchesCategory && matchesTarget;
   });
@@ -110,7 +110,7 @@ const Catalogue = () => {
                   <SelectValue placeholder="Catégorie" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les catégories</SelectItem>
+                  <SelectItem value="all">Toutes les catégories</SelectItem>
                   {categories.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
@@ -123,7 +123,7 @@ const Catalogue = () => {
                   <SelectValue placeholder="Cible" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toutes les cibles</SelectItem>
+                  <SelectItem value="all">Toutes les cibles</SelectItem>
                   {targets.map(target => (
                     <SelectItem key={target} value={target}>{target}</SelectItem>
                   ))}
