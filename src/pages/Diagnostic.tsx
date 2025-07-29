@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail } from 'lucide-react';
 
 const Diagnostic = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showResults, setShowResults] = useState(false);
   const [responses, setResponses] = useState({
     task: '',
     frequency: '',
@@ -82,8 +83,8 @@ const Diagnostic = () => {
     if (currentStep < questions.length) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Generate results
-      console.log('Diagnostic completed:', responses);
+      // Show results page
+      setShowResults(true);
     }
   };
 
@@ -100,7 +101,194 @@ const Diagnostic = () => {
     }));
   };
 
-  const isCurrentStepComplete = responses[currentQuestion.field as keyof typeof responses].trim() !== '';
+  const isCurrentStepComplete = responses[currentQuestion?.field as keyof typeof responses]?.trim() !== '';
+
+  // Generate AI-like recommendations
+  const generateScore = () => {
+    let score = 60; // Base score
+    if (responses.frequency.toLowerCase().includes('jour') || responses.frequency.toLowerCase().includes('quotidien')) score += 20;
+    if (responses.task.length > 50) score += 10;
+    if (responses.tools.toLowerCase().includes('excel') || responses.tools.toLowerCase().includes('manuel')) score += 15;
+    return Math.min(score, 95);
+  };
+
+  const getRecommendations = () => {
+    const sector = responses.sector.toLowerCase();
+    const task = responses.task.toLowerCase();
+    
+    if (task.includes('email') || task.includes('mail')) {
+      return ['Mailchimp', 'HubSpot CRM', 'Zapier'];
+    } else if (task.includes('rapport') || task.includes('données')) {
+      return ['Monday.com', 'Zapier', 'Google Sheets API'];
+    } else if (task.includes('rendez-vous') || task.includes('planning')) {
+      return ['Calendly', 'Acuity Scheduling', 'HubSpot CRM'];
+    } else {
+      return ['Zapier', 'Monday.com', 'HubSpot CRM'];
+    }
+  };
+
+  const startNewDiagnostic = () => {
+    setShowResults(false);
+    setCurrentStep(1);
+    setResponses({
+      task: '',
+      frequency: '',
+      sector: '',
+      tools: '',
+      deliverable: '',
+      constraints: ''
+    });
+  };
+
+  if (showResults) {
+    const score = generateScore();
+    const recommendations = getRecommendations();
+    const timeSaved = Math.round(score * 0.6); // Estimation du temps gagné en %
+
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <Navigation />
+        
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            {/* Results Header */}
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center mb-4">
+                <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
+                <h1 className="text-3xl font-bold text-foreground">Diagnostic Terminé !</h1>
+              </div>
+              <p className="text-muted-foreground text-lg">
+                Voici votre analyse personnalisée et nos recommandations
+              </p>
+            </div>
+
+            {/* Score Card */}
+            <Card className="mb-6 shadow-medium">
+              <CardHeader className="text-center">
+                <CardTitle className="text-2xl">Score d'Automatisation</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="relative w-32 h-32 mx-auto mb-4">
+                  <div className="w-32 h-32 rounded-full border-8 border-primary/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-primary">{score}%</div>
+                      <div className="text-sm text-muted-foreground">Potentiel</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                  <div className="text-center">
+                    <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                    <div className="font-semibold">{timeSaved}%</div>
+                    <div className="text-sm text-muted-foreground">Temps économisé</div>
+                  </div>
+                  <div className="text-center">
+                    <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                    <div className="font-semibold">2-4 semaines</div>
+                    <div className="text-sm text-muted-foreground">Mise en place</div>
+                  </div>
+                  <div className="text-center">
+                    <Target className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                    <div className="font-semibold">ROI rapide</div>
+                    <div className="text-sm text-muted-foreground">Rentabilité</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Summary */}
+            <Card className="mb-6 shadow-medium">
+              <CardHeader>
+                <CardTitle>Résumé de votre diagnostic</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">TÂCHE À AUTOMATISER</div>
+                    <p className="text-sm">{responses.task}</p>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">FRÉQUENCE</div>
+                    <p className="text-sm">{responses.frequency}</p>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">SECTEUR</div>
+                    <p className="text-sm">{responses.sector}</p>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">OUTILS ACTUELS</div>
+                    <p className="text-sm">{responses.tools}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Recommendations */}
+            <Card className="mb-6 shadow-medium">
+              <CardHeader>
+                <CardTitle>Nos recommandations pour vous</CardTitle>
+                <p className="text-muted-foreground">Solutions adaptées à votre profil</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recommendations.map((tool, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <div className="font-semibold">{tool}</div>
+                          <div className="text-sm text-muted-foreground">Solution recommandée</div>
+                        </div>
+                      </div>
+                      <Badge variant="secondary">Score élevé</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="shadow-medium">
+                <CardContent className="p-6 text-center">
+                  <Mail className="h-8 w-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2">Recevoir par email</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Recevez ce diagnostic et nos recommandations détaillées
+                  </p>
+                  <Button variant="outline" className="w-full">
+                    Envoyer le rapport
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-medium">
+                <CardContent className="p-6 text-center">
+                  <Target className="h-8 w-8 text-primary mx-auto mb-3" />
+                  <h3 className="font-semibold mb-2">Consultation gratuite</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Échangez avec un expert pour affiner votre stratégie
+                  </p>
+                  <Button variant="hero" className="w-full">
+                    Réserver un créneau
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Restart button */}
+            <div className="text-center mt-8">
+              <Button variant="outline" onClick={startNewDiagnostic}>
+                Faire un nouveau diagnostic
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
