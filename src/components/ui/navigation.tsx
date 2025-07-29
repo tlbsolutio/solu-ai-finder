@@ -2,15 +2,18 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Languages } from 'lucide-react';
 
 const Navigation = () => {
   const location = useLocation();
+  const { language, setLanguage, t } = useLanguage();
 
   const navItems = [
-    { name: 'Accueil', path: '/' },
-    { name: 'Diagnostic IA', path: '/diagnostic' },
-    { name: 'Catalogue SaaS', path: '/catalogue' },
-    { name: 'Contact', path: '/contact' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.diagnostic'), path: '/diagnostic' },
+    { name: t('nav.catalogue'), path: '/catalogue' },
+    { name: t('nav.contact'), path: '/contact' },
   ];
 
   return (
@@ -42,9 +45,18 @@ const Navigation = () => {
         </div>
 
         <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+            className="hidden sm:flex"
+          >
+            <Languages className="h-4 w-4 mr-2" />
+            {language === 'fr' ? 'EN' : 'FR'}
+          </Button>
           <Link to="/diagnostic">
             <Button variant="default" className="bg-gradient-primary hover:opacity-90">
-              Commencer le diagnostic
+              {t('nav.start_diagnostic')}
             </Button>
           </Link>
         </div>
