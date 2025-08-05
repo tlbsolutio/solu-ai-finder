@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
+import heroBackground from '@/assets/hero-bg.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -112,20 +113,28 @@ const Index = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
+      <section className="relative overflow-hidden py-20 lg:py-32" style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
               <Badge variant="secondary" className="mb-4 text-primary">
                 Transformation Digitale
               </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-                Automatisez votre activité avec l'
-                <span className="bg-gradient-primary bg-clip-text text-transparent">IA</span>
+              <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Trouvez la meilleure solution 
+                <span className="bg-gradient-primary bg-clip-text text-transparent">SaaS</span>
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-xl">
-                Découvrez les meilleures solutions SaaS pour automatiser vos tâches répétitives. 
-                Diagnostic IA gratuit et recommandations personnalisées en 5 minutes.
+              <p className="text-xl text-white/90 mb-6 max-w-xl">
+                Trouvez la meilleure solution SaaS pour automatiser votre activité et gagner du temps. 
+                Diagnostic gratuit + recommandations personnalisées.
+              </p>
+              <p className="text-lg text-white/80 mb-8 max-w-xl">
+                Nous vous aidons aussi à implémenter l'IA dans vos processus.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -136,13 +145,13 @@ const Index = () => {
                   </Button>
                 </Link>
                 <Link to="/catalogue">
-                  <Button variant="outline" size="xl" className="w-full sm:w-auto">
-                    Voir le catalogue
+                  <Button variant="outline" size="xl" className="w-full sm:w-auto border-white text-primary bg-white hover:bg-white/90">
+                    Explorer le catalogue
                   </Button>
                 </Link>
               </div>
 
-              <div className="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-sm text-white/80">
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                   Gratuit
@@ -274,7 +283,7 @@ const Index = () => {
             {categories.map((category, idx) => (
               <Link
                 key={idx}
-                to={`/catalogue?category=${category.slug}`}
+                to={`/catalogue?filter=${category.slug}`}
                 className="group"
               >
                 <Card className="h-full text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105 border-border/50">
