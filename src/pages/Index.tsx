@@ -5,120 +5,139 @@ import { Button } from '@/components/ui/button';
 import heroBackground from '@/assets/hero-bg.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Brain, 
-  Search, 
-  Zap, 
-  TrendingUp, 
-  Users, 
-  CheckCircle, 
-  ArrowRight,
-  Clock,
-  DollarSign,
-  Target,
-  UserCircle,
-  TrendingUp as Growth,
-  Workflow,
-  Palette,
-  ShoppingCart,
-  Briefcase,
-  FileText,
-  Shield,
-  Calculator,
-  UserCheck,
-  GraduationCap,
-  Headphones,
-  Heart,
-  Package,
-  Code,
-  Scale
-} from 'lucide-react';
-
+import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
 const Index = () => {
-  const features = [
-    {
-      icon: Brain,
-      title: "Diagnostic IA Intelligent",
-      description: "Notre assistant conversationnel analyse vos processus en 6 questions ciblées pour identifier les tâches à automatiser.",
-      color: "text-blue-500"
-    },
-    {
-      icon: Search,
-      title: "Catalogue SaaS Personnalisé",
-      description: "Découvrez une sélection de solutions SaaS triées sur le volet, adaptées à votre secteur et vos besoins spécifiques.",
-      color: "text-green-500"
-    },
-    {
-      icon: Zap,
-      title: "Recommandations Sur Mesure",
-      description: "Recevez des recommandations précises basées sur le potentiel d'automatisation et la facilité d'implémentation.",
-      color: "text-yellow-500"
-    }
-  ];
-
-  const benefits = [
-    {
-      icon: Clock,
-      title: "Gagnez du temps",
-      description: "Jusqu'à 70% de temps économisé sur vos tâches répétitives"
-    },
-    {
-      icon: DollarSign,
-      title: "Réduisez vos coûts",
-      description: "ROI moyen de 300% dès la première année"
-    },
-    {
-      icon: Target,
-      title: "Solutions ciblées",
-      description: "Recommandations adaptées à votre secteur et taille d'entreprise"
-    }
-  ];
-
-  const testimonials = [
-    {
-      quote: "Grâce à Solutio, j'ai automatisé ma gestion des leads et gagné 15h par semaine !",
-      author: "Marie D.",
-      role: "Consultante Marketing",
-      company: "Freelance"
-    },
-    {
-      quote: "L'accompagnement était parfait. Nous avons trouvé la solution idéale en 2 semaines.",
-      author: "Thomas L.",
-      role: "CEO",
-      company: "TechStart"
-    }
-  ];
-
-  const categories = [
-    { icon: UserCircle, name: "CRM & Relation Client", count: "45+ outils", slug: "crm-relation-client" },
-    { icon: Growth, name: "Marketing & Growth", count: "38+ outils", slug: "marketing-growth" },
-    { icon: Workflow, name: "Automatisation & No-code", count: "52+ outils", slug: "automatisation-nocode" },
-    { icon: Palette, name: "Création, Design & Multimédia", count: "29+ outils", slug: "creation-design" },
-    { icon: ShoppingCart, name: "Ventes & E-commerce", count: "41+ outils", slug: "ventes-ecommerce" },
-    { icon: Briefcase, name: "Gestion de Projet & Collaboration", count: "33+ outils", slug: "gestion-projet" },
-    { icon: FileText, name: "Productivité & Outils Bureautiques", count: "47+ outils", slug: "productivite" },
-    { icon: Shield, name: "Sécurité & Conformité", count: "22+ outils", slug: "securite-conformite" },
-    { icon: Calculator, name: "Finance & Comptabilité", count: "36+ outils", slug: "finance-comptabilite" },
-    { icon: UserCheck, name: "Ressources Humaines & Recrutement", count: "27+ outils", slug: "ressources-humaines" },
-    { icon: GraduationCap, name: "Éducation & Formation", count: "21+ outils", slug: "education-formation" },
-    { icon: Headphones, name: "Service Client & Support", count: "16+ outils", slug: "service-client" },
-    { icon: Heart, name: "Santé & Bien-être", count: "15+ outils", slug: "sante-bienetre" },
-    { icon: Package, name: "Industrie & Logistique", count: "22+ outils", slug: "industrie-logistique" },
-    { icon: Code, name: "Développement & IT", count: "56+ outils", slug: "developpement-it" },
-    { icon: Scale, name: "LegalTech & Juridique", count: "18+ outils", slug: "legaltech-juridique" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-subtle">
+  const features = [{
+    icon: Brain,
+    title: "Diagnostic IA Intelligent",
+    description: "Notre assistant conversationnel analyse vos processus en 6 questions ciblées pour identifier les tâches à automatiser.",
+    color: "text-blue-500"
+  }, {
+    icon: Search,
+    title: "Catalogue SaaS Personnalisé",
+    description: "Découvrez une sélection de solutions SaaS triées sur le volet, adaptées à votre secteur et vos besoins spécifiques.",
+    color: "text-green-500"
+  }, {
+    icon: Zap,
+    title: "Recommandations Sur Mesure",
+    description: "Recevez des recommandations précises basées sur le potentiel d'automatisation et la facilité d'implémentation.",
+    color: "text-yellow-500"
+  }];
+  const benefits = [{
+    icon: Clock,
+    title: "Gagnez du temps",
+    description: "Jusqu'à 70% de temps économisé sur vos tâches répétitives"
+  }, {
+    icon: DollarSign,
+    title: "Réduisez vos coûts",
+    description: "ROI moyen de 300% dès la première année"
+  }, {
+    icon: Target,
+    title: "Solutions ciblées",
+    description: "Recommandations adaptées à votre secteur et taille d'entreprise"
+  }];
+  const testimonials = [{
+    quote: "Grâce à Solutio, j'ai automatisé ma gestion des leads et gagné 15h par semaine !",
+    author: "Marie D.",
+    role: "Consultante Marketing",
+    company: "Freelance"
+  }, {
+    quote: "L'accompagnement était parfait. Nous avons trouvé la solution idéale en 2 semaines.",
+    author: "Thomas L.",
+    role: "CEO",
+    company: "TechStart"
+  }];
+  const categories = [{
+    icon: UserCircle,
+    name: "CRM & Relation Client",
+    count: "45+ outils",
+    slug: "crm-relation-client"
+  }, {
+    icon: Growth,
+    name: "Marketing & Growth",
+    count: "38+ outils",
+    slug: "marketing-growth"
+  }, {
+    icon: Workflow,
+    name: "Automatisation & No-code",
+    count: "52+ outils",
+    slug: "automatisation-nocode"
+  }, {
+    icon: Palette,
+    name: "Création, Design & Multimédia",
+    count: "29+ outils",
+    slug: "creation-design"
+  }, {
+    icon: ShoppingCart,
+    name: "Ventes & E-commerce",
+    count: "41+ outils",
+    slug: "ventes-ecommerce"
+  }, {
+    icon: Briefcase,
+    name: "Gestion de Projet & Collaboration",
+    count: "33+ outils",
+    slug: "gestion-projet"
+  }, {
+    icon: FileText,
+    name: "Productivité & Outils Bureautiques",
+    count: "47+ outils",
+    slug: "productivite"
+  }, {
+    icon: Shield,
+    name: "Sécurité & Conformité",
+    count: "22+ outils",
+    slug: "securite-conformite"
+  }, {
+    icon: Calculator,
+    name: "Finance & Comptabilité",
+    count: "36+ outils",
+    slug: "finance-comptabilite"
+  }, {
+    icon: UserCheck,
+    name: "Ressources Humaines & Recrutement",
+    count: "27+ outils",
+    slug: "ressources-humaines"
+  }, {
+    icon: GraduationCap,
+    name: "Éducation & Formation",
+    count: "21+ outils",
+    slug: "education-formation"
+  }, {
+    icon: Headphones,
+    name: "Service Client & Support",
+    count: "16+ outils",
+    slug: "service-client"
+  }, {
+    icon: Heart,
+    name: "Santé & Bien-être",
+    count: "15+ outils",
+    slug: "sante-bienetre"
+  }, {
+    icon: Package,
+    name: "Industrie & Logistique",
+    count: "22+ outils",
+    slug: "industrie-logistique"
+  }, {
+    icon: Code,
+    name: "Développement & IT",
+    count: "56+ outils",
+    slug: "developpement-it"
+  }, {
+    icon: Scale,
+    name: "LegalTech & Juridique",
+    count: "18+ outils",
+    slug: "legaltech-juridique"
+  }];
+  return <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32" style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}>
+      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroBackground})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="text-center lg:text-left">
@@ -169,11 +188,7 @@ const Index = () => {
 
             <div className="relative animate-float">
               <div className="relative z-10">
-                <img 
-                  src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" 
-                  alt="Solutio Platform" 
-                  className="w-full max-w-md mx-auto drop-shadow-2xl"
-                />
+                <img src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" alt="Solutio Platform" className="w-full max-w-md mx-auto drop-shadow-2xl" />
               </div>
               <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full transform scale-75"></div>
             </div>
@@ -194,8 +209,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, idx) => (
-              <Card key={idx} className="group hover:shadow-medium transition-all duration-300 transform hover:scale-105">
+            {features.map((feature, idx) => <Card key={idx} className="group hover:shadow-medium transition-all duration-300 transform hover:scale-105">
                 <CardHeader className="text-center">
                   <feature.icon className={`h-12 w-12 ${feature.color} mx-auto mb-4 group-hover:scale-110 transition-transform`} />
                   <CardTitle className="text-xl">{feature.title}</CardTitle>
@@ -203,8 +217,7 @@ const Index = () => {
                 <CardContent>
                   <p className="text-muted-foreground text-center">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -222,8 +235,7 @@ const Index = () => {
               </p>
               
               <div className="space-y-6">
-                {benefits.map((benefit, idx) => (
-                  <div key={idx} className="flex items-start">
+                {benefits.map((benefit, idx) => <div key={idx} className="flex items-start">
                     <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
                       <benefit.icon className="h-6 w-6 text-primary" />
                     </div>
@@ -231,8 +243,7 @@ const Index = () => {
                       <h3 className="font-semibold text-foreground mb-1">{benefit.title}</h3>
                       <p className="text-muted-foreground">{benefit.description}</p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
 
               <div className="mt-8">
@@ -246,8 +257,7 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              {testimonials.map((testimonial, idx) => (
-                <Card key={idx} className="shadow-soft">
+              {testimonials.map((testimonial, idx) => <Card key={idx} className="shadow-soft">
                   <CardContent className="p-6">
                     <p className="text-foreground italic mb-4">"{testimonial.quote}"</p>
                     <div className="flex items-center">
@@ -260,8 +270,7 @@ const Index = () => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
           </div>
         </div>
@@ -280,12 +289,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, idx) => (
-              <Link
-                key={idx}
-                to={`/catalogue?filter=${category.slug}`}
-                className="group"
-              >
+            {categories.map((category, idx) => <Link key={idx} to={`/catalogue?filter=${category.slug}`} className="group">
                 <Card className="h-full text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105 border-border/50">
                   <CardContent className="p-6">
                     <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
@@ -299,8 +303,7 @@ const Index = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              </Link>)}
           </div>
         </div>
       </section>
@@ -325,7 +328,7 @@ const Index = () => {
                 </Button>
               </Link>
               <Link to="/catalogue">
-                <Button variant="outline" size="xl" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary">
+                <Button variant="outline" size="xl" className="w-full sm:w-auto border-white hover:bg-white text-neutral-700">
                   Explorer le catalogue
                 </Button>
               </Link>
@@ -354,11 +357,7 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <img 
-                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" 
-                alt="Solutio" 
-                className="h-8 w-auto mb-4"
-              />
+              <img src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" alt="Solutio" className="h-8 w-auto mb-4" />
               <p className="text-muted-foreground text-sm">
                 Votre partenaire pour la transformation digitale et l'automatisation.
               </p>
@@ -399,8 +398,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
