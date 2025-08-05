@@ -14,7 +14,23 @@ import {
   ArrowRight,
   Clock,
   DollarSign,
-  Target
+  Target,
+  UserCircle,
+  TrendingUp as Growth,
+  Workflow,
+  Palette,
+  ShoppingCart,
+  Briefcase,
+  FileText,
+  Shield,
+  Calculator,
+  UserCheck,
+  GraduationCap,
+  Headphones,
+  Heart,
+  Package,
+  Code,
+  Scale
 } from 'lucide-react';
 
 const Index = () => {
@@ -70,6 +86,25 @@ const Index = () => {
       role: "CEO",
       company: "TechStart"
     }
+  ];
+
+  const categories = [
+    { icon: UserCircle, name: "CRM & Relation Client", count: "45+ outils", slug: "crm-relation-client" },
+    { icon: Growth, name: "Marketing & Growth", count: "38+ outils", slug: "marketing-growth" },
+    { icon: Workflow, name: "Automatisation & No-code", count: "52+ outils", slug: "automatisation-nocode" },
+    { icon: Palette, name: "Création, Design & Multimédia", count: "29+ outils", slug: "creation-design" },
+    { icon: ShoppingCart, name: "Ventes & E-commerce", count: "41+ outils", slug: "ventes-ecommerce" },
+    { icon: Briefcase, name: "Gestion de Projet & Collaboration", count: "33+ outils", slug: "gestion-projet" },
+    { icon: FileText, name: "Productivité & Outils Bureautiques", count: "47+ outils", slug: "productivite" },
+    { icon: Shield, name: "Sécurité & Conformité", count: "22+ outils", slug: "securite-conformite" },
+    { icon: Calculator, name: "Finance & Comptabilité", count: "36+ outils", slug: "finance-comptabilite" },
+    { icon: UserCheck, name: "Ressources Humaines & Recrutement", count: "27+ outils", slug: "ressources-humaines" },
+    { icon: GraduationCap, name: "Éducation & Formation", count: "21+ outils", slug: "education-formation" },
+    { icon: Headphones, name: "Service Client & Support", count: "16+ outils", slug: "service-client" },
+    { icon: Heart, name: "Santé & Bien-être", count: "15+ outils", slug: "sante-bienetre" },
+    { icon: Package, name: "Industrie & Logistique", count: "22+ outils", slug: "industrie-logistique" },
+    { icon: Code, name: "Développement & IT", count: "56+ outils", slug: "developpement-it" },
+    { icon: Scale, name: "LegalTech & Juridique", count: "18+ outils", slug: "legaltech-juridique" }
   ];
 
   return (
@@ -219,6 +254,44 @@ const Index = () => {
                 </Card>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              Explorez nos catégories de solutions
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Trouvez les outils parfaits pour votre secteur d'activité parmi plus de 500 solutions référencées
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories.map((category, idx) => (
+              <Link
+                key={idx}
+                to={`/catalogue?category=${category.slug}`}
+                className="group"
+              >
+                <Card className="h-full text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105 border-border/50">
+                  <CardContent className="p-6">
+                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                      <category.icon className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2 text-sm leading-tight">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {category.count}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
