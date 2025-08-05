@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,9 +10,18 @@ import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-reac
 
 const Catalogue = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
+
+  // Set category filter from URL params on mount
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
 
   // Mock data - in real app, this would come from Airtable
   const saasData = [
@@ -66,7 +75,25 @@ const Catalogue = () => {
     }
   ];
 
-  const categories = ["Automatisation", "CRM", "Gestion de projet", "Planification", "Marketing", "Finance"];
+  const categories = [
+    "CRM & Relation Client",
+    "Marketing & Growth", 
+    "Automatisation & No-code",
+    "Création, Design & Multimédia",
+    "Ventes & E-commerce",
+    "Gestion de Projet & Collaboration",
+    "Productivité & Outils Bureautiques",
+    "Sécurité & Conformité",
+    "Finance & Comptabilité",
+    "Ressources Humaines & Recrutement",
+    "Éducation & Formation",
+    "Service Client & Support",
+    "Santé & Bien-être",
+    "Industrie & Logistique",
+    "Développement & IT",
+    "LegalTech & Juridique",
+    "Autre"
+  ];
   const targets = ["PME", "Startups", "Entrepreneurs", "Équipes", "Consultants", "Commerciaux"];
 
   const filteredSaaS = saasData.filter(item => {
