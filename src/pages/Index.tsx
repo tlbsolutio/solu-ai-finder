@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
-import heroBackground from '@/assets/hero-bg.jpg';
+import heroBackground from '@/assets/hero-business.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
@@ -133,7 +133,7 @@ const Index = () => {
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 lg:py-32" style={{
-      backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(${heroBackground})`,
+      backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(59, 130, 246, 0.75)), url(${heroBackground})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat'
@@ -145,15 +145,13 @@ const Index = () => {
                 Transformation Digitale
               </Badge>
               <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Trouvez la meilleure solution 
-                <span className="bg-gradient-primary bg-clip-text text-transparent">SaaS</span>
+                Trouvez la meilleure solution SaaS pour automatiser votre activité
               </h1>
-              <p className="text-xl text-white/90 mb-6 max-w-xl text-center">
-                Trouvez la meilleure solution SaaS pour automatiser votre activité et gagner du temps. 
-                Diagnostic gratuit + recommandations personnalisées.
+              <p className="text-xl text-white/90 mb-4 max-w-xl">
+                Diagnostic gratuit + recommandations personnalisées
               </p>
-              <p className="text-lg text-white/80 mb-8 max-w-xl">
-                Nous vous aidons aussi à implémenter l'IA dans vos processus.
+              <p className="text-sm text-white/80 mb-8 max-w-xl">
+                Solutio vous aide aussi à implémenter l'IA dans vos processus métier.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -186,10 +184,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="relative animate-float">
-              <div className="relative z-10">
-                <img src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" alt="Solutio Platform" className="w-full max-w-md mx-auto drop-shadow-2xl" />
-              </div>
+            <div className="relative animate-float hidden lg:block">
               <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full transform scale-75"></div>
             </div>
           </div>
