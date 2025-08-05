@@ -132,14 +132,16 @@ const Index = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32" style={{
+      <section className="relative overflow-hidden py-24 lg:py-40" style={{
       backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(59, 130, 246, 0.75)), url(${heroBackground})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed'
+     }}>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 animate-pulse"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center animate-fade-in">
             <div className="text-center lg:text-left">
               <Badge variant="secondary" className="mb-4 text-primary">
                 Transformation Digitale
@@ -156,13 +158,13 @@ const Index = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/diagnostic">
-                  <Button variant="hero" size="xl" className="w-full sm:w-auto">
+                  <Button variant="hero" size="xl" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     <Brain className="h-5 w-5 mr-2" />
                     Commencer le diagnostic gratuit
                   </Button>
                 </Link>
                 <Link to="/catalogue">
-                  <Button variant="outline" size="xl" className="w-full sm:w-auto border-white text-primary bg-white hover:bg-white/90">
+                  <Button variant="outline" size="xl" className="w-full sm:w-auto border-white text-primary bg-white hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     Explorer le catalogue
                   </Button>
                 </Link>
@@ -185,14 +187,14 @@ const Index = () => {
             </div>
 
             <div className="relative animate-float hidden lg:block">
-              <div className="absolute inset-0 bg-gradient-primary opacity-20 blur-3xl rounded-full transform scale-75"></div>
+              <div className="absolute inset-0 bg-gradient-primary opacity-30 blur-3xl rounded-full transform scale-75 animate-pulse"></div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-background">
+      <section className="py-24 bg-background shadow-lg relative z-10 -mt-8 rounded-t-3xl">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -204,9 +206,11 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, idx) => <Card key={idx} className="group hover:shadow-medium transition-all duration-300 transform hover:scale-105">
+            {features.map((feature, idx) => <Card key={idx} className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md">
                 <CardHeader className="text-center">
-                  <feature.icon className={`h-12 w-12 ${feature.color} mx-auto mb-4 group-hover:scale-110 transition-transform`} />
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
+                    <feature.icon className={`h-8 w-8 ${feature.color} group-hover:scale-110 transition-transform`} />
+                  </div>
                   <CardTitle className="text-xl">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -218,7 +222,7 @@ const Index = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-gradient-subtle">
+      <section className="py-24 bg-gradient-subtle shadow-inner relative">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
@@ -243,7 +247,7 @@ const Index = () => {
 
               <div className="mt-8">
                 <Link to="/contact">
-                  <Button variant="premium" size="lg">
+                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                     Demander une démo personnalisée
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
@@ -252,11 +256,11 @@ const Index = () => {
             </div>
 
             <div className="space-y-6">
-              {testimonials.map((testimonial, idx) => <Card key={idx} className="shadow-soft">
+              {testimonials.map((testimonial, idx) => <Card key={idx} className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0">
                   <CardContent className="p-6">
                     <p className="text-foreground italic mb-4">"{testimonial.quote}"</p>
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold mr-3 shadow-md">
                         {testimonial.author.charAt(0)}
                       </div>
                       <div>
@@ -272,7 +276,7 @@ const Index = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="py-20 bg-background">
+      <section className="py-24 bg-background shadow-lg relative z-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -285,10 +289,10 @@ const Index = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((category, idx) => <Link key={idx} to={`/catalogue?filter=${category.slug}`} className="group">
-                <Card className="h-full text-center hover:shadow-lg transition-all duration-300 group-hover:scale-105 border-border/50">
+                <Card className="h-full text-center hover:shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2 border-0 shadow-md">
                   <CardContent className="p-6">
-                    <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                      <category.icon className="h-8 w-8 text-primary" />
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300">
+                      <category.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <h3 className="font-semibold text-foreground mb-2 text-sm leading-tight">
                       {category.name}
@@ -304,7 +308,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary text-white relative overflow-hidden">
+      <section className="py-24 bg-primary text-white relative overflow-hidden shadow-2xl">
         <div className="absolute inset-0 bg-gradient-hero opacity-90"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
@@ -317,13 +321,13 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/diagnostic">
-                <Button variant="secondary" size="xl" className="w-full sm:w-auto">
+                <Button variant="secondary" size="xl" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <Brain className="h-5 w-5 mr-2" />
                   Diagnostic gratuit en 5 min
                 </Button>
               </Link>
               <Link to="/catalogue">
-                <Button variant="outline" size="xl" className="w-full sm:w-auto border-white hover:bg-white text-neutral-700">
+                <Button variant="outline" size="xl" className="w-full sm:w-auto border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   Explorer le catalogue
                 </Button>
               </Link>
