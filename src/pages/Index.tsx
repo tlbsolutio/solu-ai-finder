@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
-import heroBackground from '@/assets/hero-business.jpg';
+import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
@@ -132,62 +132,86 @@ const Index = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 lg:py-40" style={{
-      backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.85), rgba(59, 130, 246, 0.75)), url(${heroBackground})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      backgroundAttachment: 'fixed'
-     }}>
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 animate-pulse"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center animate-fade-in">
-            <div className="text-center lg:text-left">
-              <Badge variant="secondary" className="mb-4 text-primary">
-                Transformation Digitale
-              </Badge>
-              <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Trouvez la meilleure solution SaaS pour automatiser votre activité
-              </h1>
-              <p className="text-xl text-white/90 mb-4 max-w-xl">
-                Diagnostic gratuit + recommandations personnalisées
-              </p>
-              <p className="text-sm text-white/80 mb-8 max-w-xl">
-                Solutio vous aide aussi à implémenter l'IA dans vos processus métier.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link to="/diagnostic">
-                  <Button variant="hero" size="xl" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <Brain className="h-5 w-5 mr-2" />
-                    Commencer le diagnostic gratuit
-                  </Button>
-                </Link>
-                <Link to="/catalogue">
-                  <Button variant="outline" size="xl" className="w-full sm:w-auto border-white text-primary bg-white hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    Explorer le catalogue
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="flex items-center justify-center lg:justify-start mt-8 space-x-6 text-sm text-white/80">
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Gratuit
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  5 minutes
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                  Sans engagement
-                </div>
-              </div>
+      <section className="relative overflow-hidden py-32 lg:py-48">
+        {/* Background with overlay */}
+        <div 
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: `url(${heroBackground})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        
+        {/* Modern gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-700/85 z-10" />
+        
+        {/* Subtle geometric pattern overlay */}
+        <div className="absolute inset-0 opacity-10 z-20" style={{
+          backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary)) 0%, transparent 50%), 
+                           radial-gradient(circle at 75% 75%, hsl(var(--secondary)) 0%, transparent 50%)`
+        }} />
+        
+        <div className="container mx-auto px-4 relative z-30">
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Badge */}
+            <Badge variant="secondary" className="mb-8 px-4 py-2 text-sm font-medium bg-white/10 text-white border-white/20 backdrop-blur-sm">
+              Transformation Digitale
+            </Badge>
+            
+            {/* Main heading */}
+            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
+              Trouvez la meilleure solution SaaS pour automatiser votre activité
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-2xl lg:text-3xl text-white/90 mb-6 font-medium">
+              Diagnostic gratuit + recommandations personnalisées
+            </p>
+            
+            {/* Additional info */}
+            <p className="text-lg text-white/70 mb-12 max-w-2xl mx-auto">
+              Solutio vous aide aussi à implémenter l'IA dans vos processus métier.
+            </p>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+              <Link to="/diagnostic">
+                <Button 
+                  variant="hero" 
+                  size="xl" 
+                  className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-white text-slate-900 hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 border-0"
+                >
+                  <Brain className="h-6 w-6 mr-3" />
+                  Commencer le diagnostic gratuit
+                </Button>
+              </Link>
+              <Link to="/catalogue">
+                <Button 
+                  variant="outline" 
+                  size="xl" 
+                  className="w-full sm:w-auto px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
+                >
+                  Explorer le catalogue
+                </Button>
+              </Link>
             </div>
 
-            <div className="relative animate-float hidden lg:block">
-              <div className="absolute inset-0 bg-gradient-primary opacity-30 blur-3xl rounded-full transform scale-75 animate-pulse"></div>
+            {/* Trust indicators */}
+            <div className="flex items-center justify-center space-x-8 text-white/70">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                <span className="text-sm font-medium">Gratuit</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                <span className="text-sm font-medium">5 minutes</span>
+              </div>
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
+                <span className="text-sm font-medium">Sans engagement</span>
+              </div>
             </div>
           </div>
         </div>
