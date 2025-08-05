@@ -148,7 +148,7 @@ const Index = () => {
                 Trouvez la meilleure solution 
                 <span className="bg-gradient-primary bg-clip-text text-transparent">SaaS</span>
               </h1>
-              <p className="text-xl text-white/90 mb-6 max-w-xl">
+              <p className="text-xl text-white/90 mb-6 max-w-xl text-center">
                 Trouvez la meilleure solution SaaS pour automatiser votre activité et gagner du temps. 
                 Diagnostic gratuit + recommandations personnalisées.
               </p>
