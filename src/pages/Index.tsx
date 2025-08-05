@@ -288,7 +288,7 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, idx) => <Link key={idx} to={`/catalogue?filter=${category.slug}`} className="group">
+            {categories.map((category, idx) => <Link key={idx} to={`/catalogue-saas?category=${encodeURIComponent(category.name)}`} className="group">
                 <Card className="h-full text-center hover:shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2 border-0 shadow-md">
                   <CardContent className="p-6">
                     <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300">

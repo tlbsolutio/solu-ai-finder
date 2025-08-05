@@ -19,7 +19,7 @@ const Catalogue = () => {
   useEffect(() => {
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
-      setSelectedCategory(categoryParam);
+      setSelectedCategory(decodeURIComponent(categoryParam));
     }
   }, [searchParams]);
 
