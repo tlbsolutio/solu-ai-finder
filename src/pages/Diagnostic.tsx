@@ -147,9 +147,8 @@ const Diagnostic = () => {
     const recommendations = getRecommendations();
     const timeSaved = Math.round(score * 0.6); // Estimation du temps gagné en %
 
-    return (
-      <div className="min-h-screen bg-gradient-subtle">
-        <Navigation />
+  return (
+    <div className="min-h-screen bg-gradient-subtle">
         
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">

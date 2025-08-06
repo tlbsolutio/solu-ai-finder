@@ -1,6 +1,5 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -78,7 +77,6 @@ const SaasDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Navigation />
       
       <div className="container mx-auto px-4 py-8">
         {/* Back navigation */}
@@ -86,7 +84,7 @@ const SaasDetail = () => {
           <Link to="/catalogue">
             <Button variant="ghost" className="flex items-center">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour au catalogue
+              {t('saasdetail.back_to_catalog')}
             </Button>
           </Link>
         </div>
@@ -126,17 +124,17 @@ const SaasDetail = () => {
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   <div className="text-center">
                     <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Automatisation</p>
+                    <p className="text-sm text-muted-foreground">{t('saasdetail.automation')}</p>
                     <p className="font-semibold">{saasDetail.automation}%</p>
                   </div>
                   <div className="text-center">
                     <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">Facilité</p>
+                    <p className="text-sm text-muted-foreground">{t('saasdetail.ease')}</p>
                     <p className="font-semibold">{saasDetail.ease}/100</p>
                   </div>
                   <div className="text-center">
                     <DollarSign className="h-6 w-6 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">À partir de</p>
+                    <p className="text-sm text-muted-foreground">{t('saasdetail.from')}</p>
                     <p className="font-semibold">{saasDetail.price.split(' - ')[0]}</p>
                   </div>
                 </div>
@@ -146,7 +144,7 @@ const SaasDetail = () => {
             {/* Features */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Fonctionnalités principales</CardTitle>
+                <CardTitle>{t('saasdetail.main_features')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -163,7 +161,7 @@ const SaasDetail = () => {
             {/* Use Cases */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Cas d'usage populaires</CardTitle>
+                <CardTitle>{t('saasdetail.popular_use_cases')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -183,7 +181,7 @@ const SaasDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle className="text-green-600">Avantages</CardTitle>
+                  <CardTitle className="text-green-600">{t('saasdetail.advantages')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -199,7 +197,7 @@ const SaasDetail = () => {
 
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle className="text-red-600">Inconvénients</CardTitle>
+                  <CardTitle className="text-red-600">{t('saasdetail.disadvantages')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -220,7 +218,7 @@ const SaasDetail = () => {
             {/* CTA Card */}
             <Card className="shadow-medium border-primary/20">
               <CardHeader>
-                <CardTitle className="text-center">Commencer maintenant</CardTitle>
+                <CardTitle className="text-center">{t('saasdetail.start_now')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button 
@@ -231,7 +229,7 @@ const SaasDetail = () => {
                 >
                   <a href={saasDetail.affiliateLink} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Essayer gratuitement
+                    {t('saasdetail.try_free')}
                   </a>
                 </Button>
                 
@@ -241,7 +239,7 @@ const SaasDetail = () => {
                   asChild
                 >
                   <a href={saasDetail.website} target="_blank" rel="noopener noreferrer">
-                    Visiter le site web
+                    {t('saasdetail.visit_website')}
                   </a>
                 </Button>
                 
@@ -249,7 +247,7 @@ const SaasDetail = () => {
                 
                 <Link to="/contact">
                   <Button className="w-full" variant="secondary">
-                    Demander conseil
+                    {t('saasdetail.ask_advice')}
                   </Button>
                 </Link>
               </CardContent>
@@ -258,7 +256,7 @@ const SaasDetail = () => {
             {/* Pricing */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Tarification</CardTitle>
+                <CardTitle>{t('saasdetail.pricing')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {saasDetail.pricing.map((plan, idx) => (
@@ -266,10 +264,10 @@ const SaasDetail = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium">{plan.plan}</h4>
                       {plan.popular && (
-                        <Badge variant="default" className="text-xs">Populaire</Badge>
+                        <Badge variant="default" className="text-xs">{t('saasdetail.popular')}</Badge>
                       )}
                     </div>
-                    <p className="text-2xl font-bold text-primary mb-2">{plan.price}<span className="text-sm text-muted-foreground">/mois</span></p>
+                    <p className="text-2xl font-bold text-primary mb-2">{plan.price}<span className="text-sm text-muted-foreground">{t('saasdetail.per_month')}</span></p>
                     <div className="space-y-1">
                       {plan.features.map((feature, featureIdx) => (
                         <div key={featureIdx} className="flex items-center text-xs">
@@ -286,7 +284,7 @@ const SaasDetail = () => {
             {/* Target audience */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Idéal pour</CardTitle>
+                <CardTitle>{t('saasdetail.ideal_for')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">

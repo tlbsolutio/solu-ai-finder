@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
 import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,7 +131,6 @@ const Index = () => {
     slug: "legaltech-juridique"
   }];
   return <div className="min-h-screen bg-gradient-subtle">
-      <Navigation />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-32 lg:py-48">
@@ -205,15 +203,15 @@ const Index = () => {
             <div className="flex items-center justify-center space-x-8 text-white/70">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">Gratuit</span>
+                <span className="text-sm font-medium">{t('home.free')}</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">5 minutes</span>
+                <span className="text-sm font-medium">{t('home.minutes')}</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">Sans engagement</span>
+                <span className="text-sm font-medium">{t('home.no_commitment')}</span>
               </div>
             </div>
           </div>
@@ -225,10 +223,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Comment Solutio révolutionne votre productivité
+              {t('home.how_title')}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Une approche en 3 étapes pour identifier, choisir et implémenter les meilleures solutions d'automatisation
+              {t('home.how_subtitle')}
             </p>
           </div>
 
@@ -254,10 +252,10 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                Pourquoi choisir Solutio ?
+                {t('home.why_title')}
               </h2>
               <p className="text-muted-foreground text-lg mb-8">
-                Nous ne vendons pas de solutions, nous trouvons LA solution qui vous convient parfaitement.
+                {t('home.why_subtitle')}
               </p>
               
               <div className="space-y-6">
@@ -275,7 +273,7 @@ const Index = () => {
               <div className="mt-8">
                 <Link to="/contact">
                   <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    Demander une démo personnalisée
+                    {t('home.demo_cta')}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
@@ -307,10 +305,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Explorez nos catégories de solutions
+              {t('categories.title')}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Trouvez les outils parfaits pour votre secteur d'activité parmi plus de 500 solutions référencées
+              {t('categories.subtitle')}
             </p>
           </div>
 
@@ -340,22 +338,22 @@ const Index = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-              Prêt à automatiser votre activité ?
+              {t('home.cta_title')}
             </h2>
             <p className="text-xl text-white/90 mb-8">
-              Commencez votre diagnostic gratuit dès maintenant et découvrez comment gagner des heures chaque semaine.
+              {t('home.cta_subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/diagnostic">
                 <Button variant="secondary" size="xl" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <Brain className="h-5 w-5 mr-2" />
-                  Diagnostic gratuit en 5 min
+                  {t('home.diagnostic_5min')}
                 </Button>
               </Link>
               <Link to="/catalogue">
                 <Button variant="outline" size="xl" className="w-full sm:w-auto border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  Explorer le catalogue
+                  {t('home.explore_catalogue')}
                 </Button>
               </Link>
             </div>
@@ -363,67 +361,21 @@ const Index = () => {
             <div className="mt-8 grid grid-cols-3 gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold">500+</div>
-                <div className="text-white/80">Solutions référencées</div>
+                <div className="text-white/80">{t('home.solutions_count')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">95%</div>
-                <div className="text-white/80">Clients satisfaits</div>
+                <div className="text-white/80">{t('home.satisfaction')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">24h</div>
-                <div className="text-white/80">Temps de réponse</div>
+                <div className="text-white/80">{t('home.response_time')}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-background border-t border-border py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <img src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" alt="Solutio" className="h-8 w-auto mb-4" />
-              <p className="text-muted-foreground text-sm">
-                Votre partenaire pour la transformation digitale et l'automatisation.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Solutions</h4>
-              <div className="space-y-2 text-sm">
-                <Link to="/diagnostic" className="block text-muted-foreground hover:text-primary">Diagnostic IA</Link>
-                <Link to="/catalogue" className="block text-muted-foreground hover:text-primary">Catalogue SaaS</Link>
-                <Link to="/contact" className="block text-muted-foreground hover:text-primary">Conseil Expert</Link>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Support</h4>
-              <div className="space-y-2 text-sm">
-                <Link to="/contact" className="block text-muted-foreground hover:text-primary">Contact</Link>
-                <a href="mailto:contact@solutio.fr" className="block text-muted-foreground hover:text-primary">Email</a>
-                <a href="tel:+33123456789" className="block text-muted-foreground hover:text-primary">Téléphone</a>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Légal</h4>
-              <div className="space-y-2 text-sm">
-                <a href="#" className="block text-muted-foreground hover:text-primary">Mentions légales</a>
-                <a href="#" className="block text-muted-foreground hover:text-primary">Confidentialité</a>
-                <a href="#" className="block text-muted-foreground hover:text-primary">CGU</a>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-border mt-8 pt-8 text-center">
-            <p className="text-muted-foreground text-sm">
-              © 2024 Solutio. Tous droits réservés.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>;
 };
 export default Index;

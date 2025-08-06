@@ -61,6 +61,8 @@ const translations = {
     'categories.development': 'Développement & IT',
     'categories.legal': 'LegalTech & Juridique',
     'categories.count': '{count} outils',
+    'categories.title': 'Explorez nos catégories de solutions',
+    'categories.subtitle': 'Trouvez les outils parfaits pour votre secteur d\'activité parmi plus de 500 solutions référencées',
     
     // Catalog page
     'catalog.title': 'Catalogue SaaS',
@@ -153,7 +155,39 @@ const translations = {
     'footer.legal_notice': 'Mentions légales',
     'footer.privacy': 'Confidentialité',
     'footer.terms': 'CGU',
-    'footer.copyright': '© 2024 Solutio. Tous droits réservés.'
+    'footer.copyright': '© 2024 Solutio. Tous droits réservés.',
+
+    // SaaS Detail page
+    'saasdetail.back_to_catalog': 'Retour au catalogue',
+    'saasdetail.main_features': 'Fonctionnalités principales',
+    'saasdetail.popular_use_cases': 'Cas d\'usage populaires',
+    'saasdetail.advantages': 'Avantages',
+    'saasdetail.disadvantages': 'Inconvénients',
+    'saasdetail.start_now': 'Commencer maintenant',
+    'saasdetail.try_free': 'Essayer gratuitement',
+    'saasdetail.visit_website': 'Visiter le site web',
+    'saasdetail.ask_advice': 'Demander conseil',
+    'saasdetail.pricing': 'Tarification',
+    'saasdetail.popular': 'Populaire',
+    'saasdetail.per_month': '/mois',
+    'saasdetail.ideal_for': 'Idéal pour',
+    'saasdetail.automation': 'Automatisation',
+    'saasdetail.ease': 'Facilité',
+    'saasdetail.from': 'À partir de',
+
+    // Not Found page
+    'notfound.title': '404',
+    'notfound.message': 'Oops ! Page introuvable',
+    'notfound.back_home': 'Retour à l\'accueil',
+
+    // Common
+    'common.loading': 'Chargement...',
+    'common.error': 'Erreur',
+    'common.success': 'Succès',
+    'common.cancel': 'Annuler',
+    'common.save': 'Enregistrer',
+    'common.close': 'Fermer',
+    'common.confirm': 'Confirmer'
   },
   en: {
     // Navigation
@@ -205,6 +239,8 @@ const translations = {
     'categories.development': 'Development & IT',
     'categories.legal': 'LegalTech & Legal',
     'categories.count': '{count} tools',
+    'categories.title': 'Explore our solution categories',
+    'categories.subtitle': 'Find the perfect tools for your industry among more than 500 referenced solutions',
     
     // Catalog page
     'catalog.title': 'SaaS Catalog',
@@ -297,7 +333,39 @@ const translations = {
     'footer.legal_notice': 'Legal notice',
     'footer.privacy': 'Privacy',
     'footer.terms': 'Terms',
-    'footer.copyright': '© 2024 Solutio. All rights reserved.'
+    'footer.copyright': '© 2024 Solutio. All rights reserved.',
+
+    // SaaS Detail page
+    'saasdetail.back_to_catalog': 'Back to catalog',
+    'saasdetail.main_features': 'Main features',
+    'saasdetail.popular_use_cases': 'Popular use cases',
+    'saasdetail.advantages': 'Advantages',
+    'saasdetail.disadvantages': 'Disadvantages',
+    'saasdetail.start_now': 'Start now',
+    'saasdetail.try_free': 'Try for free',
+    'saasdetail.visit_website': 'Visit website',
+    'saasdetail.ask_advice': 'Ask for advice',
+    'saasdetail.pricing': 'Pricing',
+    'saasdetail.popular': 'Popular',
+    'saasdetail.per_month': '/month',
+    'saasdetail.ideal_for': 'Ideal for',
+    'saasdetail.automation': 'Automation',
+    'saasdetail.ease': 'Ease',
+    'saasdetail.from': 'From',
+
+    // Not Found page
+    'notfound.title': '404',
+    'notfound.message': 'Oops! Page not found',
+    'notfound.back_home': 'Return to Home',
+
+    // Common
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'common.success': 'Success',
+    'common.cancel': 'Cancel',
+    'common.save': 'Save',
+    'common.close': 'Close',
+    'common.confirm': 'Confirm'
   }
 };
 
