@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale, Settings, Star } from 'lucide-react';
+import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 const Index = () => {
   const { t } = useLanguage();
@@ -172,19 +172,9 @@ const Index = () => {
             </p>
             
             {/* Additional info */}
-            <p className="text-lg text-white/70 mb-6 max-w-2xl mx-auto">
+            <p className="text-lg text-white/70 mb-12 max-w-2xl mx-auto">
               {t('hero.description')}
             </p>
-
-            {/* Catchphrase */}
-            <div className="text-center mb-12">
-              <p className="text-xl text-white font-semibold mb-2">
-                {t('catchphrase')}
-              </p>
-              <p className="text-lg text-white/80">
-                {t('catchphraseSubtext')}
-              </p>
-            </div>
             
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
@@ -224,72 +214,6 @@ const Index = () => {
                 <span className="text-sm font-medium">{t('home.no_commitment')}</span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mission Section */}
-      <section className="py-20 bg-background shadow-lg relative z-10 -mt-8 rounded-t-3xl">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
-              {t('ourMission')}
-            </h2>
-            <div className="text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
-              {t('missionDescription')}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Approach Section */}
-      <section className="py-24 bg-gradient-subtle">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              {t('ourApproach')}
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t('approachSubtitle')}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md text-center">
-              <CardHeader>
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
-                  <Brain className="h-8 w-8 text-blue-500 group-hover:scale-110 transition-transform" />
-                </div>
-                <CardTitle className="text-xl">{t('diagnosticStep')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{t('diagnosticStepDesc')}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md text-center">
-              <CardHeader>
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500/10 to-green-600/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
-                  <Search className="h-8 w-8 text-green-500 group-hover:scale-110 transition-transform" />
-                </div>
-                <CardTitle className="text-xl">{t('selectionStep')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{t('selectionStepDesc')}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md text-center">
-              <CardHeader>
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500/10 to-yellow-600/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
-                  <Settings className="h-8 w-8 text-yellow-500 group-hover:scale-110 transition-transform" />
-                </div>
-                <CardTitle className="text-xl">{t('implementationStep')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{t('implementationStepDesc')}</p>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>

@@ -248,20 +248,6 @@ const translations = {
     'notfound.message': 'Oops ! Page introuvable',
     'notfound.back_home': 'Retour à l\'accueil',
 
-    // New sections for homepage
-    'ourMission': 'Notre mission : vous faire gagner du temps, sans compromis sur l\'efficacité',
-    'missionDescription': 'Chez Solutio, nous ne proposons pas simplement des outils.\nNous vous aidons à identifier les meilleures solutions pour automatiser vos tâches répétitives, réduire les erreurs, et vous concentrer sur ce qui crée réellement de la valeur.\nAccompagnement, personnalisation et performance sont au cœur de notre approche.',
-    'ourApproach': 'Notre approche en 3 étapes',
-    'approachSubtitle': 'Une méthode claire pour passer de l\'idée à l\'action, sans perte de temps.',
-    'diagnosticStep': 'Diagnostic intelligent',
-    'diagnosticStepDesc': 'Notre assistant IA identifie vos tâches automatisables en quelques minutes.',
-    'selectionStep': 'Sélection sur mesure',
-    'selectionStepDesc': 'Accédez à une sélection ciblée de solutions SaaS, triées selon votre métier et vos outils.',
-    'implementationStep': 'Mise en place guidée',
-    'implementationStepDesc': 'Nous vous accompagnons dans l\'intégration des outils dans vos process pour un impact immédiat.',
-    'catchphrase': '500 outils disponibles, 1 solution idéale pour vous.',
-    'catchphraseSubtext': 'On vous aide à la trouver, à l\'installer et à l\'utiliser.',
-
     // Common
     'common.loading': 'Chargement...',
     'common.error': 'Erreur',
@@ -507,20 +493,6 @@ const translations = {
     'notfound.title': '404',
     'notfound.message': 'Oops! Page not found',
     'notfound.back_home': 'Return to Home',
-
-    // New sections for homepage
-    'ourMission': 'Our mission: help you save time, without compromising on efficiency',
-    'missionDescription': 'At Solutio, we don\'t just offer tools.\nWe help you identify the best solutions to automate your repetitive tasks, reduce errors, and focus on what truly creates value.\nSupport, customization and performance are at the heart of our approach.',
-    'ourApproach': 'Our 3-step approach',
-    'approachSubtitle': 'A clear method to go from idea to action, without wasting time.',
-    'diagnosticStep': 'Intelligent diagnostic',
-    'diagnosticStepDesc': 'Our AI assistant identifies your automatable tasks in minutes.',
-    'selectionStep': 'Custom selection',
-    'selectionStepDesc': 'Access a targeted selection of SaaS solutions, sorted by your business and tools.',
-    'implementationStep': 'Guided implementation',
-    'implementationStepDesc': 'We support you in integrating tools into your processes for immediate impact.',
-    'catchphrase': '500 available tools, 1 ideal solution for you.',
-    'catchphraseSubtext': 'We help you find it, install it and use it.',
 
     // Common
     'common.loading': 'Loading...',
