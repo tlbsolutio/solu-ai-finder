@@ -142,13 +142,13 @@ const Contact = () => {
             {/* Quick contact */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Contact direct</CardTitle>
+                <CardTitle>{t('contact.direct_contact_title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center">
                   <Mail className="h-5 w-5 text-primary mr-3" />
                   <div>
-                    <p className="font-medium">Email</p>
+                    <p className="font-medium">{t('contact.email_label_info')}</p>
                     <p className="text-muted-foreground">contact@solutio.fr</p>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ const Contact = () => {
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 text-primary mr-3" />
                   <div>
-                    <p className="font-medium">Téléphone</p>
+                    <p className="font-medium">{t('contact.phone_label')}</p>
                     <p className="text-muted-foreground">+33 1 23 45 67 89</p>
                   </div>
                 </div>
@@ -164,8 +164,8 @@ const Contact = () => {
                 <div className="flex items-center">
                   <Clock className="h-5 w-5 text-primary mr-3" />
                   <div>
-                    <p className="font-medium">Horaires</p>
-                    <p className="text-muted-foreground">Lun-Ven, 9h-18h</p>
+                    <p className="font-medium">{t('contact.hours_label')}</p>
+                    <p className="text-muted-foreground">{t('contact.hours_value')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -176,26 +176,26 @@ const Contact = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Calendar className="h-5 w-5 mr-2 text-primary" />
-                  Réserver un appel
+                  {t('contact.book_call_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground">
-                  Planifiez un appel de 30 minutes avec un expert pour discuter de vos besoins spécifiques.
+                  {t('contact.book_call_subtitle')}
                 </p>
                 
                 <div className="space-y-3">
                   <div className="flex items-center text-sm">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    <span>Analyse gratuite de vos processus</span>
+                    <span>{t('contact.book_call_benefit1')}</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    <span>Recommandations personnalisées</span>
+                    <span>{t('contact.book_call_benefit2')}</span>
                   </div>
                   <div className="flex items-center text-sm">
                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                    <span>Plan d'implémentation détaillé</span>
+                    <span>{t('contact.book_call_benefit3')}</span>
                   </div>
                 </div>
 
@@ -207,7 +207,7 @@ const Contact = () => {
                 >
                   <a href="https://calendly.com/solutio-expert" target="_blank" rel="noopener noreferrer">
                     <Calendar className="h-4 w-4 mr-2" />
-                    Réserver maintenant
+                    {t('contact.book_call_button')}
                   </a>
                 </Button>
               </CardContent>
@@ -216,27 +216,27 @@ const Contact = () => {
             {/* FAQ Quick */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Questions fréquentes</CardTitle>
+                <CardTitle>{t('contact.faq_title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-medium mb-1">Combien coûte un audit ?</h4>
+                  <h4 className="font-medium mb-1">{t('contact.faq_q1')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    L'audit initial est gratuit lors de notre premier appel.
+                    {t('contact.faq_a1')}
                   </p>
                 </div>
                 
                 <div>
-                  <h4 className="font-medium mb-1">Combien de temps pour voir des résultats ?</h4>
+                  <h4 className="font-medium mb-1">{t('contact.faq_q2')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    La plupart de nos clients voient des gains de temps dès la première semaine.
+                    {t('contact.faq_a2')}
                   </p>
                 </div>
 
                 <div>
-                  <h4 className="font-medium mb-1">Vous accompagnez l'implémentation ?</h4>
+                  <h4 className="font-medium mb-1">{t('contact.faq_q3')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Oui, nous proposons un accompagnement complet de A à Z.
+                    {t('contact.faq_a3')}
                   </p>
                 </div>
               </CardContent>

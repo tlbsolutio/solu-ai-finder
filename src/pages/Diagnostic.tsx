@@ -24,56 +24,56 @@ const Diagnostic = () => {
   const questions = [
     {
       id: 1,
-      title: "Quelle tâche vous fait perdre du temps ?",
-      subtitle: "Décrivez la tâche répétitive qui vous fait perdre le plus de temps",
+      title: t('diagnostic.question_task_title'),
+      subtitle: t('diagnostic.question_task_subtitle'),
       type: "textarea",
       field: "task",
-      placeholder: "Exemple: Saisie manuelle des factures clients, création de rapports mensuels...",
+      placeholder: t('diagnostic.question_task_placeholder'),
       examples: ["Saisie de données", "Création de rapports", "Gestion des emails", "Planification"]
     },
     {
       id: 2,
-      title: "À quelle fréquence effectuez-vous cette tâche ?",
-      subtitle: "Indiquez le volume et la fréquence",
+      title: t('diagnostic.question_frequency_title'),
+      subtitle: t('diagnostic.question_frequency_subtitle'),
       type: "input",
       field: "frequency",
-      placeholder: "Exemple: 2 heures par jour, 10 fois par semaine...",
+      placeholder: t('diagnostic.question_frequency_placeholder'),
       examples: ["Quotidien", "Hebdomadaire", "Mensuel", "Ponctuel"]
     },
     {
       id: 3,
-      title: "Dans quel secteur travaillez-vous ?",
-      subtitle: "Précisez votre domaine d'activité",
+      title: t('diagnostic.question_sector_title'),
+      subtitle: t('diagnostic.question_sector_subtitle'),
       type: "input", 
       field: "sector",
-      placeholder: "Exemple: E-commerce, Consulting, SaaS, Immobilier...",
+      placeholder: t('diagnostic.question_sector_placeholder'),
       examples: ["E-commerce", "Consulting", "SaaS", "Finance", "Marketing", "RH"]
     },
     {
       id: 4,
-      title: "Quels outils utilisez-vous actuellement ?",
-      subtitle: "Listez les logiciels et outils que vous utilisez",
+      title: t('diagnostic.question_tools_title'),
+      subtitle: t('diagnostic.question_tools_subtitle'),
       type: "textarea",
       field: "tools",
-      placeholder: "Exemple: Excel, Salesforce, Gmail, Slack...",
+      placeholder: t('diagnostic.question_tools_placeholder'),
       examples: ["Excel", "Google Sheets", "CRM", "ERP", "Email"]
     },
     {
       id: 5,
-      title: "Quel est le livrable final attendu ?",
-      subtitle: "Décrivez le résultat final de cette tâche",
+      title: t('diagnostic.question_deliverable_title'),
+      subtitle: t('diagnostic.question_deliverable_subtitle'),
       type: "textarea",
       field: "deliverable",
-      placeholder: "Exemple: Rapport PDF, données synchronisées, email personnalisé...",
+      placeholder: t('diagnostic.question_deliverable_placeholder'),
       examples: ["Rapport", "Base de données", "Email", "Document", "Tableau de bord"]
     },
     {
       id: 6,
-      title: "Y a-t-il des contraintes spécifiques ?",
-      subtitle: "RGPD, validation manuelle, urgence, budget...",
+      title: t('diagnostic.question_constraints_title'),
+      subtitle: t('diagnostic.question_constraints_subtitle'),
       type: "textarea",
       field: "constraints",
-      placeholder: "Exemple: Conformité RGPD, validation obligatoire, budget limité...",
+      placeholder: t('diagnostic.question_constraints_placeholder'),
       examples: ["RGPD", "Validation manuelle", "Budget limité", "Urgence", "Sécurité"]
     }
   ];
@@ -156,24 +156,24 @@ const Diagnostic = () => {
             <div className="text-center mb-8">
               <div className="flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
-                <h1 className="text-3xl font-bold text-foreground">Diagnostic Terminé !</h1>
+                <h1 className="text-3xl font-bold text-foreground">{t('diagnostic.results_title')}</h1>
               </div>
               <p className="text-muted-foreground text-lg">
-                Voici votre analyse personnalisée et nos recommandations
+                {t('diagnostic.results_subtitle')}
               </p>
             </div>
 
             {/* Score Card */}
             <Card className="mb-6 shadow-medium">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl">Score d'Automatisation</CardTitle>
+                <CardTitle className="text-2xl">{t('diagnostic.automation_score')}</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <div className="w-32 h-32 rounded-full border-8 border-primary/20 flex items-center justify-center">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-primary">{score}%</div>
-                      <div className="text-sm text-muted-foreground">Potentiel</div>
+                      <div className="text-sm text-muted-foreground">{t('diagnostic.potential_label')}</div>
                     </div>
                   </div>
                 </div>
@@ -181,17 +181,17 @@ const Diagnostic = () => {
                   <div className="text-center">
                     <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
                     <div className="font-semibold">{timeSaved}%</div>
-                    <div className="text-sm text-muted-foreground">Temps économisé</div>
+                    <div className="text-sm text-muted-foreground">{t('diagnostic.time_saved_label')}</div>
                   </div>
                   <div className="text-center">
                     <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <div className="font-semibold">2-4 semaines</div>
-                    <div className="text-sm text-muted-foreground">Mise en place</div>
+                    <div className="font-semibold">{t('diagnostic.implementation_time')}</div>
+                    <div className="text-sm text-muted-foreground">{t('diagnostic.implementation_label')}</div>
                   </div>
                   <div className="text-center">
                     <Target className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                    <div className="font-semibold">ROI rapide</div>
-                    <div className="text-sm text-muted-foreground">Rentabilité</div>
+                    <div className="font-semibold">{t('diagnostic.roi_label')}</div>
+                    <div className="text-sm text-muted-foreground">{t('diagnostic.roi_value')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -200,24 +200,24 @@ const Diagnostic = () => {
             {/* Summary */}
             <Card className="mb-6 shadow-medium">
               <CardHeader>
-                <CardTitle>Résumé de votre diagnostic</CardTitle>
+                <CardTitle>{t('diagnostic.summary_title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">TÂCHE À AUTOMATISER</div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.task_to_automate')}</div>
                     <p className="text-sm">{responses.task}</p>
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">FRÉQUENCE</div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.frequency_label_caps')}</div>
                     <p className="text-sm">{responses.frequency}</p>
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">SECTEUR</div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.sector_label_caps')}</div>
                     <p className="text-sm">{responses.sector}</p>
                   </div>
                   <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">OUTILS ACTUELS</div>
+                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.current_tools')}</div>
                     <p className="text-sm">{responses.tools}</p>
                   </div>
                 </div>
@@ -227,8 +227,8 @@ const Diagnostic = () => {
             {/* Recommendations */}
             <Card className="mb-6 shadow-medium">
               <CardHeader>
-                <CardTitle>Nos recommandations pour vous</CardTitle>
-                <p className="text-muted-foreground">Solutions adaptées à votre profil</p>
+                <CardTitle>{t('diagnostic.recommendations_title')}</CardTitle>
+                <p className="text-muted-foreground">{t('diagnostic.recommendations_subtitle')}</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -240,10 +240,10 @@ const Diagnostic = () => {
                         </div>
                         <div>
                           <div className="font-semibold">{tool}</div>
-                          <div className="text-sm text-muted-foreground">Solution recommandée</div>
+                          <div className="text-sm text-muted-foreground">{t('diagnostic.recommended_solution')}</div>
                         </div>
                       </div>
-                      <Badge variant="secondary">Score élevé</Badge>
+                      <Badge variant="secondary">{t('diagnostic.high_score')}</Badge>
                     </div>
                   ))}
                 </div>
@@ -255,12 +255,12 @@ const Diagnostic = () => {
               <Card className="shadow-medium">
                 <CardContent className="p-6 text-center">
                   <Mail className="h-8 w-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Recevoir par email</h3>
+                  <h3 className="font-semibold mb-2">{t('diagnostic.receive_email_title')}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Recevez ce diagnostic et nos recommandations détaillées
+                    {t('diagnostic.receive_email_subtitle')}
                   </p>
                   <Button variant="outline" className="w-full">
-                    Envoyer le rapport
+                    {t('diagnostic.send_report')}
                   </Button>
                 </CardContent>
               </Card>
@@ -268,12 +268,12 @@ const Diagnostic = () => {
               <Card className="shadow-medium">
                 <CardContent className="p-6 text-center">
                   <Target className="h-8 w-8 text-primary mx-auto mb-3" />
-                  <h3 className="font-semibold mb-2">Consultation gratuite</h3>
+                  <h3 className="font-semibold mb-2">{t('diagnostic.free_consultation_title')}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Échangez avec un expert pour affiner votre stratégie
+                    {t('diagnostic.free_consultation_subtitle')}
                   </p>
                   <Button variant="hero" className="w-full">
-                    Réserver un créneau
+                    {t('diagnostic.book_slot')}
                   </Button>
                 </CardContent>
               </Card>
@@ -282,7 +282,7 @@ const Diagnostic = () => {
             {/* Restart button */}
             <div className="text-center mt-8">
               <Button variant="outline" onClick={startNewDiagnostic}>
-                Faire un nouveau diagnostic
+                {t('diagnostic.new_diagnostic')}
               </Button>
             </div>
           </div>
@@ -315,8 +315,8 @@ const Diagnostic = () => {
               />
             </div>
             <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-              <span>Étape {currentStep}/6</span>
-              <span>{Math.round(progress)}% complété</span>
+              <span>{t('diagnostic.step_label')} {currentStep}/6</span>
+              <span>{Math.round(progress)}% {t('diagnostic.progress_completed')}</span>
             </div>
           </div>
 
@@ -325,7 +325,7 @@ const Diagnostic = () => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <Badge variant="secondary" className="text-primary">
-                  Question {currentStep}
+                  {t('diagnostic.question_number')} {currentStep}
                 </Badge>
                 {currentStep === questions.length && (
                   <CheckCircle className="h-5 w-5 text-green-500" />
@@ -356,7 +356,7 @@ const Diagnostic = () => {
 
               {/* Examples */}
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Exemples populaires :</p>
+                <p className="text-sm text-muted-foreground">{t('diagnostic.examples_label')}</p>
                 <div className="flex flex-wrap gap-2">
                   {currentQuestion.examples.map((example, idx) => (
                     <Badge
@@ -380,7 +380,7 @@ const Diagnostic = () => {
                   className="flex items-center"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Précédent
+                  {t('diagnostic.previous_button')}
                 </Button>
                 
                 <Button
@@ -389,7 +389,7 @@ const Diagnostic = () => {
                   variant="hero"
                   className="flex items-center"
                 >
-                  {currentStep === questions.length ? 'Voir mes recommandations' : 'Suivant'}
+                  {currentStep === questions.length ? t('diagnostic.see_recommendations') : t('diagnostic.next_button')}
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
