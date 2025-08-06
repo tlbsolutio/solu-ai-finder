@@ -145,8 +145,8 @@ const Index = () => {
           }}
         />
         
-        {/* Modern gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-700/85 z-10" />
+        {/* Modern gradient overlay - Reduced opacity for better image visibility */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-700/65 z-10" />
         
         {/* Subtle geometric pattern overlay */}
         <div className="absolute inset-0 opacity-10 z-20" style={{
