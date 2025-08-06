@@ -23,7 +23,7 @@ const translations = {
     'hero.badge': 'Transformation Digitale',
     'hero.title': 'Trouvez la meilleure solution SaaS pour automatiser votre activité',
     'hero.subtitle': 'Diagnostic gratuit + recommandations personnalisées',
-    'hero.description': 'Solutio vous aide aussi à implémenter l\'IA dans vos processus métier.',
+    'hero.description': 'Solutio vous aide aussi à implémenter des outils efficaces dans vos processus métier.',
     'hero.cta_diagnostic': 'Commencer le diagnostic gratuit',
     'hero.cta_catalog': 'Explorer le catalogue',
     
@@ -269,7 +269,7 @@ const translations = {
     'hero.badge': 'Digital Transformation',
     'hero.title': 'Find the best SaaS solution to automate your business',
     'hero.subtitle': 'Free diagnostic + personalized recommendations',
-    'hero.description': 'Solutio also helps you implement AI in your business processes.',
+    'hero.description': 'Solutio also helps you implement effective tools in your business processes.',
     'hero.cta_diagnostic': 'Start free diagnostic',
     'hero.cta_catalog': 'Explore catalog',
     
