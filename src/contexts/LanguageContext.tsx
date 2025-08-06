@@ -28,7 +28,7 @@ const translations = {
     'hero.cta_catalog': 'Explorer le catalogue',
     
     // Features section
-    'features.intelligent_diagnostic.title': 'Diagnostic IA Intelligent',
+    'features.intelligent_diagnostic.title': 'Diagnostic Intelligent',
     'features.intelligent_diagnostic.description': 'Notre assistant conversationnel analyse vos processus en 6 questions ciblées pour identifier les tâches à automatiser.',
     'features.personalized_catalog.title': 'Catalogue SaaS Personnalisé',
     'features.personalized_catalog.description': 'Découvrez une sélection de solutions SaaS triées sur le volet, adaptées à votre secteur et vos besoins spécifiques.',
@@ -274,7 +274,7 @@ const translations = {
     'hero.cta_catalog': 'Explore catalog',
     
     // Features section
-    'features.intelligent_diagnostic.title': 'Intelligent AI Diagnostic',
+    'features.intelligent_diagnostic.title': 'Intelligent Diagnostic',
     'features.intelligent_diagnostic.description': 'Our conversational assistant analyzes your processes with 6 targeted questions to identify tasks to automate.',
     'features.personalized_catalog.title': 'Personalized SaaS Catalog',
     'features.personalized_catalog.description': 'Discover a curated selection of SaaS solutions, tailored to your industry and specific needs.',
