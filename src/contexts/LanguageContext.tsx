@@ -5,7 +5,7 @@ type Language = 'fr' | 'en';
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -18,6 +18,83 @@ const translations = {
     'nav.catalogue': 'Catalogue SaaS',
     'nav.contact': 'Contact',
     'nav.start_diagnostic': 'Commencer le diagnostic',
+
+    // Hero section
+    'hero.badge': 'Transformation Digitale',
+    'hero.title': 'Trouvez la meilleure solution SaaS pour automatiser votre activité',
+    'hero.subtitle': 'Diagnostic gratuit + recommandations personnalisées',
+    'hero.description': 'Solutio vous aide aussi à implémenter l\'IA dans vos processus métier.',
+    'hero.cta_diagnostic': 'Commencer le diagnostic gratuit',
+    'hero.cta_catalog': 'Explorer le catalogue',
+    
+    // Features section
+    'features.intelligent_diagnostic.title': 'Diagnostic IA Intelligent',
+    'features.intelligent_diagnostic.description': 'Notre assistant conversationnel analyse vos processus en 6 questions ciblées pour identifier les tâches à automatiser.',
+    'features.personalized_catalog.title': 'Catalogue SaaS Personnalisé',
+    'features.personalized_catalog.description': 'Découvrez une sélection de solutions SaaS triées sur le volet, adaptées à votre secteur et vos besoins spécifiques.',
+    'features.custom_recommendations.title': 'Recommandations Sur Mesure',
+    'features.custom_recommendations.description': 'Recevez des recommandations précises basées sur le potentiel d\'automatisation et la facilité d\'implémentation.',
+    
+    // Benefits section
+    'benefits.save_time.title': 'Gagnez du temps',
+    'benefits.save_time.description': 'Jusqu\'à 70% de temps économisé sur vos tâches répétitives',
+    'benefits.reduce_costs.title': 'Réduisez vos coûts',
+    'benefits.reduce_costs.description': 'ROI moyen de 300% dès la première année',
+    'benefits.targeted_solutions.title': 'Solutions ciblées',
+    'benefits.targeted_solutions.description': 'Recommandations adaptées à votre secteur et taille d\'entreprise',
+    
+    // Categories
+    'categories.crm': 'CRM & Relation Client',
+    'categories.marketing': 'Marketing & Growth',
+    'categories.automation': 'Automatisation & No-code',
+    'categories.design': 'Création, Design & Multimédia',
+    'categories.sales': 'Ventes & E-commerce',
+    'categories.project_management': 'Gestion de Projet & Collaboration',
+    'categories.productivity': 'Productivité & Outils Bureautiques',
+    'categories.security': 'Sécurité & Conformité',
+    'categories.finance': 'Finance & Comptabilité',
+    'categories.hr': 'Ressources Humaines & Recrutement',
+    'categories.education': 'Éducation & Formation',
+    'categories.customer_service': 'Service Client & Support',
+    'categories.health': 'Santé & Bien-être',
+    'categories.industry': 'Industrie & Logistique',
+    'categories.development': 'Développement & IT',
+    'categories.legal': 'LegalTech & Juridique',
+    'categories.count': '{count} outils',
+    
+    // Catalog page
+    'catalog.title': 'Catalogue SaaS',
+    'catalog.subtitle': 'Découvrez les meilleures solutions pour automatiser votre activité',
+    'catalog.search_placeholder': 'Rechercher une solution...',
+    'catalog.filter_category': 'Catégorie',
+    'catalog.filter_target': 'Cible',
+    'catalog.all_categories': 'Toutes les catégories',
+    'catalog.all_targets': 'Toutes les cibles',
+    'catalog.key_features': 'Fonctionnalités clés',
+    'catalog.view_details': 'Voir le détail',
+    'catalog.no_results_title': 'Aucune solution trouvée',
+    'catalog.no_results_subtitle': 'Essayez de modifier vos critères de recherche',
+
+    // Contact page
+    'contact.title': 'Contactez-nous',
+    'contact.subtitle': 'Besoin d\'aide pour choisir la meilleure solution ? Nos experts sont là pour vous accompagner.',
+    'contact.form_title': 'Envoyez-nous un message',
+    'contact.name_label': 'Nom complet *',
+    'contact.name_placeholder': 'Votre nom',
+    'contact.email_label': 'Email *',
+    'contact.email_placeholder': 'votre@email.com',
+    'contact.company_label': 'Entreprise',
+    'contact.company_placeholder': 'Nom de votre entreprise',
+    'contact.message_label': 'Message *',
+    'contact.message_placeholder': 'Décrivez votre besoin ou votre projet...',
+    'contact.submit_button': 'Envoyer le message',
+    'contact.success_title': 'Merci pour votre message !',
+    'contact.success_message': 'Nous avons bien reçu votre demande et vous répondrons dans les plus brefs délais.',
+    'contact.send_another': 'Envoyer un autre message',
+
+    // Diagnostic page
+    'diagnostic.title': 'Diagnostic IA',
+    'diagnostic.subtitle': 'Répondez à 6 questions simples pour découvrir les meilleures solutions d\'automatisation pour votre activité',
 
     // Home page
     'home.badge': 'Transformation Digitale',
@@ -86,6 +163,83 @@ const translations = {
     'nav.contact': 'Contact',
     'nav.start_diagnostic': 'Start diagnostic',
 
+    // Hero section
+    'hero.badge': 'Digital Transformation',
+    'hero.title': 'Find the best SaaS solution to automate your business',
+    'hero.subtitle': 'Free diagnostic + personalized recommendations',
+    'hero.description': 'Solutio also helps you implement AI in your business processes.',
+    'hero.cta_diagnostic': 'Start free diagnostic',
+    'hero.cta_catalog': 'Explore catalog',
+    
+    // Features section
+    'features.intelligent_diagnostic.title': 'Intelligent AI Diagnostic',
+    'features.intelligent_diagnostic.description': 'Our conversational assistant analyzes your processes with 6 targeted questions to identify tasks to automate.',
+    'features.personalized_catalog.title': 'Personalized SaaS Catalog',
+    'features.personalized_catalog.description': 'Discover a curated selection of SaaS solutions, tailored to your industry and specific needs.',
+    'features.custom_recommendations.title': 'Custom Recommendations',
+    'features.custom_recommendations.description': 'Receive precise recommendations based on automation potential and implementation ease.',
+    
+    // Benefits section
+    'benefits.save_time.title': 'Save time',
+    'benefits.save_time.description': 'Up to 70% time saved on your repetitive tasks',
+    'benefits.reduce_costs.title': 'Reduce costs',
+    'benefits.reduce_costs.description': 'Average ROI of 300% from the first year',
+    'benefits.targeted_solutions.title': 'Targeted solutions',
+    'benefits.targeted_solutions.description': 'Recommendations adapted to your industry and company size',
+    
+    // Categories
+    'categories.crm': 'CRM & Customer Relations',
+    'categories.marketing': 'Marketing & Growth',
+    'categories.automation': 'Automation & No-code',
+    'categories.design': 'Creation, Design & Multimedia',
+    'categories.sales': 'Sales & E-commerce',
+    'categories.project_management': 'Project Management & Collaboration',
+    'categories.productivity': 'Productivity & Office Tools',
+    'categories.security': 'Security & Compliance',
+    'categories.finance': 'Finance & Accounting',
+    'categories.hr': 'Human Resources & Recruitment',
+    'categories.education': 'Education & Training',
+    'categories.customer_service': 'Customer Service & Support',
+    'categories.health': 'Health & Wellness',
+    'categories.industry': 'Industry & Logistics',
+    'categories.development': 'Development & IT',
+    'categories.legal': 'LegalTech & Legal',
+    'categories.count': '{count} tools',
+    
+    // Catalog page
+    'catalog.title': 'SaaS Catalog',
+    'catalog.subtitle': 'Discover the best solutions to automate your business',
+    'catalog.search_placeholder': 'Search for a solution...',
+    'catalog.filter_category': 'Category',
+    'catalog.filter_target': 'Target',
+    'catalog.all_categories': 'All categories',
+    'catalog.all_targets': 'All targets',
+    'catalog.key_features': 'Key features',
+    'catalog.view_details': 'View details',
+    'catalog.no_results_title': 'No solutions found',
+    'catalog.no_results_subtitle': 'Try modifying your search criteria',
+
+    // Contact page
+    'contact.title': 'Contact us',
+    'contact.subtitle': 'Need help choosing the best solution? Our experts are here to help you.',
+    'contact.form_title': 'Send us a message',
+    'contact.name_label': 'Full name *',
+    'contact.name_placeholder': 'Your name',
+    'contact.email_label': 'Email *',
+    'contact.email_placeholder': 'your@email.com',
+    'contact.company_label': 'Company',
+    'contact.company_placeholder': 'Your company name',
+    'contact.message_label': 'Message *',
+    'contact.message_placeholder': 'Describe your need or project...',
+    'contact.submit_button': 'Send message',
+    'contact.success_title': 'Thank you for your message!',
+    'contact.success_message': 'We have received your request and will respond as soon as possible.',
+    'contact.send_another': 'Send another message',
+
+    // Diagnostic page
+    'diagnostic.title': 'AI Diagnostic',
+    'diagnostic.subtitle': 'Answer 6 simple questions to discover the best automation solutions for your business',
+
     // Home page
     'home.badge': 'Digital Transformation',
     'home.title': 'Automate your business with AI',
@@ -150,8 +304,16 @@ const translations = {
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>('fr');
 
-  const t = (key: string): string => {
-    return translations[language][key] || key;
+  const t = (key: string, params?: Record<string, string>): string => {
+    let translation = translations[language][key] || key;
+    
+    if (params) {
+      Object.keys(params).forEach(param => {
+        translation = translation.replace(`{${param}}`, params[param]);
+      });
+    }
+    
+    return translation;
   };
 
   return (

@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SaasDetail = () => {
+  const { t } = useLanguage();
   const { id } = useParams();
 
   // Mock detailed data - in real app, fetch based on ID

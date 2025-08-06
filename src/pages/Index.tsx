@@ -6,35 +6,38 @@ import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 const Index = () => {
+  const { t } = useLanguage();
+  
   const features = [{
     icon: Brain,
-    title: "Diagnostic IA Intelligent",
-    description: "Notre assistant conversationnel analyse vos processus en 6 questions ciblées pour identifier les tâches à automatiser.",
+    title: t('features.intelligent_diagnostic.title'),
+    description: t('features.intelligent_diagnostic.description'),
     color: "text-blue-500"
   }, {
     icon: Search,
-    title: "Catalogue SaaS Personnalisé",
-    description: "Découvrez une sélection de solutions SaaS triées sur le volet, adaptées à votre secteur et vos besoins spécifiques.",
+    title: t('features.personalized_catalog.title'),
+    description: t('features.personalized_catalog.description'),
     color: "text-green-500"
   }, {
     icon: Zap,
-    title: "Recommandations Sur Mesure",
-    description: "Recevez des recommandations précises basées sur le potentiel d'automatisation et la facilité d'implémentation.",
+    title: t('features.custom_recommendations.title'),
+    description: t('features.custom_recommendations.description'),
     color: "text-yellow-500"
   }];
   const benefits = [{
     icon: Clock,
-    title: "Gagnez du temps",
-    description: "Jusqu'à 70% de temps économisé sur vos tâches répétitives"
+    title: t('benefits.save_time.title'),
+    description: t('benefits.save_time.description')
   }, {
     icon: DollarSign,
-    title: "Réduisez vos coûts",
-    description: "ROI moyen de 300% dès la première année"
+    title: t('benefits.reduce_costs.title'),
+    description: t('benefits.reduce_costs.description')
   }, {
     icon: Target,
-    title: "Solutions ciblées",
-    description: "Recommandations adaptées à votre secteur et taille d'entreprise"
+    title: t('benefits.targeted_solutions.title'),
+    description: t('benefits.targeted_solutions.description')
   }];
   const testimonials = [{
     quote: "Grâce à Solutio, j'ai automatisé ma gestion des leads et gagné 15h par semaine !",
@@ -49,83 +52,83 @@ const Index = () => {
   }];
   const categories = [{
     icon: UserCircle,
-    name: "CRM & Relation Client",
-    count: "45+ outils",
+    name: t('categories.crm'),
+    count: t('categories.count', { count: '45+' }),
     slug: "crm-relation-client"
   }, {
     icon: Growth,
-    name: "Marketing & Growth",
-    count: "38+ outils",
+    name: t('categories.marketing'),
+    count: t('categories.count', { count: '38+' }),
     slug: "marketing-growth"
   }, {
     icon: Workflow,
-    name: "Automatisation & No-code",
-    count: "52+ outils",
+    name: t('categories.automation'),
+    count: t('categories.count', { count: '52+' }),
     slug: "automatisation-nocode"
   }, {
     icon: Palette,
-    name: "Création, Design & Multimédia",
-    count: "29+ outils",
+    name: t('categories.design'),
+    count: t('categories.count', { count: '29+' }),
     slug: "creation-design"
   }, {
     icon: ShoppingCart,
-    name: "Ventes & E-commerce",
-    count: "41+ outils",
+    name: t('categories.sales'),
+    count: t('categories.count', { count: '41+' }),
     slug: "ventes-ecommerce"
   }, {
     icon: Briefcase,
-    name: "Gestion de Projet & Collaboration",
-    count: "33+ outils",
+    name: t('categories.project_management'),
+    count: t('categories.count', { count: '33+' }),
     slug: "gestion-projet"
   }, {
     icon: FileText,
-    name: "Productivité & Outils Bureautiques",
-    count: "47+ outils",
+    name: t('categories.productivity'),
+    count: t('categories.count', { count: '47+' }),
     slug: "productivite"
   }, {
     icon: Shield,
-    name: "Sécurité & Conformité",
-    count: "22+ outils",
+    name: t('categories.security'),
+    count: t('categories.count', { count: '22+' }),
     slug: "securite-conformite"
   }, {
     icon: Calculator,
-    name: "Finance & Comptabilité",
-    count: "36+ outils",
+    name: t('categories.finance'),
+    count: t('categories.count', { count: '36+' }),
     slug: "finance-comptabilite"
   }, {
     icon: UserCheck,
-    name: "Ressources Humaines & Recrutement",
-    count: "27+ outils",
+    name: t('categories.hr'),
+    count: t('categories.count', { count: '27+' }),
     slug: "ressources-humaines"
   }, {
     icon: GraduationCap,
-    name: "Éducation & Formation",
-    count: "21+ outils",
+    name: t('categories.education'),
+    count: t('categories.count', { count: '21+' }),
     slug: "education-formation"
   }, {
     icon: Headphones,
-    name: "Service Client & Support",
-    count: "16+ outils",
+    name: t('categories.customer_service'),
+    count: t('categories.count', { count: '16+' }),
     slug: "service-client"
   }, {
     icon: Heart,
-    name: "Santé & Bien-être",
-    count: "15+ outils",
+    name: t('categories.health'),
+    count: t('categories.count', { count: '15+' }),
     slug: "sante-bienetre"
   }, {
     icon: Package,
-    name: "Industrie & Logistique",
-    count: "22+ outils",
+    name: t('categories.industry'),
+    count: t('categories.count', { count: '22+' }),
     slug: "industrie-logistique"
   }, {
     icon: Code,
-    name: "Développement & IT",
-    count: "56+ outils",
+    name: t('categories.development'),
+    count: t('categories.count', { count: '56+' }),
     slug: "developpement-it"
   }, {
     icon: Scale,
-    name: "LegalTech & Juridique",
-    count: "18+ outils",
+    name: t('categories.legal'),
+    count: t('categories.count', { count: '18+' }),
     slug: "legaltech-juridique"
   }];
   return <div className="min-h-screen bg-gradient-subtle">
@@ -157,22 +160,22 @@ const Index = () => {
           <div className="max-w-4xl mx-auto text-center">
             {/* Badge */}
             <Badge variant="secondary" className="mb-8 px-4 py-2 text-sm font-medium bg-white/10 text-white border-white/20 backdrop-blur-sm">
-              Transformation Digitale
+              {t('hero.badge')}
             </Badge>
             
             {/* Main heading */}
             <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
-              Trouvez la meilleure solution SaaS pour automatiser votre activité
+              {t('hero.title')}
             </h1>
             
             {/* Subtitle */}
             <p className="text-2xl lg:text-3xl text-white/90 mb-6 font-medium">
-              Diagnostic gratuit + recommandations personnalisées
+              {t('hero.subtitle')}
             </p>
             
             {/* Additional info */}
             <p className="text-lg text-white/70 mb-12 max-w-2xl mx-auto">
-              Solutio vous aide aussi à implémenter l'IA dans vos processus métier.
+              {t('hero.description')}
             </p>
             
             {/* CTA Buttons */}
@@ -184,7 +187,7 @@ const Index = () => {
                   className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-white text-slate-900 hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 border-0"
                 >
                   <Brain className="h-6 w-6 mr-3" />
-                  Commencer le diagnostic gratuit
+                  {t('hero.cta_diagnostic')}
                 </Button>
               </Link>
               <Link to="/catalogue">
@@ -193,7 +196,7 @@ const Index = () => {
                   size="xl" 
                   className="w-full sm:w-auto px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
                 >
-                  Explorer le catalogue
+                  {t('hero.cta_catalog')}
                 </Button>
               </Link>
             </div>

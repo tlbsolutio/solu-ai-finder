@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Mail, Phone, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Contact = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,12 +40,12 @@ const Contact = () => {
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-2xl mx-auto text-center">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-foreground mb-4">Merci pour votre message !</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-4">{t('contact.success_title')}</h1>
             <p className="text-muted-foreground text-lg mb-8">
-              Nous avons bien reçu votre demande et vous répondrons dans les plus brefs délais.
+              {t('contact.success_message')}
             </p>
             <Button variant="hero" onClick={() => setIsSubmitted(false)}>
-              Envoyer un autre message
+              {t('contact.send_another')}
             </Button>
           </div>
         </div>
@@ -58,9 +60,9 @@ const Contact = () => {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Contactez-nous</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">{t('contact.title')}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Besoin d'aide pour choisir la meilleure solution ? Nos experts sont là pour vous accompagner.
+            {t('contact.subtitle')}
           </p>
         </div>
 
@@ -70,7 +72,7 @@ const Contact = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <MessageCircle className="h-5 w-5 mr-2 text-primary" />
-                Envoyez-nous un message
+                {t('contact.form_title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -78,11 +80,11 @@ const Contact = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium">
-                      Nom complet *
+                      {t('contact.name_label')}
                     </label>
                     <Input
                       id="name"
-                      placeholder="Votre nom"
+                      placeholder={t('contact.name_placeholder')}
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                       required
@@ -90,12 +92,12 @@ const Contact = () => {
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">
-                      Email *
+                      {t('contact.email_label')}
                     </label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="votre@email.com"
+                      placeholder={t('contact.email_placeholder')}
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       required
@@ -105,11 +107,11 @@ const Contact = () => {
 
                 <div className="space-y-2">
                   <label htmlFor="company" className="text-sm font-medium">
-                    Entreprise
+                    {t('contact.company_label')}
                   </label>
                   <Input
                     id="company"
-                    placeholder="Nom de votre entreprise"
+                    placeholder={t('contact.company_placeholder')}
                     value={formData.company}
                     onChange={(e) => handleInputChange('company', e.target.value)}
                   />
@@ -117,11 +119,11 @@ const Contact = () => {
 
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium">
-                    Message *
+                    {t('contact.message_label')}
                   </label>
                   <Textarea
                     id="message"
-                    placeholder="Décrivez votre besoin ou votre projet..."
+                    placeholder={t('contact.message_placeholder')}
                     className="min-h-[120px] resize-none"
                     value={formData.message}
                     onChange={(e) => handleInputChange('message', e.target.value)}
@@ -130,7 +132,7 @@ const Contact = () => {
                 </div>
 
                 <Button type="submit" className="w-full" variant="hero" size="lg">
-                  Envoyer le message
+                  {t('contact.submit_button')}
                 </Button>
               </form>
             </CardContent>

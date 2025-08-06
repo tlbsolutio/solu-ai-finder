@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Catalogue = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,9 +114,9 @@ const Catalogue = () => {
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Catalogue SaaS</h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">{t('catalog.title')}</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Découvrez les meilleures solutions pour automatiser votre activité
+            {t('catalog.subtitle')}
           </p>
         </div>
 
@@ -126,7 +128,7 @@ const Catalogue = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Rechercher une solution..."
+                  placeholder={t('catalog.search_placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -136,10 +138,10 @@ const Catalogue = () => {
               {/* Category filter */}
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Catégorie" />
+                  <SelectValue placeholder={t('catalog.filter_category')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes les catégories</SelectItem>
+                  <SelectItem value="all">{t('catalog.all_categories')}</SelectItem>
                   {categories.map(cat => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
@@ -149,10 +151,10 @@ const Catalogue = () => {
               {/* Target filter */}
               <Select value={selectedTarget} onValueChange={setSelectedTarget}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Cible" />
+                  <SelectValue placeholder={t('catalog.filter_target')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Toutes les cibles</SelectItem>
+                  <SelectItem value="all">{t('catalog.all_targets')}</SelectItem>
                   {targets.map(target => (
                     <SelectItem key={target} value={target}>{target}</SelectItem>
                   ))}
@@ -165,7 +167,7 @@ const Catalogue = () => {
         {/* Results count */}
         <div className="mb-6">
           <p className="text-muted-foreground">
-            {filteredSaaS.length} solution{filteredSaaS.length > 1 ? 's' : ''} trouvée{filteredSaaS.length > 1 ? 's' : ''}
+            {filteredSaaS.length} {filteredSaaS.length === 1 ? 'solution trouvée' : 'solutions trouvées'}
           </p>
         </div>
 
@@ -210,7 +212,7 @@ const Catalogue = () => {
 
                 {/* Features */}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium">Fonctionnalités clés :</p>
+                  <p className="text-sm font-medium">{t('catalog.key_features')}:</p>
                   <div className="flex flex-wrap gap-1">
                     {saas.features.slice(0, 3).map((feature, idx) => (
                       <Badge key={idx} variant="outline" className="text-xs">
@@ -234,7 +236,7 @@ const Catalogue = () => {
                   variant="hero"
                   onClick={() => navigate(`/saas/${saas.id}`)}
                 >
-                  Voir le détail
+                  {t('catalog.view_details')}
                 </Button>
               </CardContent>
             </Card>
@@ -245,9 +247,9 @@ const Catalogue = () => {
         {filteredSaaS.length === 0 && (
           <div className="text-center py-12">
             <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">Aucune solution trouvée</h3>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('catalog.no_results_title')}</h3>
             <p className="text-muted-foreground">
-              Essayez de modifier vos critères de recherche
+              {t('catalog.no_results_subtitle')}
             </p>
           </div>
         )}

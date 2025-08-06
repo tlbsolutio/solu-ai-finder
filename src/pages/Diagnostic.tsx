@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Diagnostic = () => {
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [showResults, setShowResults] = useState(false);
   const [responses, setResponses] = useState({
@@ -300,10 +302,10 @@ const Diagnostic = () => {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
               <MessageCircle className="h-8 w-8 text-primary mr-3" />
-              <h1 className="text-3xl font-bold text-foreground">Diagnostic IA</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('diagnostic.title')}</h1>
             </div>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Répondez à 6 questions simples pour découvrir les meilleures solutions d'automatisation pour votre activité
+              {t('diagnostic.subtitle')}
             </p>
             
             {/* Progress bar */}
