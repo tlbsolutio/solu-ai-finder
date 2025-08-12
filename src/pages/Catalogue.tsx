@@ -10,7 +10,8 @@ import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-reac
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
-
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 interface SaaSItem {
   id: string;
   name: string;
@@ -31,6 +32,8 @@ const Catalogue = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Set category filter from URL params on mount
   useEffect(() => {
@@ -62,19 +65,30 @@ const Catalogue = () => {
       searchParams.get('uiUrl') ||
       'https://airtable.com/appayjYdBAGkJak1e/tblExeDT6EQQHUrMF/viwWt7YstfzBBfRLP?blocks=hide';
 
+    setLoading(true);
+    setErrorMsg(null);
+
     (async () => {
       const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
         body: { uiUrl },
       });
       if (error) {
         console.error('Airtable fetch error', error);
+        const status: number | undefined = (error as any)?.status;
+        const baseMsg = 'Impossible de charger le catalogue (Airtable).';
+        const details = status === 401
+          ? 'Authentification Airtable échouée. Vérifiez la clé et les autorisations.'
+          : (error.message || 'Erreur inconnue');
+        setErrorMsg(`${baseMsg} ${details}`);
         setSaasData([]);
         setDisplayData([]);
+        setLoading(false);
         return;
       }
       const items = (data as any)?.items as SaaSItem[];
       setSaasData(items || []);
       setDisplayData(items || []);
+      setLoading(false);
     })();
   }, [searchParams]);
 
@@ -205,88 +219,128 @@ const Catalogue = () => {
           </CardContent>
         </Card>
 
+        {/* Error state */}
+        {errorMsg && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{errorMsg}</AlertDescription>
+          </Alert>
+        )}
+
         {/* Results count */}
-        <div className="mb-6">
-          <p className="text-muted-foreground">
-            {filteredSaaS.length} {filteredSaaS.length === 1 ? 'solution trouvée' : 'solutions trouvées'}
-          </p>
-        </div>
+        {!loading && (
+          <div className="mb-6">
+            <p className="text-muted-foreground">
+              {filteredSaaS.length} {filteredSaaS.length === 1 ? 'solution trouvée' : 'solutions trouvées'}
+            </p>
+          </div>
+        )}
 
         {/* SaaS Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSaaS.map(saas => (
-            <Card key={saas.id} className="group hover:shadow-medium transition-all duration-300 transform hover:scale-[1.02] cursor-pointer">
-              <div className="relative overflow-hidden rounded-t-lg">
-                <img 
-                  src={saas.image} 
-                  alt={`Logo ${saas.name} - ${saas.category}`}
-                  loading="lazy"
-                  className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-4 right-4">
-                  <Badge variant="secondary" className="bg-white/90">
-                    <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
-                    {saas.score}
-                  </Badge>
-                </div>
-              </div>
-
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{saas.name}</CardTitle>
-                  <Badge variant="outline">{categoryLabels[saas.category] || saas.category}</Badge>
-                </div>
-                <p className="text-muted-foreground text-sm">{saas.description}</p>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                {/* Key metrics */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center">
-                    <TrendingUp className="h-4 w-4 text-green-500 mr-2" />
-                    <span className="text-sm">{saas.automation}% auto.</span>
-                  </div>
-                  <div className="flex items-center">
-                    <DollarSign className="h-4 w-4 text-primary mr-2" />
-                    <span className="text-sm">{saas.price}</span>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">{t('catalog.key_features')}:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {saas.features.slice(0, 3).map((feature, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Targets */}
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 text-muted-foreground mr-2" />
-                  <span className="text-sm text-muted-foreground">
-                    {saas.targets.map((tg) => targetLabels[tg] || tg).join(', ')}
-                  </span>
-                </div>
-
-                {/* Action button */}
-                <Button 
-                  className="w-full" 
-                  variant="hero"
-                  onClick={() => navigate(`/saas/${saas.id}`)}
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <Card key={`skeleton-${i}`} className="overflow-hidden">
+                  <Skeleton className="w-full h-48" />
+                  <CardHeader className="pb-2">
+                    <Skeleton className="h-6 w-2/3 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-1/3" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-1/3" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-6 w-16" />
+                        <Skeleton className="h-6 w-20" />
+                        <Skeleton className="h-6 w-12" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+            : filteredSaaS.map((saas) => (
+                <Card
+                  key={saas.id}
+                  className="group hover:shadow-medium transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
                 >
-                  {t('catalog.view_details')}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="relative overflow-hidden rounded-t-lg">
+                    <img
+                      src={saas.image}
+                      alt={`Logo ${saas.name} - ${saas.category}`}
+                      loading="lazy"
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <Badge variant="secondary" className="bg-white/90">
+                        <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
+                        {saas.score}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-xl">{saas.name}</CardTitle>
+                      <Badge variant="outline">
+                        {categoryLabels[saas.category] || saas.category}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground text-sm">{saas.description}</p>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Key metrics */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center">
+                        <TrendingUp className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">{saas.automation}% auto.</span>
+                      </div>
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 text-primary mr-2" />
+                        <span className="text-sm">{saas.price}</span>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">{t('catalog.key_features')}:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {saas.features.slice(0, 3).map((feature, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Targets */}
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 text-muted-foreground mr-2" />
+                      <span className="text-sm text-muted-foreground">
+                        {saas.targets.map((tg) => targetLabels[tg] || tg).join(', ')}
+                      </span>
+                    </div>
+
+                    {/* Action button */}
+                    <Button
+                      className="w-full"
+                      variant="hero"
+                      onClick={() => navigate(`/saas/${saas.id}`)}
+                    >
+                      {t('catalog.view_details')}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
         </div>
 
         {/* Empty state */}
-        {filteredSaaS.length === 0 && (
+        {!loading && !errorMsg && filteredSaaS.length === 0 && (
           <div className="text-center py-12">
             <Filter className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">{t('catalog.no_results_title')}</h3>

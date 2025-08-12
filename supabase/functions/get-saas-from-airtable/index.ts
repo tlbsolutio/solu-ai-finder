@@ -96,9 +96,30 @@ serve(async (req) => {
 
     const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
 
+    // Resolve API key from secrets (support both conventional and legacy names)
+    const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
+    if (!apiKey) {
+      console.error('Missing Airtable API key (AIRTABLE_API_KEY).');
+      return new Response(
+        JSON.stringify({
+          error: 'Missing Airtable API key',
+          details: 'Configure AIRTABLE_API_KEY (Personal Access Token) in Supabase secrets with data.records:read scope and access to the base.',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Airtable request', {
+      baseId,
+      table: tableSegment,
+      view,
+      hasKey: true,
+      keyLen: apiKey.length,
+    });
+
     const airtableResp = await fetch(airtableUrl, {
       headers: {
-        Authorization: `Bearer ${Deno.env.get('AIRTABLE_API_KEY')}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
     });
@@ -106,6 +127,15 @@ serve(async (req) => {
     if (!airtableResp.ok) {
       const errText = await airtableResp.text();
       console.error('Airtable error:', airtableResp.status, errText);
+      if (airtableResp.status === 401) {
+        return new Response(
+          JSON.stringify({
+            error: 'Airtable authentication failed',
+            details: 'Invalid or insufficient token. Ensure AIRTABLE_API_KEY has data.records:read scope and access to the base.',
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
       return new Response(JSON.stringify({ error: 'Failed to fetch from Airtable', details: errText }), {
         status: airtableResp.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
