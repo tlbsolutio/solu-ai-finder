@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
+// removed pagination imports
 interface SaaSItem {
   id: string;
   name: string;
@@ -35,20 +35,15 @@ const Catalogue = () => {
   const [selectedTarget, setSelectedTarget] = useState('');
   const [loading, setLoading] = useState(true);
 const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+  const LOAD_STEP = 12;
+  const INITIAL_COUNT = 12;
 
-  // Reset to first page on filters/language change
+  // Reset visible count on filters/language change
   useEffect(() => {
-    setCurrentPage(1);
+    setVisibleCount(INITIAL_COUNT);
   }, [searchQuery, selectedCategory, selectedTarget, language]);
-
-  const handleSetPage = (p: number) => {
-    setCurrentPage(p);
-    if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
 
   // Set category filter from URL params on mount
   useEffect(() => {
@@ -178,15 +173,27 @@ const filteredSaaS = displayData.filter(item => {
     return matchesSearch && matchesCategory && matchesTarget;
   });
 
-  const totalItems = filteredSaaS.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
-  const startIndex = (safePage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const paginatedSaaS = filteredSaaS.slice(startIndex, endIndex);
+const totalItems = filteredSaaS.length;
+  const showingFrom = totalItems === 0 ? 0 : 1;
+  const showingTo = Math.min(visibleCount, totalItems);
+  const visibleItems = filteredSaaS.slice(0, visibleCount);
 
-  const showingFrom = totalItems === 0 ? 0 : startIndex + 1;
-  const showingTo = endIndex;
+  // Infinite scroll observer
+  useEffect(() => {
+    if (loading || errorMsg) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    if (visibleCount >= totalItems) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        setVisibleCount((c) => Math.min(c + LOAD_STEP, totalItems));
+      }
+    }, { threshold: 0.1 });
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loading, errorMsg, visibleCount, totalItems]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -246,20 +253,6 @@ const filteredSaaS = displayData.filter(item => {
           </CardContent>
         </Card>
 
-        {/* Items per page - compact, below filters */}
-        <div className="mb-4 flex items-center justify-end gap-2">
-          <span className="text-xs text-muted-foreground">{t('catalog.items_per_page')}</span>
-          <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setCurrentPage(1); }}>
-            <SelectTrigger className="h-8 px-2 text-xs">
-              <SelectValue placeholder={t('catalog.items_per_page')} />
-            </SelectTrigger>
-            <SelectContent className="z-[60]">
-              <SelectItem value="12">12</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
 
         {/* Error state */}
         {errorMsg && (
@@ -281,7 +274,7 @@ const filteredSaaS = displayData.filter(item => {
         {/* SaaS Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
-            ? Array.from({ length: pageSize }).map((_, i) => (
+            ? Array.from({ length: visibleCount }).map((_, i) => (
                 <Card key={`skeleton-${i}`} className="overflow-hidden">
                   <Skeleton className="w-full h-48" />
                   <CardHeader className="pb-2">
@@ -305,7 +298,7 @@ const filteredSaaS = displayData.filter(item => {
                   </CardContent>
                 </Card>
               ))
-            : paginatedSaaS.map((saas) => (
+            : visibleItems.map((saas) => (
                 <Card
                   key={saas.id}
                   className="group hover:shadow-medium transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
@@ -381,43 +374,9 @@ const filteredSaaS = displayData.filter(item => {
               ))}
         </div>
 
-        {/* Pagination controls */}
-        {!loading && totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage > 1) handleSetPage(currentPage - 1);
-                    }}
-                  >
-                    {t('catalog.pagination_previous')}
-                  </PaginationLink>
-                </PaginationItem>
-                <PaginationItem>
-                  <span className="px-3 py-2 text-sm text-muted-foreground">
-                    {currentPage} / {totalPages}
-                  </span>
-                </PaginationItem>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (currentPage < totalPages) handleSetPage(currentPage + 1);
-                    }}
-                  >
-                    {t('catalog.pagination_next')}
-                  </PaginationLink>
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
+        {/* Infinite scroll sentinel */}
+        {!loading && visibleCount < totalItems && (
+          <div ref={sentinelRef} className="h-10" />
         )}
 
 
