@@ -203,7 +203,7 @@ const filteredSaaS = displayData.filter(item => {
         {/* Filters */}
         <Card className="mb-8 shadow-soft">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -241,23 +241,25 @@ const filteredSaaS = displayData.filter(item => {
                 </SelectContent>
               </Select>
 
-              {/* Items per page */}
-              <div className="space-y-1">
-                <div className="text-xs text-muted-foreground">{t('catalog.items_per_page')}</div>
-                <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setCurrentPage(1); }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('catalog.items_per_page')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="12">12</SelectItem>
-                    <SelectItem value="24">24</SelectItem>
-                    <SelectItem value="48">48</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+{/* moved below */}
             </div>
           </CardContent>
         </Card>
+
+        {/* Items per page - compact, below filters */}
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <span className="text-xs text-muted-foreground">{t('catalog.items_per_page')}</span>
+          <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setCurrentPage(1); }}>
+            <SelectTrigger className="h-8 px-2 text-xs">
+              <SelectValue placeholder={t('catalog.items_per_page')} />
+            </SelectTrigger>
+            <SelectContent className="z-[60]">
+              <SelectItem value="12">12</SelectItem>
+              <SelectItem value="24">24</SelectItem>
+              <SelectItem value="48">48</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Error state */}
         {errorMsg && (
