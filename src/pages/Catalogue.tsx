@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,24 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+import { translateWithDeepl } from '@/utils/translate';
+
+interface SaaSItem {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  targets: string[];
+  score: number;
+  automation: number;
+  price: string;
+  features: string[];
+  image: string;
+}
 
 const Catalogue = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,85 +40,118 @@ const Catalogue = () => {
     }
   }, [searchParams]);
 
-  // Mock data - in real app, this would come from Airtable
-  const saasData = [
-    {
-      id: 1,
-      name: "Zapier",
-      description: "Automatisation de workflows entre applications",
-      category: "Automatisation",
-      targets: ["PME", "Entrepreneurs"],
-      score: 4.8,
-      automation: 85,
-      price: "Gratuit - 29€/mois",
-      features: ["2000+ intégrations", "Workflows visuels", "API REST"],
-      image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=200&fit=crop"
-    },
-    {
-      id: 2,
-      name: "HubSpot CRM",
-      description: "CRM gratuit avec outils marketing intégrés",
-      category: "CRM",
-      targets: ["PME", "Startups"],
-      score: 4.6,
-      automation: 70,
-      price: "Gratuit - 50€/mois",
-      features: ["CRM complet", "Email marketing", "Landing pages"],
-      image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=200&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Monday.com",
-      description: "Plateforme de gestion de projets et workflows",
-      category: "Gestion de projet",
-      targets: ["Équipes", "PME"],
-      score: 4.7,
-      automation: 75,
-      price: "8€ - 16€/mois/user",
-      features: ["Tableaux personnalisables", "Automatisations", "Intégrations"],
-      image: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=200&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Calendly",
-      description: "Planification automatique de rendez-vous",
-      category: "Planification",
-      targets: ["Consultants", "Commerciaux"],
-      score: 4.9,
-      automation: 90,
-      price: "Gratuit - 12€/mois",
-      features: ["Calendrier intelligent", "Intégrations", "Rappels automatiques"],
-      image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop"
+  // Dynamic SaaS data from Airtable
+  const [saasData, setSaasData] = useState<SaaSItem[]>([]);
+  const [displayData, setDisplayData] = useState<SaaSItem[]>([]);
+  const categories = useMemo(
+    () => Array.from(new Set(saasData.map((i) => i.category))).sort(),
+    [saasData]
+  );
+  const targets = useMemo(
+    () => Array.from(new Set(saasData.flatMap((i) => i.targets))).sort(),
+    [saasData]
+  );
+
+  // Display labels (translated in EN)
+  const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
+  const [targetLabels, setTargetLabels] = useState<Record<string, string>>({});
+
+  // Fetch from Edge Function (Airtable)
+  useEffect(() => {
+    const baseId = searchParams.get('airtableBase') || searchParams.get('baseId');
+    const table = searchParams.get('table') || undefined;
+    const view = searchParams.get('view') || undefined;
+
+    if (!baseId) {
+      setSaasData([]);
+      setDisplayData([]);
+      return;
     }
-  ];
 
-  const categories = [
-    "CRM & Relation Client",
-    "Marketing & Growth", 
-    "Automatisation & No-code",
-    "Création, Design & Multimédia",
-    "Ventes & E-commerce",
-    "Gestion de Projet & Collaboration",
-    "Productivité & Outils Bureautiques",
-    "Sécurité & Conformité",
-    "Finance & Comptabilité",
-    "Ressources Humaines & Recrutement",
-    "Éducation & Formation",
-    "Service Client & Support",
-    "Santé & Bien-être",
-    "Industrie & Logistique",
-    "Développement & IT",
-    "LegalTech & Juridique",
-    "Autre"
-  ];
-  const targets = ["PME", "Startups", "Entrepreneurs", "Équipes", "Consultants", "Commerciaux"];
+    (async () => {
+      const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
+        body: { baseId, table, view },
+      });
+      if (error) {
+        console.error('Airtable fetch error', error);
+        setSaasData([]);
+        setDisplayData([]);
+        return;
+      }
+      const items = (data as any)?.items as SaaSItem[];
+      setSaasData(items || []);
+      setDisplayData(items || []);
+    })();
+  }, [searchParams]);
 
-  const filteredSaaS = saasData.filter(item => {
+  // Translate to EN on the fly (and cache)
+  useEffect(() => {
+    const run = async () => {
+      if (language === 'en') {
+        const textSet = new Set<string>();
+        saasData.forEach((i) => {
+          textSet.add(i.name);
+          textSet.add(i.description);
+          i.features.forEach((f) => textSet.add(f));
+        });
+        // Also translate category/target labels for display
+        categories.forEach((c) => textSet.add(c));
+        targets.forEach((t) => textSet.add(t));
+
+        const texts = Array.from(textSet);
+        if (texts.length === 0) {
+          setDisplayData([]);
+          setCategoryLabels({});
+          setTargetLabels({});
+          return;
+        }
+
+        try {
+          const map = await translateWithDeepl(texts, 'EN');
+
+          // Map items
+          const translatedItems = saasData.map((i) => ({
+            ...i,
+            name: map[i.name] || i.name,
+            description: map[i.description] || i.description,
+            features: i.features.map((f) => map[f] || f),
+          }));
+
+          // Display labels
+          const catMap: Record<string, string> = {};
+          categories.forEach((c) => (catMap[c] = map[c] || c));
+          const tgtMap: Record<string, string> = {};
+          targets.forEach((tg) => (tgtMap[tg] = map[tg] || tg));
+
+          setDisplayData(translatedItems);
+          setCategoryLabels(catMap);
+          setTargetLabels(tgtMap);
+        } catch (e) {
+          console.error('Translation error', e);
+          setDisplayData(saasData);
+          setCategoryLabels({});
+          setTargetLabels({});
+        }
+      } else {
+        setDisplayData(saasData);
+        // Identity labels in FR
+        const catMap: Record<string, string> = {};
+        categories.forEach((c) => (catMap[c] = c));
+        const tgtMap: Record<string, string> = {};
+        targets.forEach((tg) => (tgtMap[tg] = tg));
+        setCategoryLabels(catMap);
+        setTargetLabels(tgtMap);
+      }
+    };
+
+    run();
+  }, [language, saasData, categories, targets]);
+
+  const filteredSaaS = displayData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.category === selectedCategory;
     const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
-    
     return matchesSearch && matchesCategory && matchesTarget;
   });
 
@@ -142,7 +190,7 @@ const Catalogue = () => {
                 <SelectContent>
                   <SelectItem value="all">{t('catalog.all_categories')}</SelectItem>
                   {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    <SelectItem key={cat} value={cat}>{categoryLabels[cat] || cat}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -155,7 +203,7 @@ const Catalogue = () => {
                 <SelectContent>
                   <SelectItem value="all">{t('catalog.all_targets')}</SelectItem>
                   {targets.map(target => (
-                    <SelectItem key={target} value={target}>{target}</SelectItem>
+                    <SelectItem key={target} value={target}>{targetLabels[target] || target}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -177,7 +225,8 @@ const Catalogue = () => {
               <div className="relative overflow-hidden rounded-t-lg">
                 <img 
                   src={saas.image} 
-                  alt={saas.name}
+                  alt={`Logo ${saas.name} - ${saas.category}`}
+                  loading="lazy"
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute top-4 right-4">
@@ -191,7 +240,7 @@ const Catalogue = () => {
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl">{saas.name}</CardTitle>
-                  <Badge variant="outline">{saas.category}</Badge>
+                  <Badge variant="outline">{categoryLabels[saas.category] || saas.category}</Badge>
                 </div>
                 <p className="text-muted-foreground text-sm">{saas.description}</p>
               </CardHeader>
@@ -225,7 +274,7 @@ const Catalogue = () => {
                 <div className="flex items-center">
                   <Users className="h-4 w-4 text-muted-foreground mr-2" />
                   <span className="text-sm text-muted-foreground">
-                    {saas.targets.join(', ')}
+                    {saas.targets.map((tg) => targetLabels[tg] || tg).join(', ')}
                   </span>
                 </div>
 
