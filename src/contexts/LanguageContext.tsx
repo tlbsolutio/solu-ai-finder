@@ -76,6 +76,10 @@ const translations = {
     'catalog.view_details': 'Voir le détail',
     'catalog.no_results_title': 'Aucune solution trouvée',
     'catalog.no_results_subtitle': 'Essayez de modifier vos critères de recherche',
+    'catalog.pagination_previous': 'Précédent',
+    'catalog.pagination_next': 'Suivant',
+    'catalog.items_per_page': 'Éléments par page',
+    'catalog.showing_count': 'Affichage {from}–{to} sur {total}',
 
     // Contact page
     'contact.title': 'Contactez-nous',
@@ -322,6 +326,11 @@ const translations = {
     'catalog.view_details': 'View details',
     'catalog.no_results_title': 'No solutions found',
     'catalog.no_results_subtitle': 'Try modifying your search criteria',
+
+    'catalog.pagination_previous': 'Previous',
+    'catalog.pagination_next': 'Next',
+    'catalog.items_per_page': 'Items per page',
+    'catalog.showing_count': 'Showing {from}–{to} of {total}',
 
     // Contact page
     'contact.title': 'Contact us',

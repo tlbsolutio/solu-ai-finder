@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 interface SaaSItem {
   id: string;
   name: string;
@@ -33,7 +34,21 @@ const Catalogue = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  // Reset to first page on filters/language change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedTarget, language]);
+
+  const handleSetPage = (p: number) => {
+    setCurrentPage(p);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Set category filter from URL params on mount
   useEffect(() => {
@@ -155,13 +170,23 @@ const Catalogue = () => {
     run();
   }, [language, saasData, categories, targets]);
 
-  const filteredSaaS = displayData.filter(item => {
+const filteredSaaS = displayData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.category === selectedCategory;
     const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
     return matchesSearch && matchesCategory && matchesTarget;
   });
+
+  const totalItems = filteredSaaS.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(currentPage, 1), totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const paginatedSaaS = filteredSaaS.slice(startIndex, endIndex);
+
+  const showingFrom = totalItems === 0 ? 0 : startIndex + 1;
+  const showingTo = endIndex;
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -178,7 +203,7 @@ const Catalogue = () => {
         {/* Filters */}
         <Card className="mb-8 shadow-soft">
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -215,6 +240,21 @@ const Catalogue = () => {
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Items per page */}
+              <div className="space-y-1">
+                <div className="text-xs text-muted-foreground">{t('catalog.items_per_page')}</div>
+                <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(parseInt(v, 10)); setCurrentPage(1); }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('catalog.items_per_page')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12">12</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
+                    <SelectItem value="48">48</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -231,7 +271,7 @@ const Catalogue = () => {
         {!loading && (
           <div className="mb-6">
             <p className="text-muted-foreground">
-              {filteredSaaS.length} {filteredSaaS.length === 1 ? 'solution trouvée' : 'solutions trouvées'}
+              {t('catalog.showing_count', { from: String(showingFrom), to: String(showingTo), total: String(totalItems) })}
             </p>
           </div>
         )}
@@ -239,7 +279,7 @@ const Catalogue = () => {
         {/* SaaS Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
+            ? Array.from({ length: pageSize }).map((_, i) => (
                 <Card key={`skeleton-${i}`} className="overflow-hidden">
                   <Skeleton className="w-full h-48" />
                   <CardHeader className="pb-2">
@@ -263,7 +303,7 @@ const Catalogue = () => {
                   </CardContent>
                 </Card>
               ))
-            : filteredSaaS.map((saas) => (
+            : paginatedSaaS.map((saas) => (
                 <Card
                   key={saas.id}
                   className="group hover:shadow-medium transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
@@ -338,6 +378,46 @@ const Catalogue = () => {
                 </Card>
               ))}
         </div>
+
+        {/* Pagination controls */}
+        {!loading && totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) handleSetPage(currentPage - 1);
+                    }}
+                  >
+                    {t('catalog.pagination_previous')}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <span className="px-3 py-2 text-sm text-muted-foreground">
+                    {currentPage} / {totalPages}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink
+                    href="#"
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) handleSetPage(currentPage + 1);
+                    }}
+                  >
+                    {t('catalog.pagination_next')}
+                  </PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
 
         {/* Empty state */}
         {!loading && !errorMsg && filteredSaaS.length === 0 && (
