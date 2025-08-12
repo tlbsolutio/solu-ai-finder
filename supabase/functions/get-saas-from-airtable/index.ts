@@ -35,6 +35,7 @@ serve(async (req) => {
     let table = url.searchParams.get('table') || '';
     let view = url.searchParams.get('view') || '';
     let path = url.searchParams.get('path') || '';
+    let uiUrl = url.searchParams.get('uiUrl') || '';
 
     if (!isGet) {
       const body = await req.json().catch(() => ({}));
@@ -42,24 +43,58 @@ serve(async (req) => {
       table = body.table || table;
       view = body.view || view;
       path = body.path || path;
+      uiUrl = body.uiUrl || uiUrl;
     }
 
+    // If a UI URL is provided, parse base/table/view IDs from it
+    if (!baseId && uiUrl) {
+      try {
+        const parts = new URL(uiUrl).pathname.split('/').filter(Boolean);
+        // Expecting: /app.../tbl.../viw...
+        const appPart = parts.find(p => p.startsWith('app'));
+        const tblPart = parts.find(p => p.startsWith('tbl'));
+        const viwPart = parts.find(p => p.startsWith('viw'));
+        if (appPart) baseId = appPart;
+        if (tblPart) table = tblPart;
+        if (viwPart) view = viwPart;
+      } catch (e) {
+        console.warn('Failed to parse uiUrl:', e);
+      }
+    }
+
+    // Fallback to secrets if still missing
     if (!baseId) {
-      return new Response(JSON.stringify({ error: 'Missing required parameter: baseId' }), {
+      const envBase = Deno.env.get('AIRTABLE_BASE_ID') || '';
+      const envTable = Deno.env.get('AIRTABLE_TABLE_ID') || '';
+      const envView = Deno.env.get('AIRTABLE_VIEW_ID') || '';
+      if (envBase) {
+        baseId = envBase;
+        if (!table) table = envTable;
+        if (!view) view = envView;
+      }
+    }
+
+    // Build Airtable endpoint path segment after baseId
+    if (!baseId) {
+      return new Response(JSON.stringify({ error: 'Missing Airtable baseId. Provide uiUrl or configure AIRTABLE_BASE_ID.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Build Airtable endpoint path segment after baseId
-    // Order of precedence: explicit path -> table -> default example view name
-    const tableOrView = path || table || 'Saas-Grid view';
+    const tableSegment = path || table;
+    if (!tableSegment) {
+      return new Response(JSON.stringify({ error: 'Missing Airtable table. Provide uiUrl, table/path parameter, or configure AIRTABLE_TABLE_ID.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     const params = new URLSearchParams();
     params.set('pageSize', '100');
     if (view) params.set('view', view);
 
-    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableOrView)}?${params.toString()}`;
+    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
 
     const airtableResp = await fetch(airtableUrl, {
       headers: {

@@ -58,19 +58,13 @@ const Catalogue = () => {
 
   // Fetch from Edge Function (Airtable)
   useEffect(() => {
-    const baseId = searchParams.get('airtableBase') || searchParams.get('baseId');
-    const table = searchParams.get('table') || undefined;
-    const view = searchParams.get('view') || undefined;
-
-    if (!baseId) {
-      setSaasData([]);
-      setDisplayData([]);
-      return;
-    }
+    const uiUrl =
+      searchParams.get('uiUrl') ||
+      'https://airtable.com/appayjYdBAGkJak1e/tblExeDT6EQQHUrMF/viwWt7YstfzBBfRLP?blocks=hide';
 
     (async () => {
       const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
-        body: { baseId, table, view },
+        body: { uiUrl },
       });
       if (error) {
         console.error('Airtable fetch error', error);
