@@ -323,7 +323,7 @@ const totalItems = filteredSaaS.length;
             : visibleItems.map((saas) => (
                 <Card
                   key={saas.id}
-                  className="group hover:shadow-medium transition-all duration-300 transform hover:scale-[1.02] cursor-pointer"
+                  className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
                 >
                   <div className="relative overflow-hidden rounded-t-lg">
                     <img
@@ -346,8 +346,8 @@ const totalItems = filteredSaaS.length;
                     <CardTitle className="text-xl line-clamp-1">{saas.name}</CardTitle>
                   </CardHeader>
 
-                  <CardContent className="p-4 pt-0">
-                    <div className="space-y-3">
+                  <CardContent className="p-4 pt-0 flex-1 flex flex-col">
+                    <div className="space-y-3 flex-1">
                       {/* Categories */}
                       <div className="flex flex-wrap gap-1">
                         {saas.categories.map((cat, idx) => (
@@ -406,11 +406,13 @@ const totalItems = filteredSaaS.length;
                         ))}
                       </div>
 
-                      <Link to={`/saas/${saas.id}`}>
-                        <Button variant="outline" size="sm" className="w-full">
-                          Voir le détail
-                        </Button>
-                      </Link>
+                      <div className="mt-auto pt-4">
+                        <Link to={`/saas/${saas.id}`}>
+                          <Button variant="cta" size="sm" className="w-full">
+                            Voir le détail
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
