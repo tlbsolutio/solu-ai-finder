@@ -21,135 +21,6 @@ function pick<T = any>(fields: Record<string, any>, keys: string[]): T | undefin
   return undefined;
 }
 
-const BASE = 'appayjYdBAGkJak1e';
-const SAAS_TABLE = 'tblzQQ7ivUGHqTBTF';
-const SAAS_VIEW = 'viwjGA16J4vctsYXf';
-const PRICING_TABLE = 'tbl5qcovjk1Id7Hj5';
-const PRICING_VIEW = 'viwxJnfTzP1MqTcXu';
-
-async function fetchSaasRecords() {
-  const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
-  if (!apiKey) {
-    console.error('Missing Airtable API key');
-    throw new Error('Missing Airtable API key');
-  }
-
-  const url = new URL(`https://api.airtable.com/v0/${BASE}/${SAAS_TABLE}`);
-  url.searchParams.set('view', SAAS_VIEW);
-  
-  // Essential fields only - removed "Cas d'usage" to fix 422 error
-  const essentialFields = [
-    'Nom', 'Tagline', 'Description', 'Catégorie', 'Cibles', 'Note',
-    'Automatisation (%)', 'Facilité (/100)', 'Prix affiché',
-    'Fonctionnalités principales', 'Avantages', 'Inconvénients',
-    'Logo (URL ou attachement)', 'Site web', 'Bouton Essayer gratuitement', 'Lien d\'affiliation'
-  ];
-  
-  essentialFields.forEach(field => url.searchParams.append('fields[]', field));
-  url.searchParams.set('pageSize', '50');
-
-  console.log('Fetching SaaS records from:', url.toString());
-
-  try {
-    const res = await fetch(url, { 
-      headers: { 
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`SaaS fetch failed: ${res.status} - ${errorText}`);
-      throw new Error(`SaaS fetch failed: ${res.status} - ${errorText}`);
-    }
-    
-    const json = await res.json();
-    console.log(`Successfully fetched ${json.records?.length || 0} SaaS records`);
-    return json.records || [];
-  } catch (error) {
-    console.error('Error fetching SaaS records:', error);
-    throw error;
-  }
-}
-
-async function fetchPricingForSaasIds(ids: string[]) {
-  if (!ids?.length) {
-    console.log('No SaaS IDs provided for pricing fetch');
-    return [];
-  }
-  
-  const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
-  if (!apiKey) {
-    console.error('Missing Airtable API key for pricing fetch');
-    return [];
-  }
-
-  const or = `OR(${ids.map(id => `SEARCH("${id}", ARRAYJOIN({SaaS lié}))`).join(',')})`;
-  const url = new URL(`https://api.airtable.com/v0/${BASE}/${PRICING_TABLE}`);
-  url.searchParams.set('view', PRICING_VIEW);
-  url.searchParams.set('filterByFormula', or);
-  
-  const pricingFields = ['Nom du plan', 'Prix', 'Fonctionnalités incluses', 'Populaire', 'SaaS lié'];
-  pricingFields.forEach(field => url.searchParams.append('fields[]', field));
-  url.searchParams.set('pageSize', '100');
-
-  console.log('Fetching pricing records with formula:', or);
-
-  try {
-    const res = await fetch(url, { 
-      headers: { 
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.warn(`Pricing fetch failed: ${res.status} - ${errorText}`);
-      return [];
-    }
-    
-    const json = await res.json();
-    console.log(`Successfully fetched ${json.records?.length || 0} pricing records`);
-    return json.records || [];
-  } catch (error) {
-    console.error('Error fetching pricing records:', error);
-    return [];
-  }
-}
-
-function groupPricingBySaas(pricingRecords: any[]) {
-  const map = new Map<string, any[]>();
-  for (const r of pricingRecords) {
-    const linked: string[] = r.fields['SaaS lié'] || [];
-    const planObj = {
-      id: r.id,
-      plan: r.fields['Nom du plan'] ?? '',
-      price: r.fields['Prix'] ?? '',
-      included: toArray<string>(r.fields['Fonctionnalités incluses'] ?? []),
-      popular: Boolean(r.fields['Populaire'])
-    };
-    for (const saasId of linked) {
-      if (!map.has(saasId)) map.set(saasId, []);
-      map.get(saasId)!.push(planObj);
-    }
-  }
-  // Sort plans: popular first, then by price
-  for (const [k, arr] of map) {
-    arr.sort((a,b) => {
-      if (a.popular !== b.popular) return a.popular ? -1 : 1;
-      const na = parseFloat((a.price || '').replace(',', '.'));
-      const nb = parseFloat((b.price || '').replace(',', '.'));
-      const aNum = Number.isFinite(na) ? na : Number.POSITIVE_INFINITY;
-      const bNum = Number.isFinite(nb) ? nb : Number.POSITIVE_INFINITY;
-      return aNum - bNum;
-    });
-    map.set(k, arr);
-  }
-  return map;
-}
-
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -157,14 +28,189 @@ serve(async (req) => {
   }
 
   try {
-    const saasRecords = await fetchSaasRecords();
-    const ids = saasRecords.map((r: any) => r.id);
-    const pricingRecords = await fetchPricingForSaasIds(ids);
-    const pricingMap = groupPricingBySaas(pricingRecords);
+    const url = new URL(req.url);
+    const isGet = req.method === 'GET';
 
-    console.log(`Fetched ${saasRecords.length} SaaS / ${pricingRecords.length} pricing records`);
+    let baseId = url.searchParams.get('baseId') || '';
+    let table = url.searchParams.get('table') || '';
+    let view = url.searchParams.get('view') || '';
+    let path = url.searchParams.get('path') || '';
+    let uiUrl = url.searchParams.get('uiUrl') || '';
 
-    const mapped = saasRecords.map((r: any) => {
+    if (!isGet) {
+      const body = await req.json().catch(() => ({}));
+      baseId = body.baseId || baseId;
+      table = body.table || table;
+      view = body.view || view;
+      path = body.path || path;
+      uiUrl = body.uiUrl || uiUrl;
+    }
+
+    // If a UI URL is provided, parse base/table/view IDs from it
+    if (!baseId && uiUrl) {
+      try {
+        const parts = new URL(uiUrl).pathname.split('/').filter(Boolean);
+        // Expecting: /app.../tbl.../viw...
+        const appPart = parts.find(p => p.startsWith('app'));
+        const tblPart = parts.find(p => p.startsWith('tbl'));
+        const viwPart = parts.find(p => p.startsWith('viw'));
+        if (appPart) baseId = appPart;
+        if (tblPart) table = tblPart;
+        if (viwPart) view = viwPart;
+      } catch (e) {
+        console.warn('Failed to parse uiUrl:', e);
+      }
+    }
+
+    // Fallback to secrets if still missing
+    if (!baseId) {
+      const envBase = Deno.env.get('AIRTABLE_BASE_ID') || '';
+      const envTable = Deno.env.get('AIRTABLE_TABLE_ID') || '';
+      const envView = Deno.env.get('AIRTABLE_VIEW_ID') || '';
+      if (envBase) {
+        baseId = envBase;
+        if (!table) table = envTable;
+        if (!view) view = envView;
+      }
+    }
+
+    // Build Airtable endpoint path segment after baseId
+    if (!baseId) {
+      return new Response(JSON.stringify({ error: 'Missing Airtable baseId. Provide uiUrl or configure AIRTABLE_BASE_ID.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const tableSegment = path || table;
+    if (!tableSegment) {
+      return new Response(JSON.stringify({ error: 'Missing Airtable table. Provide uiUrl, table/path parameter, or configure AIRTABLE_TABLE_ID.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const params = new URLSearchParams();
+    params.set('pageSize', '50');
+    if (view) params.set('view', view);
+
+    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
+
+    // Resolve API key from secrets (support both conventional and legacy names)
+    const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
+    if (!apiKey) {
+      console.error('Missing Airtable API key (AIRTABLE_API_KEY).');
+      return new Response(
+        JSON.stringify({
+          error: 'Missing Airtable API key',
+          details: 'Configure AIRTABLE_API_KEY (Personal Access Token) in Supabase secrets with data.records:read scope and access to the base.',
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Airtable request', {
+      baseId,
+      table: tableSegment,
+      view,
+      hasKey: true,
+      keyLen: apiKey.length,
+    });
+
+    const airtableResp = await fetch(airtableUrl, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!airtableResp.ok) {
+      const errText = await airtableResp.text();
+      console.error('Airtable error:', airtableResp.status, errText);
+      if (airtableResp.status === 401) {
+        return new Response(
+          JSON.stringify({
+            error: 'Airtable authentication failed',
+            details: 'Invalid or insufficient token. Ensure AIRTABLE_API_KEY has data.records:read scope and access to the base.',
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(JSON.stringify({ error: 'Failed to fetch from Airtable', details: errText }), {
+        status: airtableResp.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const airtableData = await airtableResp.json();
+    const records = airtableData.records || [];
+
+    // Extract all SaaS record IDs for batch pricing fetch
+    const saasIds = records.map((r: any) => r.id);
+    
+    // Fetch ALL pricing records from tbl5qcovjk1Id7Hj5 that link to any of these SaaS
+    const fetchAllPricingPlans = async () => {
+      if (saasIds.length === 0) return [];
+      
+      try {
+        // Build filterByFormula to match ANY SaaS in the "SaaS lié" field
+        const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({SaaS lié}))`).join(',')})`;
+        
+        const pricingParams = new URLSearchParams();
+        pricingParams.set('view', 'viwxJnfTzP1MqTcXu');
+        pricingParams.set('filterByFormula', filterFormula);
+        pricingParams.set('pageSize', '100');
+        
+        // Only fetch necessary fields
+        ['Nom du plan', 'Prix', 'Fonctionnalités incluses', 'Populaire', 'SaaS lié'].forEach(field => {
+          pricingParams.append('fields[]', field);
+        });
+        
+        const pricingUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${pricingParams.toString()}`;
+        
+        console.log('Fetching pricing plans with formula:', filterFormula);
+        
+        const pricingResp = await fetch(pricingUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!pricingResp.ok) {
+          console.warn('Failed to fetch pricing data:', pricingResp.status, await pricingResp.text());
+          return [];
+        }
+        
+        const pricingData = await pricingResp.json();
+        console.log(`Fetched ${pricingData.records?.length || 0} pricing records from tbl5qcovjk1Id7Hj5`);
+        
+        return pricingData.records || [];
+      } catch (error) {
+        console.warn('Error fetching pricing records:', error);
+        return [];
+      }
+    };
+
+    const allPricingRecords = await fetchAllPricingPlans();
+    
+    // Group pricing records by SaaS ID
+    const pricingBySaasId = new Map<string, any[]>();
+    allPricingRecords.forEach((pr: any) => {
+      const fields = pr.fields || {};
+      const linkedSaasIds = toArray<string>(fields['SaaS lié'] || []);
+      
+      linkedSaasIds.forEach(saasId => {
+        if (!pricingBySaasId.has(saasId)) {
+          pricingBySaasId.set(saasId, []);
+        }
+        pricingBySaasId.get(saasId)!.push(pr);
+      });
+    });
+
+    console.log(`Processed pricing for ${pricingBySaasId.size} SaaS items with ${allPricingRecords.length} total plans`);
+
+    const mapped = records.map((r: any) => {
       const f = r.fields || {};
       const name = pick<string>(f, ['Nom', 'name', 'Name', 'Titre', 'Title']) || '';
       const tagline = pick<string>(f, ['Tagline', 'tagline', 'Slogan']) || '';
@@ -192,8 +238,18 @@ serve(async (req) => {
         }
       }
 
-      // Get pricing plans linked to this SaaS (already sorted by groupPricingBySaas)
-      const pricingLinked = pricingMap.get(r.id) || [];
+      // Get pricing plans linked to this SaaS
+      const linkedPricingRecords = pricingBySaasId.get(r.id) || [];
+      const pricingLinked = linkedPricingRecords.map((pr: any) => {
+        const pf = pr.fields || {};
+        return {
+          id: pr.id,
+          plan: pf['Nom du plan'] || '',
+          price: pf['Prix'] || '',
+          included: toArray<string>(pf['Fonctionnalités incluses'] || []),
+          popular: Boolean(pf['Populaire'] || false),
+        };
+      });
 
       return {
         id: r.id,
