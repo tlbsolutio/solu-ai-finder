@@ -28,47 +28,95 @@ const PRICING_TABLE = 'tbl5qcovjk1Id7Hj5';
 const PRICING_VIEW = 'viwxJnfTzP1MqTcXu';
 
 async function fetchSaasRecords() {
-  const url = new URL(`https://api.airtable.com/v0/${BASE}/${SAAS_TABLE}`);
-  url.searchParams.set('view', SAAS_VIEW);
-  [
-    'Nom','Tagline','Description','Catégorie','Cibles','Note',
-    'Automatisation (%)','Facilité (/100)','Prix affiché',
-    'Fonctionnalités principales','Cas d\'usage','Avantages','Inconvénients',
-    'Logo (URL ou attachement)','Site web','Bouton Essayer gratuitement','Lien d\'affiliation'
-  ].forEach(f => url.searchParams.append('fields[]', f));
-  url.searchParams.set('pageSize','50');
-
   const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
   if (!apiKey) {
+    console.error('Missing Airtable API key');
     throw new Error('Missing Airtable API key');
   }
 
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }});
-  if (!res.ok) {
-    throw new Error(`SaaS fetch failed: ${res.status}`);
+  const url = new URL(`https://api.airtable.com/v0/${BASE}/${SAAS_TABLE}`);
+  url.searchParams.set('view', SAAS_VIEW);
+  
+  // Essential fields only to reduce payload and avoid 422 errors
+  const essentialFields = [
+    'Nom', 'Tagline', 'Description', 'Catégorie', 'Cibles', 'Note',
+    'Automatisation (%)', 'Facilité (/100)', 'Prix affiché',
+    'Fonctionnalités principales', 'Cas d\'usage', 'Avantages', 'Inconvénients',
+    'Logo (URL ou attachement)', 'Site web', 'Bouton Essayer gratuitement', 'Lien d\'affiliation'
+  ];
+  
+  essentialFields.forEach(field => url.searchParams.append('fields[]', field));
+  url.searchParams.set('pageSize', '50');
+
+  console.log('Fetching SaaS records from:', url.toString());
+
+  try {
+    const res = await fetch(url, { 
+      headers: { 
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`SaaS fetch failed: ${res.status} - ${errorText}`);
+      throw new Error(`SaaS fetch failed: ${res.status} - ${errorText}`);
+    }
+    
+    const json = await res.json();
+    console.log(`Successfully fetched ${json.records?.length || 0} SaaS records`);
+    return json.records || [];
+  } catch (error) {
+    console.error('Error fetching SaaS records:', error);
+    throw error;
   }
-  const json = await res.json();
-  return json.records; // [{id, fields}]
 }
 
 async function fetchPricingForSaasIds(ids: string[]) {
-  if (!ids?.length) return [];
+  if (!ids?.length) {
+    console.log('No SaaS IDs provided for pricing fetch');
+    return [];
+  }
+  
+  const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
+  if (!apiKey) {
+    console.error('Missing Airtable API key for pricing fetch');
+    return [];
+  }
+
   const or = `OR(${ids.map(id => `SEARCH("${id}", ARRAYJOIN({SaaS lié}))`).join(',')})`;
   const url = new URL(`https://api.airtable.com/v0/${BASE}/${PRICING_TABLE}`);
   url.searchParams.set('view', PRICING_VIEW);
   url.searchParams.set('filterByFormula', or);
-  ['Nom du plan','Prix','Fonctionnalités incluses','Populaire','SaaS lié']
-    .forEach(f => url.searchParams.append('fields[]', f));
-  url.searchParams.set('pageSize','100');
+  
+  const pricingFields = ['Nom du plan', 'Prix', 'Fonctionnalités incluses', 'Populaire', 'SaaS lié'];
+  pricingFields.forEach(field => url.searchParams.append('fields[]', field));
+  url.searchParams.set('pageSize', '100');
 
-  const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }});
-  if (!res.ok) {
-    console.warn(`Pricing fetch failed: ${res.status}`);
+  console.log('Fetching pricing records with formula:', or);
+
+  try {
+    const res = await fetch(url, { 
+      headers: { 
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.warn(`Pricing fetch failed: ${res.status} - ${errorText}`);
+      return [];
+    }
+    
+    const json = await res.json();
+    console.log(`Successfully fetched ${json.records?.length || 0} pricing records`);
+    return json.records || [];
+  } catch (error) {
+    console.error('Error fetching pricing records:', error);
     return [];
   }
-  const json = await res.json();
-  return json.records; // [{id, fields}]
 }
 
 function groupPricingBySaas(pricingRecords: any[]) {
