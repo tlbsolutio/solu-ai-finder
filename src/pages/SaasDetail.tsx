@@ -44,14 +44,18 @@ const SaasDetail = () => {
       try {
         setLoading(true);
         const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
-          body: {}
+          body: {
+            uiUrl: "https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide"
+          }
         });
 
         if (error) throw error;
 
         const saasItems = data?.items || [];
+        const decodedName = decodeURIComponent(id || '');
         const saas = saasItems.find((item: SaaSItem) => 
-          item.id === id || item.name.toLowerCase().replace(/\s+/g, '-') === decodeURIComponent(id || '')
+          item.name.toLowerCase().replace(/\s+/g, '-') === decodedName ||
+          item.name.toLowerCase() === decodedName
         );
         
         if (!saas) {

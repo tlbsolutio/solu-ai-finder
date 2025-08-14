@@ -381,11 +381,15 @@ const totalItems = filteredSaaS.length;
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
                           <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                          <span className="text-sm font-medium">{Math.round(saas.score * 2) / 2}</span>
+                           <span className="text-sm font-medium">
+                             {saas.score % 1 === 0 ? saas.score.toFixed(0) : 
+                              saas.score % 1 === 0.5 ? saas.score.toFixed(1) : 
+                              saas.score.toFixed(1)}
+                           </span>
                         </div>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <TrendingUp className="h-3 w-3 mr-1" />
-                          <span>{saas.automation}% auto.</span>
+                          <span>{saas.automation || 0}% auto.</span>
                         </div>
                       </div>
 
