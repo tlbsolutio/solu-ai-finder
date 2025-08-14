@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useSaasCache } from '@/hooks/useSaasCache';
+import { Link } from 'react-router-dom';
+import { Check } from 'lucide-react';
 // removed pagination imports
 interface SaaSItem {
   id: string;
@@ -38,6 +41,7 @@ const Catalogue = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { cachedData, getCachedData, setCacheData } = useSaasCache();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
@@ -77,11 +81,20 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [categoryLabels, setCategoryLabels] = useState<Record<string, string>>({});
   const [targetLabels, setTargetLabels] = useState<Record<string, string>>({});
 
-  // Fetch from Edge Function (Airtable)
+  // Fetch from Edge Function (Airtable) with cache
   useEffect(() => {
-  const uiUrl =
-    searchParams.get('uiUrl') ||
-    'https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide';
+    const uiUrl =
+      searchParams.get('uiUrl') ||
+      'https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide';
+
+    // Check cache first
+    const cached = getCachedData();
+    if (cached && cached.length > 0) {
+      setSaasData(cached);
+      setDisplayData(cached);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setErrorMsg(null);
@@ -106,9 +119,10 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
       const items = (data as any)?.items as SaaSItem[];
       setSaasData(items || []);
       setDisplayData(items || []);
+      setCacheData(items || []); // Cache the data
       setLoading(false);
     })();
-  }, [searchParams]);
+  }, [searchParams, getCachedData, setCacheData]);
 
   // Translate to EN on the fly (and cache)
   useEffect(() => {
@@ -327,56 +341,69 @@ const totalItems = filteredSaaS.length;
                   </div>
 
                   <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl">{saas.name}</CardTitle>
-                      <Badge variant="outline">
-                        {categoryLabels[saas.category] || saas.category}
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground text-sm">{saas.description}</p>
+                    <CardTitle className="text-xl line-clamp-1">{saas.name}</CardTitle>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
-                    {/* Key metrics */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-4 w-4 text-green-500 mr-2" />
-                        <span className="text-sm">{saas.automation}% auto.</span>
-                      </div>
-                      <div className="flex items-center">
-                        <DollarSign className="h-4 w-4 text-primary mr-2" />
-                        <span className="text-sm">{saas.price}</span>
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">{t('catalog.key_features')}:</p>
+                  <CardContent className="p-4 pt-0">
+                    <div className="space-y-3">
+                      {/* Categories */}
                       <div className="flex flex-wrap gap-1">
-                        {saas.features.slice(0, 3).map((feature, idx) => (
+                        <Badge variant="secondary" className="text-xs">
+                          {categoryLabels[saas.category] || saas.category}
+                        </Badge>
+                      </div>
+
+                      {/* Tagline */}
+                      {saas.tagline && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {saas.tagline}
+                        </p>
+                      )}
+
+                      {/* Key Features (max 3) */}
+                      {saas.features && saas.features.length > 0 && (
+                        <div className="space-y-1">
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                            {t('catalogue.key_features')}
+                          </h4>
+                          <div className="space-y-1">
+                            {saas.features.slice(0, 3).map((feature, idx) => (
+                              <div key={idx} className="flex items-center text-xs">
+                                <Check className="h-3 w-3 text-green-500 mr-1.5 flex-shrink-0" />
+                                <span className="line-clamp-1">{feature}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Rating and automation */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
+                          <span className="text-sm font-medium">{Math.round(saas.score * 2) / 2}</span>
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          <span>{saas.automation}% auto.</span>
+                        </div>
+                      </div>
+
+                      {/* Targets */}
+                      <div className="flex flex-wrap gap-1">
+                        {saas.targets?.slice(0, 2).map((target, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
-                            {feature}
+                            {targetLabels[target] || target}
                           </Badge>
                         ))}
                       </div>
-                    </div>
 
-                    {/* Targets */}
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 text-muted-foreground mr-2" />
-                      <span className="text-sm text-muted-foreground">
-                        {saas.targets.map((tg) => targetLabels[tg] || tg).join(', ')}
-                      </span>
+                      <Link to={`/saas/${encodeURIComponent(saas.name.toLowerCase().replace(/\s+/g, '-'))}`}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          {t('catalogue.see_detail')}
+                        </Button>
+                      </Link>
                     </div>
-
-                    {/* Action button */}
-                    <Button
-                      className="w-full"
-                      variant="hero"
-                      onClick={() => navigate(`/saas/${saas.id}`)}
-                    >
-                      {t('catalog.view_details')}
-                    </Button>
                   </CardContent>
                 </Card>
               ))}

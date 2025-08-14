@@ -50,7 +50,9 @@ const SaasDetail = () => {
         if (error) throw error;
 
         const saasItems = data?.items || [];
-        const saas = saasItems.find((item: SaaSItem) => item.id === id);
+        const saas = saasItems.find((item: SaaSItem) => 
+          item.id === id || item.name.toLowerCase().replace(/\s+/g, '-') === decodeURIComponent(id || '')
+        );
         
         if (!saas) {
           setError('SaaS not found');
