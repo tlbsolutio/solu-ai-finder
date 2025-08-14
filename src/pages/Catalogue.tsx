@@ -79,9 +79,9 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Fetch from Edge Function (Airtable)
   useEffect(() => {
-    const uiUrl =
-      searchParams.get('uiUrl') ||
-      'https://airtable.com/appayjYdBAGkJak1e/tblExeDT6EQQHUrMF/viwWt7YstfzBBfRLP?blocks=hide';
+  const uiUrl =
+    searchParams.get('uiUrl') ||
+    'https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide';
 
     setLoading(true);
     setErrorMsg(null);
