@@ -338,8 +338,8 @@ const SaasDetail = () => {
                 {/* Priority: Use affiliate link if it exists, otherwise trial link */}
                 {saasDetail.affiliate ? (
                   <Button 
-                    className="w-full" 
-                    variant="premium"
+                    className="w-full shadow-md hover:shadow-lg transition-shadow" 
+                    variant="cta"
                     size="lg"
                     asChild
                   >
@@ -350,8 +350,8 @@ const SaasDetail = () => {
                   </Button>
                 ) : saasDetail.trialUrl ? (
                   <Button 
-                    className="w-full" 
-                    variant="premium"
+                    className="w-full shadow-md hover:shadow-lg transition-shadow" 
+                    variant="cta"
                     size="lg"
                     asChild
                   >
@@ -364,7 +364,7 @@ const SaasDetail = () => {
                 
                 {saasDetail.website && (
                   <Button 
-                    className="w-full" 
+                    className="w-full shadow-sm hover:shadow-md transition-shadow" 
                     variant="outline"
                     size="lg"
                     asChild
@@ -392,81 +392,100 @@ const SaasDetail = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <DollarSign className="h-5 w-5 text-primary mr-2" />
-                  Tarification
+                  Plans tarifaires
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Prix principal */}
-                <div className="p-4 rounded-lg border border-primary/20 bg-gradient-subtle">
-                  <div className="flex items-center justify-center">
-                    <p className="text-2xl font-bold text-primary">
-                      {saasDetail.priceText || 'Prix sur demande'}
-                    </p>
-                  </div>
-                  <p className="text-center text-muted-foreground mt-2">
-                    Tarif de base - Voir les plans détaillés ci-dessous
-                  </p>
-                </div>
-
-                {/* Plans détaillés si disponibles */}
-                {saasDetail.pricingLinked && saasDetail.pricingLinked.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg mb-4">Plans disponibles</h4>
-                    <div className="grid gap-4">
-                      {saasDetail.pricingLinked.map((plan, idx) => (
-                        <Card key={idx} className={`relative transition-all duration-300 ${
+                {saasDetail.pricingLinked && saasDetail.pricingLinked.length > 0 ? (
+                  <div className="space-y-6">
+                    {/* Responsive grid: 1 col mobile, 2 cols md, 3 cols lg */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {saasDetail.pricingLinked
+                        .sort((a, b) => {
+                          // Sort: Popular plans first, then by price, "Sur devis" last
+                          if (a.popular && !b.popular) return -1;
+                          if (!a.popular && b.popular) return 1;
+                          
+                          // Both popular or both not popular - sort by price
+                          const aPrice = a.price.toLowerCase();
+                          const bPrice = b.price.toLowerCase();
+                          
+                          // "Sur devis" always last
+                          if (aPrice.includes('devis') || aPrice.includes('contact')) return 1;
+                          if (bPrice.includes('devis') || bPrice.includes('contact')) return -1;
+                          
+                          // Try to extract numbers for numeric comparison
+                          const aNum = parseFloat(aPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                          const bNum = parseFloat(bPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                          
+                          if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                          
+                          // Fallback to alphabetical
+                          return aPrice.localeCompare(bPrice);
+                        })
+                        .map((plan, idx) => (
+                        <Card key={idx} className={`relative transition-all duration-300 p-6 ${
                           plan.popular 
-                            ? 'border-primary shadow-medium bg-gradient-primary/5' 
+                            ? 'border-primary shadow-premium bg-gradient-primary/5' 
                             : 'hover:shadow-card border-border/50'
                         }`}>
                           {plan.popular && (
                             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                              <Badge className="bg-gradient-primary text-white px-3 py-1 font-semibold">
-                                <Star className="h-3 w-3 mr-1" />
+                              <Badge className="bg-gradient-primary text-white px-3 py-1 font-semibold rounded-full">
+                                <Star className="h-3 w-3 mr-1 fill-current" />
                                 Populaire
                               </Badge>
                             </div>
                           )}
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-lg">{plan.plan}</CardTitle>
-                            <p className="text-2xl font-bold text-primary">{plan.price}</p>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              {plan.included && plan.included.map((feature, featureIdx) => (
-                                <div key={featureIdx} className="flex items-start">
-                                  <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                  <span className="text-sm">{feature}</span>
-                                </div>
-                              ))}
+                          
+                          <div className="text-center mb-6">
+                            <h3 className="text-xl font-semibold mb-2">{plan.plan}</h3>
+                            <div className="text-3xl font-bold text-primary mb-1">
+                              {plan.price}
                             </div>
-                            {plan.popular && (
-                              <Button 
-                                className="w-full mt-4" 
-                                variant="premium"
-                                asChild
-                              >
-                                <a 
-                                  href={saasDetail.affiliate || saasDetail.trialUrl || saasDetail.website} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                >
-                                  Choisir ce plan
-                                </a>
-                              </Button>
-                            )}
-                          </CardContent>
+                          </div>
+
+                          {plan.included && plan.included.length > 0 && (
+                            <div className="space-y-3">
+                              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+                                Fonctionnalités incluses
+                              </h4>
+                              <ul className="space-y-2">
+                                {plan.included.slice(0, 6).map((feature, featureIdx) => (
+                                  <li key={featureIdx} className="flex items-start text-sm">
+                                    <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                                    <span className="leading-tight">{feature}</span>
+                                  </li>
+                                ))}
+                                {plan.included.length > 6 && (
+                                  <li className="text-xs text-muted-foreground italic">
+                                    +{plan.included.length - 6} autres fonctionnalités
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
                         </Card>
                       ))}
                     </div>
                   </div>
+                ) : (
+                  <div className="text-center p-8 bg-gradient-subtle rounded-2xl border border-border/50">
+                    <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Tarification sur mesure</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Consultez le site officiel pour les détails de tarification
+                    </p>
+                    {saasDetail.website && (
+                      <Button variant="outline" asChild>
+                        <a href={saasDetail.website} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Voir la tarification
+                        </a>
+                      </Button>
+                    )}
+                   </div>
                 )}
-
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">
-                    💡 Consultez le site officiel pour les détails complets et promotions en cours
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </div>

@@ -145,17 +145,30 @@ serve(async (req) => {
     const airtableData = await airtableResp.json();
     const records = airtableData.records || [];
 
-    // Helper function to fetch linked pricing records
-    const fetchPricingRecords = async (recordIds: string[]) => {
-      if (!recordIds || recordIds.length === 0) return [];
+    // Extract all SaaS record IDs for batch pricing fetch
+    const saasIds = records.map((r: any) => r.id);
+    
+    // Fetch ALL pricing records from tbl5qcovjk1Id7Hj5 that link to any of these SaaS
+    const fetchAllPricingPlans = async () => {
+      if (saasIds.length === 0) return [];
       
       try {
-        const pricingFormula = `OR(${recordIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
+        // Build filterByFormula to match ANY SaaS in the "SaaS lié" field
+        const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({SaaS lié}))`).join(',')})`;
+        
         const pricingParams = new URLSearchParams();
-        pricingParams.set('filterByFormula', pricingFormula);
+        pricingParams.set('view', 'viwxJnfTzP1MqTcXu');
+        pricingParams.set('filterByFormula', filterFormula);
         pricingParams.set('pageSize', '100');
         
-        const pricingUrl = `https://api.airtable.com/v0/${baseId}/Tarification?${pricingParams.toString()}`;
+        // Only fetch necessary fields
+        ['Nom du plan', 'Prix', 'Fonctionnalités incluses', 'Populaire', 'SaaS lié'].forEach(field => {
+          pricingParams.append('fields[]', field);
+        });
+        
+        const pricingUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${pricingParams.toString()}`;
+        
+        console.log('Fetching pricing plans with formula:', filterFormula);
         
         const pricingResp = await fetch(pricingUrl, {
           headers: {
@@ -165,11 +178,13 @@ serve(async (req) => {
         });
         
         if (!pricingResp.ok) {
-          console.warn('Failed to fetch pricing data:', pricingResp.status);
+          console.warn('Failed to fetch pricing data:', pricingResp.status, await pricingResp.text());
           return [];
         }
         
         const pricingData = await pricingResp.json();
+        console.log(`Fetched ${pricingData.records?.length || 0} pricing records from tbl5qcovjk1Id7Hj5`);
+        
         return pricingData.records || [];
       } catch (error) {
         console.warn('Error fetching pricing records:', error);
@@ -177,22 +192,23 @@ serve(async (req) => {
       }
     };
 
-    // First pass: collect all pricing record IDs
-    const allPricingIds = new Set<string>();
-    records.forEach((r: any) => {
-      const f = r.fields || {};
-      const pricingLinks = toArray<string>(pick<string | string[]>(f, ['Tarification', 'Pricing Plans', 'Plans']) || []);
-      pricingLinks.forEach(id => allPricingIds.add(id));
+    const allPricingRecords = await fetchAllPricingPlans();
+    
+    // Group pricing records by SaaS ID
+    const pricingBySaasId = new Map<string, any[]>();
+    allPricingRecords.forEach((pr: any) => {
+      const fields = pr.fields || {};
+      const linkedSaasIds = toArray<string>(fields['SaaS lié'] || []);
+      
+      linkedSaasIds.forEach(saasId => {
+        if (!pricingBySaasId.has(saasId)) {
+          pricingBySaasId.set(saasId, []);
+        }
+        pricingBySaasId.get(saasId)!.push(pr);
+      });
     });
 
-    // Fetch all pricing records in one batch
-    const pricingRecords = await fetchPricingRecords(Array.from(allPricingIds));
-    const pricingById = new Map();
-    pricingRecords.forEach((pr: any) => {
-      pricingById.set(pr.id, pr);
-    });
-
-    console.log(`Fetched ${pricingRecords.length} pricing records for ${records.length} SaaS items`);
+    console.log(`Processed pricing for ${pricingBySaasId.size} SaaS items with ${allPricingRecords.length} total plans`);
 
     const mapped = records.map((r: any) => {
       const f = r.fields || {};
@@ -222,21 +238,18 @@ serve(async (req) => {
         }
       }
 
-      // Process linked pricing plans
-      const pricingLinks = toArray<string>(pick<string | string[]>(f, ['Tarification', 'Pricing Plans', 'Plans']) || []);
-      const pricingLinked = pricingLinks
-        .map(id => pricingById.get(id))
-        .filter(Boolean)
-        .map((pr: any) => {
-          const pf = pr.fields || {};
-          return {
-            id: pr.id,
-            plan: pick<string>(pf, ['Nom du plan', 'Plan Name', 'Name', 'Nom']) || '',
-            price: pick<string>(pf, ['Prix', 'Price', 'Tarif']) || '',
-            included: toArray<string>(pick<string | string[]>(pf, ['Fonctionnalités incluses', 'Features', 'Included']) || []),
-            popular: Boolean(pick<boolean>(pf, ['Populaire', 'Popular', 'Most Popular']) || false),
-          };
-        });
+      // Get pricing plans linked to this SaaS
+      const linkedPricingRecords = pricingBySaasId.get(r.id) || [];
+      const pricingLinked = linkedPricingRecords.map((pr: any) => {
+        const pf = pr.fields || {};
+        return {
+          id: pr.id,
+          plan: pf['Nom du plan'] || '',
+          price: pf['Prix'] || '',
+          included: toArray<string>(pf['Fonctionnalités incluses'] || []),
+          popular: Boolean(pf['Populaire'] || false),
+        };
+      });
 
       return {
         id: r.id,
