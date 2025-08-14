@@ -147,29 +147,29 @@ serve(async (req) => {
 
     const mapped = records.map((r: any) => {
       const f = r.fields || {};
-      const name = pick<string>(f, ['name', 'Nom', 'Name', 'Titre', 'Title']) || '';
-      const tagline = pick<string>(f, ['tagline', 'Tagline', 'Slogan']) || '';
-      const description = pick<string>(f, ['description', 'Description', 'Desc']) || '';
-      const category = pick<string>(f, ['category', 'Catégorie', 'Categorie', 'Category']) || '';
-      const targets = toArray<string>(pick<string | string[]>(f, ['targets', 'Cibles', 'Targets']) || []);
-      const score = Number(pick<number | string>(f, ['score', 'Note', 'Rating']) || 0);
+      const name = pick<string>(f, ['Nom', 'name', 'Name', 'Titre', 'Title']) || '';
+      const tagline = pick<string>(f, ['Tagline', 'tagline', 'Slogan']) || '';
+      const description = pick<string>(f, ['Description', 'description', 'Desc']) || '';
+      const categories = toArray<string>(pick<string | string[]>(f, ['Catégorie', 'category', 'Categorie', 'Category']) || []);
+      const targets = toArray<string>(pick<string | string[]>(f, ['Cibles', 'targets', 'Targets']) || []);
+      const score = Number(pick<number | string>(f, ['Note', 'score', 'Rating']) || 0);
       const automation = Number(pick<number | string>(f, ['Automatisation (%)', 'automation', 'Automatisation', 'Automation']) || 0);
-      const ease = Number(pick<number | string>(f, ['ease', 'Facilité', 'Facilite', 'Ease']) || 0);
-      const price = pick<string>(f, ['price', 'Prix affiché', 'Prix', 'Tarif', 'Pricing']) || '';
-      const features = toArray<string>(pick<string | string[]>(f, ['features', 'Fonctionnalités principales', 'Fonctionnalités', 'Fonctionnalites', 'Features']) || []);
-      const use_cases = toArray<string>(pick<string | string[]>(f, ['use_cases', 'Cas d\'usage', 'Cas usage', 'Use cases']) || []);
-      const pros = toArray<string>(pick<string | string[]>(f, ['pros', 'Avantages', 'Advantages']) || []);
-      const cons = toArray<string>(pick<string | string[]>(f, ['cons', 'Inconvénients', 'Inconvenients', 'Disadvantages']) || []);
-      const website = pick<string>(f, ['website', 'Site web', 'Website', 'URL']) || '';
-      const affiliate_link = pick<string>(f, ['affiliate_link', 'Lien d\'affiliation', 'Affiliate']) || '';
-      const free_trial_link = pick<string>(f, ['free_trial_link', 'Bouton Essayer gratuitement', 'Try Free', 'Free Trial']) || '';
+      const ease = Number(pick<number | string>(f, ['Facilité (/100)', 'Facilité', 'ease', 'Facilite', 'Ease']) || 0);
+      const priceText = pick<string>(f, ['Prix affiché', 'price', 'Prix', 'Tarif', 'Pricing']) || '';
+      const features = toArray<string>(pick<string | string[]>(f, ['Fonctionnalités principales', 'features', 'Fonctionnalités', 'Fonctionnalites', 'Features']) || []);
+      const useCases = toArray<string>(pick<string | string[]>(f, ['Cas d\'usage', 'use_cases', 'Cas usage', 'Use cases']) || []);
+      const pros = toArray<string>(pick<string | string[]>(f, ['Avantages', 'pros', 'Advantages']) || []);
+      const cons = toArray<string>(pick<string | string[]>(f, ['Inconvénients', 'cons', 'Inconvenients', 'Disadvantages']) || []);
+      const website = pick<string>(f, ['Site web', 'website', 'Website', 'URL']) || '';
+      const affiliate = pick<string>(f, ['Lien d\'affiliation', 'affiliate_link', 'Affiliate']) || '';
+      const trialUrl = pick<string>(f, ['Bouton Essayer gratuitement', 'free_trial_link', 'Try Free', 'Free Trial']) || '';
 
-      // Image can be a direct URL or an attachment array
-      let image = pick<string>(f, ['image', 'Logo (URL ou attachement)', 'Image', 'Logo', 'logo', 'Image URL']) || '';
-      if (!image) {
+      // Logo: prioritize URL, then attachment
+      let logoUrl = pick<string>(f, ['Logo (URL ou attachement)', 'image', 'Image', 'Logo', 'logo', 'Image URL']) || '';
+      if (!logoUrl) {
         const att = pick<any[]>(f, ['Logo (URL ou attachement)', 'Logo', 'Image', 'Attachments', 'Attachment']);
         if (Array.isArray(att) && att.length > 0 && att[0]?.url) {
-          image = att[0].url;
+          logoUrl = att[0].url;
         }
       }
 
@@ -178,20 +178,20 @@ serve(async (req) => {
         name,
         tagline,
         description,
-        category,
+        categories,
         targets,
         score,
         automation,
         ease,
-        price,
+        priceText,
         features,
-        use_cases,
+        useCases,
         pros,
         cons,
+        logoUrl,
         website,
-        affiliate_link,
-        free_trial_link,
-        image,
+        trialUrl,
+        affiliate,
       };
     });
 

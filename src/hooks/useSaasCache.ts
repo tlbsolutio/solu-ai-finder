@@ -5,20 +5,29 @@ interface SaaSItem {
   name: string;
   tagline?: string;
   description: string;
-  category: string;
+  categories: string[];
   targets: string[];
   score: number;
   automation: number;
-  ease?: number;
-  price: string;
+  ease: number;
+  priceText: string;
   features: string[];
-  use_cases?: string[];
-  pros?: string[];
-  cons?: string[];
+  useCases: string[];
+  pros: string[];
+  cons: string[];
+  logoUrl: string;
   website?: string;
-  affiliate_link?: string;
-  free_trial_link?: string;
-  image: string;
+  trialUrl?: string;
+  affiliate?: string;
+  pricingLinked?: PricingPlan[];
+}
+
+interface PricingPlan {
+  id: string;
+  plan: string;
+  price: string;
+  included: string[];
+  popular: boolean;
 }
 
 interface CacheData {

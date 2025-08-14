@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft, Gauge } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,20 +14,29 @@ interface SaaSItem {
   name: string;
   tagline?: string;
   description: string;
-  category: string;
+  categories: string[];
   targets: string[];
   score: number;
   automation: number;
-  ease?: number;
-  price: string;
+  ease: number;
+  priceText: string;
   features: string[];
-  use_cases?: string[];
-  pros?: string[];
-  cons?: string[];
+  useCases: string[];
+  pros: string[];
+  cons: string[];
+  logoUrl: string;
   website?: string;
-  affiliate_link?: string;
-  free_trial_link?: string;
-  image: string;
+  trialUrl?: string;
+  affiliate?: string;
+  pricingLinked?: PricingPlan[];
+}
+
+interface PricingPlan {
+  id: string;
+  plan: string;
+  price: string;
+  included: string[];
+  popular: boolean;
 }
 
 const SaasDetail = () => {
@@ -52,11 +61,7 @@ const SaasDetail = () => {
         if (error) throw error;
 
         const saasItems = data?.items || [];
-        const decodedName = decodeURIComponent(id || '');
-        const saas = saasItems.find((item: SaaSItem) => 
-          item.name.toLowerCase().replace(/\s+/g, '-') === decodedName ||
-          item.name.toLowerCase() === decodedName
-        );
+        const saas = saasItems.find((item: SaaSItem) => item.id === id);
         
         if (!saas) {
           setError('SaaS not found');
@@ -73,6 +78,12 @@ const SaasDetail = () => {
 
     fetchSaasDetail();
   }, [id]);
+
+  const formatScore = (score: number) => {
+    if (score % 1 === 0) return score.toFixed(0);
+    if (score % 1 === 0.5) return score.toFixed(1);
+    return (Math.round(score * 2) / 2).toFixed(1);
+  };
 
   if (loading) {
     return (
@@ -134,7 +145,6 @@ const SaasDetail = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      
       <div className="container mx-auto px-4 py-8">
         {/* Back navigation */}
         <div className="mb-6">
@@ -149,59 +159,83 @@ const SaasDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Hero section */}
+            {/* Header */}
             <Card className="shadow-medium">
               <div className="relative">
                 <img 
-                  src={saasDetail.image} 
-                  alt={saasDetail.name}
+                  src={saasDetail.logoUrl} 
+                  alt={`Logo ${saasDetail.name}`}
                   className="w-full h-64 object-cover rounded-t-lg"
                 />
                 <div className="absolute top-4 right-4">
                   <Badge variant="secondary" className="bg-white/90">
                     <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
-                    {saasDetail.score}
+                    {formatScore(saasDetail.score)}
                   </Badge>
                 </div>
               </div>
               
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-2xl">{saasDetail.name}</CardTitle>
-                    <p className="text-muted-foreground mt-1">{saasDetail.tagline}</p>
+                    <CardTitle className="text-3xl">{saasDetail.name}</CardTitle>
+                    {saasDetail.tagline && (
+                      <p className="text-muted-foreground mt-2 text-lg">{saasDetail.tagline}</p>
+                    )}
                   </div>
-                  <Badge variant="outline">{saasDetail.category}</Badge>
+                  <div className="flex flex-wrap gap-2">
+                    {saasDetail.categories.map((cat, idx) => (
+                      <Badge key={idx} variant="outline">{cat}</Badge>
+                    ))}
+                  </div>
                 </div>
+                
+                {/* Target pills */}
+                {saasDetail.targets.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {saasDetail.targets.map((target, idx) => (
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        <Users className="h-3 w-3 mr-1" />
+                        {target}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardHeader>
-              
+            </Card>
+
+            {/* Intro */}
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle>Description complète</CardTitle>
+              </CardHeader>
               <CardContent>
                 <p className="text-foreground leading-relaxed">{saasDetail.description}</p>
                 
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   <div className="text-center">
+                    <Star className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Note</p>
+                    <p className="font-semibold">{formatScore(saasDetail.score)}</p>
+                  </div>
+                  <div className="text-center">
                     <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">{t('saasdetail.automation')}</p>
+                    <p className="text-sm text-muted-foreground">Score d'automatisation</p>
                     <p className="font-semibold">{saasDetail.automation}%</p>
                   </div>
                   <div className="text-center">
-                    <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">{t('saasdetail.ease')}</p>
-                    <p className="font-semibold">{saasDetail.ease || 0}/100</p>
-                  </div>
-                  <div className="text-center">
-                    <DollarSign className="h-6 w-6 text-primary mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">{t('saasdetail.from')}</p>
-                    <p className="font-semibold">{saasDetail.price.split(' - ')[0]}</p>
+                    <Gauge className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Facilité</p>
+                    <p className="font-semibold">{saasDetail.ease}/100</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Features */}
+            {/* Fonctionnalités principales */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>{t('saasdetail.main_features')}</CardTitle>
+                <CardTitle>Fonctionnalités principales</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -215,15 +249,15 @@ const SaasDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Use Cases */}
-            {saasDetail.use_cases && saasDetail.use_cases.length > 0 && (
+            {/* Cas d'usage */}
+            {saasDetail.useCases && saasDetail.useCases.length > 0 && (
               <Card className="shadow-soft">
                 <CardHeader>
-                  <CardTitle>{t('saasdetail.popular_use_cases')}</CardTitle>
+                  <CardTitle>Cas d'usage</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {saasDetail.use_cases.map((useCase, idx) => (
+                    {saasDetail.useCases.map((useCase, idx) => (
                       <div key={idx} className="flex items-start">
                         <Badge variant="outline" className="mr-3 mt-0.5 text-xs">
                           {idx + 1}
@@ -236,13 +270,13 @@ const SaasDetail = () => {
               </Card>
             )}
 
-            {/* Pros & Cons */}
+            {/* Avantages & Inconvénients */}
             {((saasDetail.pros && saasDetail.pros.length > 0) || (saasDetail.cons && saasDetail.cons.length > 0)) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {saasDetail.pros && saasDetail.pros.length > 0 && (
                   <Card className="shadow-soft">
                     <CardHeader>
-                      <CardTitle className="text-green-600">{t('saasdetail.advantages')}</CardTitle>
+                      <CardTitle className="text-green-600">Avantages</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -260,7 +294,7 @@ const SaasDetail = () => {
                 {saasDetail.cons && saasDetail.cons.length > 0 && (
                   <Card className="shadow-soft">
                     <CardHeader>
-                      <CardTitle className="text-red-600">{t('saasdetail.disadvantages')}</CardTitle>
+                      <CardTitle className="text-red-600">Inconvénients</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -286,33 +320,32 @@ const SaasDetail = () => {
                 <CardTitle className="text-center">{t('saasdetail.start_now')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {saasDetail.free_trial_link && (
+                {/* Priority: Use affiliate link if it exists, otherwise trial link */}
+                {saasDetail.affiliate ? (
                   <Button 
                     className="w-full" 
                     variant="hero"
                     size="lg"
                     asChild
                   >
-                    <a href={saasDetail.free_trial_link} target="_blank" rel="noopener noreferrer">
+                    <a href={saasDetail.affiliate} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      {t('saasdetail.try_free')}
+                      Essayer gratuitement
                     </a>
                   </Button>
-                )}
-                
-                {saasDetail.affiliate_link && (
+                ) : saasDetail.trialUrl ? (
                   <Button 
                     className="w-full" 
-                    variant={saasDetail.free_trial_link ? "outline" : "hero"}
+                    variant="hero"
                     size="lg"
                     asChild
                   >
-                    <a href={saasDetail.affiliate_link} target="_blank" rel="noopener noreferrer">
+                    <a href={saasDetail.trialUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      {saasDetail.free_trial_link ? 'Voir l\'offre' : t('saasdetail.try_free')}
+                      Essayer gratuitement
                     </a>
                   </Button>
-                )}
+                ) : null}
                 
                 {saasDetail.website && (
                   <Button 
@@ -321,7 +354,7 @@ const SaasDetail = () => {
                     asChild
                   >
                     <a href={saasDetail.website} target="_blank" rel="noopener noreferrer">
-                      {t('saasdetail.visit_website')}
+                      Visiter le site web
                     </a>
                   </Button>
                 )}
@@ -336,33 +369,20 @@ const SaasDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Pricing */}
+            {/* Tarification */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>{t('saasdetail.pricing')}</CardTitle>
+                <CardTitle>Tarification</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-lg border border-border">
-                  <p className="text-2xl font-bold text-primary">{saasDetail.price}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <div className="flex items-center mb-2">
+                    <DollarSign className="h-5 w-5 text-primary mr-2" />
+                    <p className="text-lg font-bold text-primary">{saasDetail.priceText || 'Prix sur demande'}</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
                     Consultez le site officiel pour les détails complets
                   </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Target audience */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>{t('saasdetail.ideal_for')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {saasDetail.targets.map((target, idx) => (
-                    <Badge key={idx} variant="secondary">
-                      {target}
-                    </Badge>
-                  ))}
                 </div>
               </CardContent>
             </Card>

@@ -21,20 +21,20 @@ interface SaaSItem {
   name: string;
   tagline?: string;
   description: string;
-  category: string;
+  categories: string[];
   targets: string[];
   score: number;
   automation: number;
-  ease?: number;
-  price: string;
+  ease: number;
+  priceText: string;
   features: string[];
-  use_cases?: string[];
-  pros?: string[];
-  cons?: string[];
+  useCases: string[];
+  pros: string[];
+  cons: string[];
+  logoUrl: string;
   website?: string;
-  affiliate_link?: string;
-  free_trial_link?: string;
-  image: string;
+  trialUrl?: string;
+  affiliate?: string;
 }
 
 const Catalogue = () => {
@@ -69,7 +69,7 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [saasData, setSaasData] = useState<SaaSItem[]>([]);
   const [displayData, setDisplayData] = useState<SaaSItem[]>([]);
   const categories = useMemo(
-    () => Array.from(new Set(saasData.map((i) => i.category))).sort(),
+    () => Array.from(new Set(saasData.flatMap((i) => i.categories))).sort(),
     [saasData]
   );
   const targets = useMemo(
@@ -190,7 +190,7 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
 const filteredSaaS = displayData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.categories.includes(selectedCategory);
     const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
     return matchesSearch && matchesCategory && matchesTarget;
   });
@@ -327,15 +327,17 @@ const totalItems = filteredSaaS.length;
                 >
                   <div className="relative overflow-hidden rounded-t-lg">
                     <img
-                      src={saas.image}
-                      alt={`Logo ${saas.name} - ${saas.category}`}
+                      src={saas.logoUrl}
+                      alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
                       loading="lazy"
                       className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-4 right-4">
                       <Badge variant="secondary" className="bg-white/90">
                         <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
-                        {saas.score}
+                        {saas.score % 1 === 0 ? saas.score.toFixed(0) : 
+                         saas.score % 1 === 0.5 ? saas.score.toFixed(1) : 
+                         Math.round(saas.score * 2) / 2}
                       </Badge>
                     </div>
                   </div>
@@ -348,9 +350,11 @@ const totalItems = filteredSaaS.length;
                     <div className="space-y-3">
                       {/* Categories */}
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="secondary" className="text-xs">
-                          {categoryLabels[saas.category] || saas.category}
-                        </Badge>
+                        {saas.categories.map((cat, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {categoryLabels[cat] || cat}
+                          </Badge>
+                        ))}
                       </div>
 
                       {/* Tagline */}
@@ -402,9 +406,9 @@ const totalItems = filteredSaaS.length;
                         ))}
                       </div>
 
-                      <Link to={`/saas/${encodeURIComponent(saas.name.toLowerCase().replace(/\s+/g, '-'))}`}>
+                      <Link to={`/saas/${saas.id}`}>
                         <Button variant="outline" size="sm" className="w-full">
-                          {t('catalogue.see_detail')}
+                          Voir le détail
                         </Button>
                       </Link>
                     </div>
