@@ -147,45 +147,105 @@ serve(async (req) => {
 
     // Extract all SaaS record IDs for batch pricing fetch
     const saasIds = records.map((r: any) => r.id);
+    console.log(`Found ${records.length} SaaS records:`, saasIds);
     
     // Fetch ALL pricing records from tbl5qcovjk1Id7Hj5 that link to any of these SaaS
     const fetchAllPricingPlans = async () => {
-      if (saasIds.length === 0) return [];
+      if (saasIds.length === 0) {
+        console.log('No SaaS IDs found, skipping pricing fetch');
+        return [];
+      }
       
       try {
-        // Build filterByFormula to match ANY SaaS in the "SaaS lié" field
-        const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({SaaS lié}))`).join(',')})`;
+        // First, try to fetch ALL pricing records to debug field names
+        const debugParams = new URLSearchParams();
+        debugParams.set('view', 'viwxJnfTzP1MqTcXu');
+        debugParams.set('pageSize', '5'); // Small sample for debugging
         
-        const pricingParams = new URLSearchParams();
-        pricingParams.set('view', 'viwxJnfTzP1MqTcXu');
-        pricingParams.set('filterByFormula', filterFormula);
-        pricingParams.set('pageSize', '100');
+        const debugUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${debugParams.toString()}`;
+        console.log('Debug: Fetching sample pricing records from:', debugUrl);
         
-        // Only fetch necessary fields
-        ['Nom du plan', 'Prix', 'Fonctionnalités incluses', 'Populaire', 'SaaS lié'].forEach(field => {
-          pricingParams.append('fields[]', field);
-        });
-        
-        const pricingUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${pricingParams.toString()}`;
-        
-        console.log('Fetching pricing plans with formula:', filterFormula);
-        
-        const pricingResp = await fetch(pricingUrl, {
+        const debugResp = await fetch(debugUrl, {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
         });
         
-        if (!pricingResp.ok) {
-          console.warn('Failed to fetch pricing data:', pricingResp.status, await pricingResp.text());
+        if (debugResp.ok) {
+          const debugData = await debugResp.json();
+          console.log('Debug: Sample pricing record fields:', 
+            debugData.records?.[0] ? Object.keys(debugData.records[0].fields || {}) : 'No records found'
+          );
+          if (debugData.records?.[0]?.fields) {
+            console.log('Debug: Full sample record:', JSON.stringify(debugData.records[0].fields, null, 2));
+          }
+        }
+        
+        // Now try multiple possible field names for the SaaS link
+        const possibleLinkFields = ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas'];
+        
+        for (const linkField of possibleLinkFields) {
+          console.log(`Trying to fetch pricing with link field: "${linkField}"`);
+          
+          // Build filterByFormula to match ANY SaaS in the link field
+          const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({${linkField}}))`).join(',')})`;
+          
+          const pricingParams = new URLSearchParams();
+          pricingParams.set('view', 'viwxJnfTzP1MqTcXu');
+          pricingParams.set('filterByFormula', filterFormula);
+          pricingParams.set('pageSize', '100');
+          
+          const pricingUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${pricingParams.toString()}`;
+          
+          console.log(`Fetching pricing plans with formula (${linkField}):`, filterFormula);
+          
+          const pricingResp = await fetch(pricingUrl, {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (!pricingResp.ok) {
+            console.warn(`Failed to fetch pricing data with ${linkField}:`, pricingResp.status, await pricingResp.text());
+            continue;
+          }
+          
+          const pricingData = await pricingResp.json();
+          const recordCount = pricingData.records?.length || 0;
+          console.log(`Fetched ${recordCount} pricing records using "${linkField}" field`);
+          
+          if (recordCount > 0) {
+            console.log('Success! Found pricing records with field:', linkField);
+            return pricingData.records || [];
+          }
+        }
+        
+        // If no filtered results, try getting ALL records as fallback
+        console.log('No filtered results found, trying to fetch ALL pricing records as fallback');
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.set('view', 'viwxJnfTzP1MqTcXu');
+        fallbackParams.set('pageSize', '100');
+        
+        const fallbackUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${fallbackParams.toString()}`;
+        
+        const fallbackResp = await fetch(fallbackUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!fallbackResp.ok) {
+          console.warn('Failed to fetch fallback pricing data:', fallbackResp.status, await fallbackResp.text());
           return [];
         }
         
-        const pricingData = await pricingResp.json();
-        console.log(`Fetched ${pricingData.records?.length || 0} pricing records from tbl5qcovjk1Id7Hj5`);
+        const fallbackData = await fallbackResp.json();
+        console.log(`Fallback: Fetched ${fallbackData.records?.length || 0} total pricing records`);
         
-        return pricingData.records || [];
+        return fallbackData.records || [];
       } catch (error) {
         console.warn('Error fetching pricing records:', error);
         return [];
@@ -198,7 +258,13 @@ serve(async (req) => {
     const pricingBySaasId = new Map<string, any[]>();
     allPricingRecords.forEach((pr: any) => {
       const fields = pr.fields || {};
-      const linkedSaasIds = toArray<string>(fields['SaaS lié'] || []);
+      
+      // Try multiple possible field names for the SaaS link
+      const linkedSaasIds = toArray<string>(
+        pick<string | string[]>(fields, ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas']) || []
+      );
+      
+      console.log(`Processing pricing record ${pr.id} with linked SaaS IDs:`, linkedSaasIds);
       
       linkedSaasIds.forEach(saasId => {
         if (!pricingBySaasId.has(saasId)) {
@@ -249,7 +315,20 @@ serve(async (req) => {
           included: toArray<string>(pf['Fonctionnalités incluses'] || []),
           popular: Boolean(pf['Populaire'] || false),
         };
+      }).sort((a, b) => {
+        // Sort by popular first, then by price (convert price strings to numbers for sorting)
+        if (a.popular && !b.popular) return -1;
+        if (!a.popular && b.popular) return 1;
+        
+        // Extract numbers from price strings for comparison
+        const priceA = parseFloat(a.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        const priceB = parseFloat(b.price.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        
+        return priceA - priceB;
       });
+      
+      console.log(`SaaS ${r.id} (${name}) has ${pricingLinked.length} pricing plans:`, 
+        pricingLinked.map(p => `${p.plan}: ${p.price} ${p.popular ? '(Popular)' : ''}`));
 
       return {
         id: r.id,
