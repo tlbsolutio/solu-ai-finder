@@ -37,11 +37,11 @@ async function fetchSaasRecords() {
   const url = new URL(`https://api.airtable.com/v0/${BASE}/${SAAS_TABLE}`);
   url.searchParams.set('view', SAAS_VIEW);
   
-  // Essential fields only to reduce payload and avoid 422 errors
+  // Essential fields only - removed "Cas d'usage" to fix 422 error
   const essentialFields = [
     'Nom', 'Tagline', 'Description', 'Catégorie', 'Cibles', 'Note',
     'Automatisation (%)', 'Facilité (/100)', 'Prix affiché',
-    'Fonctionnalités principales', 'Cas d\'usage', 'Avantages', 'Inconvénients',
+    'Fonctionnalités principales', 'Avantages', 'Inconvénients',
     'Logo (URL ou attachement)', 'Site web', 'Bouton Essayer gratuitement', 'Lien d\'affiliation'
   ];
   
