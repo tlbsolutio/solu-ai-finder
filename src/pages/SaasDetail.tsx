@@ -1,79 +1,130 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
+
+interface SaaSItem {
+  id: string;
+  name: string;
+  tagline?: string;
+  description: string;
+  category: string;
+  targets: string[];
+  score: number;
+  automation: number;
+  ease?: number;
+  price: string;
+  features: string[];
+  use_cases?: string[];
+  pros?: string[];
+  cons?: string[];
+  website?: string;
+  affiliate_link?: string;
+  free_trial_link?: string;
+  image: string;
+}
 
 const SaasDetail = () => {
   const { t } = useLanguage();
   const { id } = useParams();
+  const [saasDetail, setSaasDetail] = useState<SaaSItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock detailed data - in real app, fetch based on ID
-  const saasDetail = {
-    id: 1,
-    name: "Zapier",
-    tagline: "Automatisez votre workflow sans coder",
-    description: "Zapier vous permet de connecter vos applications préférées et d'automatiser vos tâches répétitives. Plus de 5000 intégrations disponibles pour créer des workflows puissants en quelques clics.",
-    category: "Automatisation",
-    targets: ["PME", "Entrepreneurs", "Équipes"],
-    score: 4.8,
-    automation: 85,
-    ease: 90,
-    price: "Gratuit - 29€/mois",
-    website: "https://zapier.com",
-    affiliateLink: "https://zapier.com?ref=solutio",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop",
-    features: [
-      "Plus de 5000 intégrations",
-      "Interface glisser-déposer",
-      "Workflows conditionnels",
-      "Déclencheurs multi-étapes",
-      "Formatage des données",
-      "Webhooks personnalisés",
-      "Planification des tâches",
-      "Gestion d'équipe"
-    ],
-    useCases: [
-      "Synchroniser CRM et email marketing",
-      "Automatiser les réseaux sociaux",
-      "Intégrer e-commerce et comptabilité",
-      "Notification automatique d'équipe"
-    ],
-    pricing: [
-      {
-        plan: "Gratuit",
-        price: "0€",
-        features: ["100 tâches/mois", "5 Zaps", "Intégrations de base"],
-        popular: false
-      },
-      {
-        plan: "Starter",
-        price: "20€",
-        features: ["750 tâches/mois", "20 Zaps", "Webhooks", "Support email"],
-        popular: true
-      },
-      {
-        plan: "Professional",
-        price: "49€",
-        features: ["2000 tâches/mois", "Zaps illimités", "Workflows avancés", "Support prioritaire"],
-        popular: false
+  useEffect(() => {
+    const fetchSaasDetail = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
+          body: {}
+        });
+
+        if (error) throw error;
+
+        const saasItems = data?.items || [];
+        const saas = saasItems.find((item: SaaSItem) => item.id === id);
+        
+        if (!saas) {
+          setError('SaaS not found');
+        } else {
+          setSaasDetail(saas);
+        }
+      } catch (err) {
+        console.error('Error fetching SaaS detail:', err);
+        setError('Failed to load SaaS details');
+      } finally {
+        setLoading(false);
       }
-    ],
-    pros: [
-      "Interface très intuitive",
-      "Énorme catalogue d'intégrations",
-      "Communauté active",
-      "Documentation complète"
-    ],
-    cons: [
-      "Prix élevé pour gros volumes",
-      "Limitations du plan gratuit",
-      "Latence sur certaines intégrations"
-    ]
-  };
+    };
+
+    fetchSaasDetail();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-6">
+            <Skeleton className="h-10 w-40" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <Skeleton className="w-full h-64" />
+                <CardHeader>
+                  <Skeleton className="h-8 w-1/2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+              </Card>
+            </div>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-full mb-4" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !saasDetail) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-6">
+            <Link to="/catalogue">
+              <Button variant="ghost" className="flex items-center">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('saasdetail.back_to_catalog')}
+              </Button>
+            </Link>
+          </div>
+          <Card className="p-8 text-center">
+            <h2 className="text-2xl font-bold mb-4">SaaS not found</h2>
+            <p className="text-muted-foreground mb-6">{error}</p>
+            <Link to="/catalogue">
+              <Button>{t('saasdetail.back_to_catalog')}</Button>
+            </Link>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -130,7 +181,7 @@ const SaasDetail = () => {
                   <div className="text-center">
                     <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">{t('saasdetail.ease')}</p>
-                    <p className="font-semibold">{saasDetail.ease}/100</p>
+                    <p className="font-semibold">{saasDetail.ease || 0}/100</p>
                   </div>
                   <div className="text-center">
                     <DollarSign className="h-6 w-6 text-primary mx-auto mb-2" />
@@ -159,58 +210,66 @@ const SaasDetail = () => {
             </Card>
 
             {/* Use Cases */}
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>{t('saasdetail.popular_use_cases')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {saasDetail.useCases.map((useCase, idx) => (
-                    <div key={idx} className="flex items-start">
-                      <Badge variant="outline" className="mr-3 mt-0.5 text-xs">
-                        {idx + 1}
-                      </Badge>
-                      <span className="text-sm">{useCase}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {saasDetail.use_cases && saasDetail.use_cases.length > 0 && (
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle>{t('saasdetail.popular_use_cases')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {saasDetail.use_cases.map((useCase, idx) => (
+                      <div key={idx} className="flex items-start">
+                        <Badge variant="outline" className="mr-3 mt-0.5 text-xs">
+                          {idx + 1}
+                        </Badge>
+                        <span className="text-sm">{useCase}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Pros & Cons */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="shadow-soft">
-                <CardHeader>
-                  <CardTitle className="text-green-600">{t('saasdetail.advantages')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {saasDetail.pros.map((pro, idx) => (
-                      <div key={idx} className="flex items-start">
-                        <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{pro}</span>
+            {((saasDetail.pros && saasDetail.pros.length > 0) || (saasDetail.cons && saasDetail.cons.length > 0)) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {saasDetail.pros && saasDetail.pros.length > 0 && (
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle className="text-green-600">{t('saasdetail.advantages')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {saasDetail.pros.map((pro, idx) => (
+                          <div key={idx} className="flex items-start">
+                            <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                            <span className="text-sm">{pro}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </CardContent>
+                  </Card>
+                )}
 
-              <Card className="shadow-soft">
-                <CardHeader>
-                  <CardTitle className="text-red-600">{t('saasdetail.disadvantages')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {saasDetail.cons.map((con, idx) => (
-                      <div key={idx} className="flex items-start">
-                        <span className="h-4 w-4 text-red-500 mr-2 mt-0.5 flex-shrink-0">×</span>
-                        <span className="text-sm">{con}</span>
+                {saasDetail.cons && saasDetail.cons.length > 0 && (
+                  <Card className="shadow-soft">
+                    <CardHeader>
+                      <CardTitle className="text-red-600">{t('saasdetail.disadvantages')}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {saasDetail.cons.map((con, idx) => (
+                          <div key={idx} className="flex items-start">
+                            <span className="h-4 w-4 text-red-500 mr-2 mt-0.5 flex-shrink-0">×</span>
+                            <span className="text-sm">{con}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -221,27 +280,45 @@ const SaasDetail = () => {
                 <CardTitle className="text-center">{t('saasdetail.start_now')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
-                  className="w-full" 
-                  variant="hero"
-                  size="lg"
-                  asChild
-                >
-                  <a href={saasDetail.affiliateLink} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    {t('saasdetail.try_free')}
-                  </a>
-                </Button>
+                {saasDetail.free_trial_link && (
+                  <Button 
+                    className="w-full" 
+                    variant="hero"
+                    size="lg"
+                    asChild
+                  >
+                    <a href={saasDetail.free_trial_link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {t('saasdetail.try_free')}
+                    </a>
+                  </Button>
+                )}
                 
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  asChild
-                >
-                  <a href={saasDetail.website} target="_blank" rel="noopener noreferrer">
-                    {t('saasdetail.visit_website')}
-                  </a>
-                </Button>
+                {saasDetail.affiliate_link && (
+                  <Button 
+                    className="w-full" 
+                    variant={saasDetail.free_trial_link ? "outline" : "hero"}
+                    size="lg"
+                    asChild
+                  >
+                    <a href={saasDetail.affiliate_link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {saasDetail.free_trial_link ? 'Voir l\'offre' : t('saasdetail.try_free')}
+                    </a>
+                  </Button>
+                )}
+                
+                {saasDetail.website && (
+                  <Button 
+                    className="w-full" 
+                    variant="outline"
+                    asChild
+                  >
+                    <a href={saasDetail.website} target="_blank" rel="noopener noreferrer">
+                      {t('saasdetail.visit_website')}
+                    </a>
+                  </Button>
+                )}
                 
                 <Separator />
                 
@@ -258,26 +335,13 @@ const SaasDetail = () => {
               <CardHeader>
                 <CardTitle>{t('saasdetail.pricing')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {saasDetail.pricing.map((plan, idx) => (
-                  <div key={idx} className={`p-3 rounded-lg border ${plan.popular ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{plan.plan}</h4>
-                      {plan.popular && (
-                        <Badge variant="default" className="text-xs">{t('saasdetail.popular')}</Badge>
-                      )}
-                    </div>
-                    <p className="text-2xl font-bold text-primary mb-2">{plan.price}<span className="text-sm text-muted-foreground">{t('saasdetail.per_month')}</span></p>
-                    <div className="space-y-1">
-                      {plan.features.map((feature, featureIdx) => (
-                        <div key={featureIdx} className="flex items-center text-xs">
-                          <Check className="h-3 w-3 text-green-500 mr-1 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <CardContent>
+                <div className="p-3 rounded-lg border border-border">
+                  <p className="text-2xl font-bold text-primary">{saasDetail.price}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Consultez le site officiel pour les détails complets
+                  </p>
+                </div>
               </CardContent>
             </Card>
 

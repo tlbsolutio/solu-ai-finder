@@ -16,13 +16,21 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 interface SaaSItem {
   id: string;
   name: string;
+  tagline?: string;
   description: string;
   category: string;
   targets: string[];
   score: number;
   automation: number;
+  ease?: number;
   price: string;
   features: string[];
+  use_cases?: string[];
+  pros?: string[];
+  cons?: string[];
+  website?: string;
+  affiliate_link?: string;
+  free_trial_link?: string;
   image: string;
 }
 

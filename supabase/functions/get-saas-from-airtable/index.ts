@@ -148,18 +148,26 @@ serve(async (req) => {
     const mapped = records.map((r: any) => {
       const f = r.fields || {};
       const name = pick<string>(f, ['name', 'Nom', 'Name', 'Titre', 'Title']) || '';
+      const tagline = pick<string>(f, ['tagline', 'Tagline', 'Slogan']) || '';
       const description = pick<string>(f, ['description', 'Description', 'Desc']) || '';
       const category = pick<string>(f, ['category', 'Catégorie', 'Categorie', 'Category']) || '';
       const targets = toArray<string>(pick<string | string[]>(f, ['targets', 'Cibles', 'Targets']) || []);
       const score = Number(pick<number | string>(f, ['score', 'Note', 'Rating']) || 0);
       const automation = Number(pick<number | string>(f, ['automation', 'Automatisation', 'Automation']) || 0);
-      const price = pick<string>(f, ['price', 'Prix', 'Tarif', 'Pricing']) || '';
-      const features = toArray<string>(pick<string | string[]>(f, ['features', 'Fonctionnalités', 'Fonctionnalites', 'Features']) || []);
+      const ease = Number(pick<number | string>(f, ['ease', 'Facilité', 'Facilite', 'Ease']) || 0);
+      const price = pick<string>(f, ['price', 'Prix affiché', 'Prix', 'Tarif', 'Pricing']) || '';
+      const features = toArray<string>(pick<string | string[]>(f, ['features', 'Fonctionnalités principales', 'Fonctionnalités', 'Fonctionnalites', 'Features']) || []);
+      const use_cases = toArray<string>(pick<string | string[]>(f, ['use_cases', 'Cas d\'usage', 'Cas usage', 'Use cases']) || []);
+      const pros = toArray<string>(pick<string | string[]>(f, ['pros', 'Avantages', 'Advantages']) || []);
+      const cons = toArray<string>(pick<string | string[]>(f, ['cons', 'Inconvénients', 'Inconvenients', 'Disadvantages']) || []);
+      const website = pick<string>(f, ['website', 'Site web', 'Website', 'URL']) || '';
+      const affiliate_link = pick<string>(f, ['affiliate_link', 'Lien d\'affiliation', 'Affiliate']) || '';
+      const free_trial_link = pick<string>(f, ['free_trial_link', 'Bouton Essayer gratuitement', 'Try Free', 'Free Trial']) || '';
 
       // Image can be a direct URL or an attachment array
-      let image = pick<string>(f, ['image', 'Image', 'Logo', 'logo', 'Image URL']) || '';
+      let image = pick<string>(f, ['image', 'Logo (URL ou attachement)', 'Image', 'Logo', 'logo', 'Image URL']) || '';
       if (!image) {
-        const att = pick<any[]>(f, ['Logo', 'Image', 'Attachments', 'Attachment']);
+        const att = pick<any[]>(f, ['Logo (URL ou attachement)', 'Logo', 'Image', 'Attachments', 'Attachment']);
         if (Array.isArray(att) && att.length > 0 && att[0]?.url) {
           image = att[0].url;
         }
@@ -168,13 +176,21 @@ serve(async (req) => {
       return {
         id: r.id,
         name,
+        tagline,
         description,
         category,
         targets,
         score,
         automation,
+        ease,
         price,
         features,
+        use_cases,
+        pros,
+        cons,
+        website,
+        affiliate_link,
+        free_trial_link,
         image,
       };
     });
