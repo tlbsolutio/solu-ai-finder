@@ -145,6 +145,55 @@ serve(async (req) => {
     const airtableData = await airtableResp.json();
     const records = airtableData.records || [];
 
+    // Helper function to fetch linked pricing records
+    const fetchPricingRecords = async (recordIds: string[]) => {
+      if (!recordIds || recordIds.length === 0) return [];
+      
+      try {
+        const pricingFormula = `OR(${recordIds.map(id => `RECORD_ID()='${id}'`).join(',')})`;
+        const pricingParams = new URLSearchParams();
+        pricingParams.set('filterByFormula', pricingFormula);
+        pricingParams.set('pageSize', '100');
+        
+        const pricingUrl = `https://api.airtable.com/v0/${baseId}/Tarification?${pricingParams.toString()}`;
+        
+        const pricingResp = await fetch(pricingUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!pricingResp.ok) {
+          console.warn('Failed to fetch pricing data:', pricingResp.status);
+          return [];
+        }
+        
+        const pricingData = await pricingResp.json();
+        return pricingData.records || [];
+      } catch (error) {
+        console.warn('Error fetching pricing records:', error);
+        return [];
+      }
+    };
+
+    // First pass: collect all pricing record IDs
+    const allPricingIds = new Set<string>();
+    records.forEach((r: any) => {
+      const f = r.fields || {};
+      const pricingLinks = toArray<string>(pick<string | string[]>(f, ['Tarification', 'Pricing Plans', 'Plans']) || []);
+      pricingLinks.forEach(id => allPricingIds.add(id));
+    });
+
+    // Fetch all pricing records in one batch
+    const pricingRecords = await fetchPricingRecords(Array.from(allPricingIds));
+    const pricingById = new Map();
+    pricingRecords.forEach((pr: any) => {
+      pricingById.set(pr.id, pr);
+    });
+
+    console.log(`Fetched ${pricingRecords.length} pricing records for ${records.length} SaaS items`);
+
     const mapped = records.map((r: any) => {
       const f = r.fields || {};
       const name = pick<string>(f, ['Nom', 'name', 'Name', 'Titre', 'Title']) || '';
@@ -173,6 +222,22 @@ serve(async (req) => {
         }
       }
 
+      // Process linked pricing plans
+      const pricingLinks = toArray<string>(pick<string | string[]>(f, ['Tarification', 'Pricing Plans', 'Plans']) || []);
+      const pricingLinked = pricingLinks
+        .map(id => pricingById.get(id))
+        .filter(Boolean)
+        .map((pr: any) => {
+          const pf = pr.fields || {};
+          return {
+            id: pr.id,
+            plan: pick<string>(pf, ['Nom du plan', 'Plan Name', 'Name', 'Nom']) || '',
+            price: pick<string>(pf, ['Prix', 'Price', 'Tarif']) || '',
+            included: toArray<string>(pick<string | string[]>(pf, ['Fonctionnalités incluses', 'Features', 'Included']) || []),
+            popular: Boolean(pick<boolean>(pf, ['Populaire', 'Popular', 'Most Popular']) || false),
+          };
+        });
+
       return {
         id: r.id,
         name,
@@ -192,6 +257,7 @@ serve(async (req) => {
         website,
         trialUrl,
         affiliate,
+        pricingLinked,
       };
     });
 
