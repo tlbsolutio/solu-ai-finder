@@ -193,7 +193,7 @@ const SaasDetail = () => {
                         <p className="text-sm font-medium text-muted-foreground mb-2">Catégories</p>
                         <div className="flex flex-wrap gap-2">
                           {saasDetail.categories.map((cat, idx) => (
-                            <Badge key={idx} variant="outline" className="text-sm py-1 px-3">
+                            <Badge key={idx} variant="default" className="text-sm py-1 px-3">
                               {cat}
                             </Badge>
                           ))}
