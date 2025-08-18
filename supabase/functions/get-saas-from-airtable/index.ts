@@ -9,6 +9,15 @@ const corsHeaders = {
 function toArray<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];
   if (val === null || val === undefined) return [] as T[];
+  
+  // Handle comma-separated strings from Airtable
+  if (typeof val === 'string') {
+    return val
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0) as T[];
+  }
+  
   return [val as T];
 }
 
