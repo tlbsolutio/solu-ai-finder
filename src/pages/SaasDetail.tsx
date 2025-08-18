@@ -424,19 +424,7 @@ const SaasDetail = () => {
                           return aPrice.localeCompare(bPrice);
                         })
                         .map((plan, idx) => (
-                        <Card key={idx} className={`relative transition-all duration-300 p-6 ${
-                          plan.popular 
-                            ? 'border-primary shadow-premium bg-gradient-primary/5' 
-                            : 'hover:shadow-card border-border/50'
-                        }`}>
-                          {plan.popular && (
-                            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                              <Badge className="bg-gradient-primary text-white px-3 py-1 font-semibold rounded-full">
-                                <Star className="h-3 w-3 mr-1 fill-current" />
-                                Populaire
-                              </Badge>
-                            </div>
-                          )}
+                        <Card key={idx} className="transition-all duration-300 p-6 hover:shadow-card border-border/50">
                           
                           <div className="text-center mb-6">
                             <h3 className="text-xl font-semibold mb-2">{plan.plan}</h3>
