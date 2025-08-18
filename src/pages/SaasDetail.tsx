@@ -177,31 +177,46 @@ const SaasDetail = () => {
               </div>
               
               <CardHeader>
-                <div className="flex items-start justify-between">
+                <div className="space-y-4">
                   <div>
                     <CardTitle className="text-3xl">{saasDetail.name}</CardTitle>
                     {saasDetail.tagline && (
                       <p className="text-muted-foreground mt-2 text-lg">{saasDetail.tagline}</p>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {saasDetail.categories.map((cat, idx) => (
-                      <Badge key={idx} variant="outline">{cat}</Badge>
-                    ))}
+                  
+                  {/* Categories et Targets dans une section dédiée */}
+                  <div className="space-y-3">
+                    {/* Categories */}
+                    {saasDetail.categories.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-2">Catégories</p>
+                        <div className="flex flex-wrap gap-2">
+                          {saasDetail.categories.map((cat, idx) => (
+                            <Badge key={idx} variant="outline" className="text-sm py-1 px-3">
+                              {cat}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Targets */}
+                    {saasDetail.targets.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground mb-2">Public cible</p>
+                        <div className="flex flex-wrap gap-2">
+                          {saasDetail.targets.map((target, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-sm py-1 px-3">
+                              <Users className="h-3 w-3 mr-1" />
+                              {target}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                {/* Target pills */}
-                {saasDetail.targets.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {saasDetail.targets.map((target, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
-                        <Users className="h-3 w-3 mr-1" />
-                        {target}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
               </CardHeader>
             </Card>
 
