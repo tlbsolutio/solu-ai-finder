@@ -156,9 +156,9 @@ const SaasDetail = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-8">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 xl:col-span-1 space-y-6">
             {/* Header */}
             <Card className="shadow-medium overflow-hidden">
               <div className="relative">
@@ -338,7 +338,7 @@ const SaasDetail = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="lg:order-none xl:order-last xl:grid xl:grid-cols-2 xl:gap-6 xl:space-y-0 space-y-6">
             {/* CTA Card */}
             <Card className="shadow-premium border-primary/30 bg-gradient-card">
               <CardHeader className="text-center">
