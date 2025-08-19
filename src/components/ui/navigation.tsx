@@ -49,7 +49,7 @@ const Navigation = () => {
             variant="outline"
             size="sm"
             onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-            className="hidden sm:flex"
+            className="flex"
           >
             <Languages className="h-4 w-4 mr-2" />
             {language === 'fr' ? 'EN' : 'FR'}

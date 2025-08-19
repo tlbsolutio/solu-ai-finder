@@ -412,65 +412,74 @@ const SaasDetail = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 {saasDetail.pricingLinked && saasDetail.pricingLinked.length > 0 ? (
-                  <div className="space-y-6">
-                    {/* Responsive grid: 1 col mobile, 2 cols md, 3 cols lg */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {saasDetail.pricingLinked
-                        .sort((a, b) => {
-                          // Sort: Popular plans first, then by price, "Sur devis" last
-                          if (a.popular && !b.popular) return -1;
-                          if (!a.popular && b.popular) return 1;
-                          
-                          // Both popular or both not popular - sort by price
-                          const aPrice = a.price.toLowerCase();
-                          const bPrice = b.price.toLowerCase();
-                          
-                          // "Sur devis" always last
-                          if (aPrice.includes('devis') || aPrice.includes('contact')) return 1;
-                          if (bPrice.includes('devis') || bPrice.includes('contact')) return -1;
-                          
-                          // Try to extract numbers for numeric comparison
-                          const aNum = parseFloat(aPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
-                          const bNum = parseFloat(bPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
-                          
-                          if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
-                          
-                          // Fallback to alphabetical
-                          return aPrice.localeCompare(bPrice);
-                        })
-                        .map((plan, idx) => (
-                        <Card key={idx} className="transition-all duration-300 p-6 hover:shadow-card border-border/50">
-                          
-                          <div className="text-center mb-6">
-                            <h3 className="text-xl font-semibold mb-2">{plan.plan}</h3>
-                            <div className="text-3xl font-bold text-primary mb-1">
-                              {plan.price}
-                            </div>
+                  <div className="space-y-4">
+                    {saasDetail.pricingLinked
+                      .sort((a, b) => {
+                        // Sort: Popular plans first, then by price, "Sur devis" last
+                        if (a.popular && !b.popular) return -1;
+                        if (!a.popular && b.popular) return 1;
+                        
+                        // Both popular or both not popular - sort by price
+                        const aPrice = a.price.toLowerCase();
+                        const bPrice = b.price.toLowerCase();
+                        
+                        // "Sur devis" always last
+                        if (aPrice.includes('devis') || aPrice.includes('contact')) return 1;
+                        if (bPrice.includes('devis') || bPrice.includes('contact')) return -1;
+                        
+                        // Try to extract numbers for numeric comparison
+                        const aNum = parseFloat(aPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                        const bNum = parseFloat(bPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                        
+                        if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                        
+                        // Fallback to alphabetical
+                        return aPrice.localeCompare(bPrice);
+                      })
+                      .map((plan, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                          plan.popular 
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
+                            : 'border-border/50 hover:border-border'
+                        }`}
+                      >
+                        {plan.popular && (
+                          <div className="text-xs font-medium text-primary mb-2 text-center">
+                            ✨ Populaire
                           </div>
+                        )}
+                        
+                        <div className="text-center mb-4">
+                          <h3 className="font-semibold text-sm mb-1">{plan.plan}</h3>
+                          <div className="text-lg font-bold text-primary">
+                            {plan.price}
+                          </div>
+                        </div>
 
-                          {plan.included && plan.included.length > 0 && (
-                            <div className="space-y-3">
-                              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                                Fonctionnalités incluses
-                              </h4>
-                              <ul className="space-y-2">
-                                {plan.included.slice(0, 6).map((feature, featureIdx) => (
-                                  <li key={featureIdx} className="flex items-start text-sm">
-                                    <Check className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                    <span className="leading-tight">{feature}</span>
-                                  </li>
-                                ))}
-                                {plan.included.length > 6 && (
-                                  <li className="text-xs text-muted-foreground italic">
-                                    +{plan.included.length - 6} autres fonctionnalités
-                                  </li>
-                                )}
-                              </ul>
-                            </div>
-                          )}
-                        </Card>
-                      ))}
-                    </div>
+                        {plan.included && plan.included.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
+                              Inclus
+                            </h4>
+                            <ul className="space-y-1.5">
+                              {plan.included.slice(0, 4).map((feature, featureIdx) => (
+                                <li key={featureIdx} className="flex items-start text-xs">
+                                  <Check className="h-3 w-3 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                                  <span className="leading-tight">{feature}</span>
+                                </li>
+                              ))}
+                              {plan.included.length > 4 && (
+                                <li className="text-xs text-muted-foreground italic pl-5">
+                                  +{plan.included.length - 4} autres fonctionnalités
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center p-8 bg-gradient-subtle rounded-2xl border border-border/50">
