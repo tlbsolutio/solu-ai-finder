@@ -437,48 +437,62 @@ const SaasDetail = () => {
                         return aPrice.localeCompare(bPrice);
                       })
                       .map((plan, idx) => (
-                      <div 
+                      <Card 
                         key={idx} 
-                        className={`p-4 rounded-lg border transition-all duration-300 ${
+                        className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group ${
                           plan.popular 
-                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20' 
-                            : 'border-border/50 hover:border-border'
+                            ? 'border-primary shadow-premium ring-1 ring-primary/20 bg-gradient-card' 
+                            : 'hover:border-primary/50 shadow-soft'
                         }`}
                       >
                         {plan.popular && (
-                          <div className="text-xs font-medium text-primary mb-2 text-center">
-                            ✨ Populaire
+                          <div className="absolute top-0 left-0 right-0 bg-gradient-primary text-white text-xs font-medium py-1 text-center">
+                            <Star className="h-3 w-3 inline mr-1" />
+                            Plan populaire
                           </div>
                         )}
                         
-                        <div className="text-center mb-4">
-                          <h3 className="font-semibold text-sm mb-1">{plan.plan}</h3>
-                          <div className="text-lg font-bold text-primary">
-                            {plan.price}
+                        <CardHeader className={`text-center ${plan.popular ? 'pt-8' : 'pt-6'}`}>
+                          <Badge variant={plan.popular ? "default" : "secondary"} className="mx-auto mb-2 font-medium">
+                            {plan.plan}
+                          </Badge>
+                          <div className="space-y-1">
+                            <div className="text-2xl font-bold text-foreground">
+                              {plan.price}
+                            </div>
+                            {!plan.price.toLowerCase().includes('gratuit') && !plan.price.toLowerCase().includes('devis') && (
+                              <p className="text-xs text-muted-foreground">par mois</p>
+                            )}
                           </div>
-                        </div>
+                        </CardHeader>
 
-                        {plan.included && plan.included.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide">
-                              Inclus
-                            </h4>
-                            <ul className="space-y-1.5">
-                              {plan.included.slice(0, 4).map((feature, featureIdx) => (
-                                <li key={featureIdx} className="flex items-start text-xs">
-                                  <Check className="h-3 w-3 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                                  <span className="leading-tight">{feature}</span>
-                                </li>
-                              ))}
-                              {plan.included.length > 4 && (
-                                <li className="text-xs text-muted-foreground italic pl-5">
-                                  +{plan.included.length - 4} autres fonctionnalités
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
+                        <CardContent className="pt-0">
+                          {plan.included && plan.included.length > 0 && (
+                            <div className="space-y-3">
+                              <Separator className="opacity-50" />
+                              <div>
+                                <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-3 flex items-center">
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Inclus dans ce plan
+                                </h4>
+                                <ul className="space-y-2">
+                                  {plan.included.slice(0, 4).map((feature, featureIdx) => (
+                                    <li key={featureIdx} className="flex items-start text-sm">
+                                      <div className="h-1.5 w-1.5 rounded-full bg-primary mt-2 mr-3 flex-shrink-0" />
+                                      <span className="leading-relaxed text-muted-foreground">{feature}</span>
+                                    </li>
+                                  ))}
+                                  {plan.included.length > 4 && (
+                                    <li className="text-sm text-primary font-medium pl-5 pt-1">
+                                      Et {plan.included.length - 4} fonctionnalités supplémentaires...
+                                    </li>
+                                  )}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 ) : (
