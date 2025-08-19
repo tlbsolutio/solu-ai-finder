@@ -445,14 +445,7 @@ const SaasDetail = () => {
                             : 'hover:border-primary/50 shadow-soft'
                         }`}
                       >
-                        {plan.popular && (
-                          <div className="absolute top-0 left-0 right-0 bg-gradient-primary text-white text-xs font-medium py-1 text-center">
-                            <Star className="h-3 w-3 inline mr-1" />
-                            Plan populaire
-                          </div>
-                        )}
-                        
-                        <CardHeader className={`text-center ${plan.popular ? 'pt-8' : 'pt-6'}`}>
+                        <CardHeader className="text-center pt-6">
                           <Badge variant={plan.popular ? "default" : "secondary"} className="mx-auto mb-2 font-medium">
                             {plan.plan}
                           </Badge>
