@@ -4,25 +4,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
-
-// In-memory cache with TTL
-interface CacheEntry {
-  data: any;
-  timestamp: number;
-  etag: string;
-}
-
-const cache = new Map<string, CacheEntry>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
-// Performance metrics
-const metrics = {
-  totalRequests: 0,
-  cacheHits: 0,
-  cacheMisses: 0,
-  avgResponseTime: 0,
 };
 
 function toArray<T>(val: unknown): T[] {
@@ -49,69 +30,7 @@ function pick<T = any>(fields: Record<string, any>, keys: string[]): T | undefin
   return undefined;
 }
 
-// Generate ETag from data
-function generateETag(data: any): string {
-  const hash = new TextEncoder().encode(JSON.stringify(data));
-  return Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
-}
-
-// Check if cache entry is valid
-function isCacheValid(entry: CacheEntry): boolean {
-  return Date.now() - entry.timestamp < CACHE_TTL;
-}
-
-// Robust pagination function to get ALL records
-async function getAllRecords(baseUrl: string, apiKey: string, maxRecords = 1000): Promise<any[]> {
-  const allRecords: any[] = [];
-  let offset: string | undefined = undefined;
-  let pageCount = 0;
-  const maxPages = Math.ceil(maxRecords / 100); // Safety limit
-
-  console.log(`🚀 Starting pagination to fetch ALL records (max ${maxRecords})`);
-  
-  while (pageCount < maxPages) {
-    const params = new URLSearchParams();
-    params.set('pageSize', '100'); // Maximum allowed by Airtable
-    if (offset) params.set('offset', offset);
-    
-    const url = `${baseUrl}?${params.toString()}`;
-    console.log(`📄 Fetching page ${pageCount + 1}, offset: ${offset || 'none'}`);
-    
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      console.error(`❌ Page ${pageCount + 1} failed:`, response.status, await response.text());
-      break;
-    }
-
-    const data = await response.json();
-    const records = data.records || [];
-    allRecords.push(...records);
-    
-    console.log(`✅ Page ${pageCount + 1}: +${records.length} records (total: ${allRecords.length})`);
-    
-    // Check if there are more pages
-    offset = data.offset;
-    if (!offset) {
-      console.log(`🏁 Pagination complete: ${allRecords.length} total records`);
-      break;
-    }
-    
-    pageCount++;
-  }
-
-  return allRecords;
-}
-
 serve(async (req) => {
-  const startTime = performance.now();
-  metrics.totalRequests++;
-
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -180,40 +99,11 @@ serve(async (req) => {
       });
     }
 
-    // Create cache key
-    const cacheKey = `saas-${baseId}-${tableSegment}-${view}`;
-    
-    // Check cache first
-    const cachedEntry = cache.get(cacheKey);
-    if (cachedEntry && isCacheValid(cachedEntry)) {
-      metrics.cacheHits++;
-      console.log(`💨 Cache HIT for ${cacheKey} (age: ${(Date.now() - cachedEntry.timestamp) / 1000}s)`);
-      
-      const responseTime = performance.now() - startTime;
-      metrics.avgResponseTime = (metrics.avgResponseTime + responseTime) / 2;
-      
-      return new Response(JSON.stringify(cachedEntry.data), {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'ETag': cachedEntry.etag,
-          'Cache-Control': 'public, max-age=300',
-          'X-Cache': 'HIT',
-          'X-Response-Time': `${responseTime.toFixed(2)}ms`
-        },
-      });
-    }
-    
-    metrics.cacheMisses++;
-    console.log(`💾 Cache MISS for ${cacheKey}`);
+    const params = new URLSearchParams();
+    params.set('pageSize', '50');
+    if (view) params.set('view', view);
 
-    const airtableBaseUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}`;
-    if (view) {
-      const viewParam = new URLSearchParams();
-      viewParam.set('view', view);
-      const fullUrl = `${airtableBaseUrl}?${viewParam.toString()}`;
-      console.log(`🎯 Base URL with view: ${fullUrl}`);
-    }
+    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
 
     // Resolve API key from secrets (support both conventional and legacy names)
     const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
@@ -228,7 +118,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('🔄 Starting parallel data fetch:', {
+    console.log('Airtable request', {
       baseId,
       table: tableSegment,
       view,
@@ -236,53 +126,154 @@ serve(async (req) => {
       keyLen: apiKey.length,
     });
 
-    // PARALLEL FETCH: SaaS + Pricing data simultaneously
-    const [saasRecords, pricingRecords] = await Promise.all([
-      // Fetch ALL SaaS records with robust pagination
-      (async () => {
-        let url = airtableBaseUrl;
-        if (view) {
-          const params = new URLSearchParams();
-          params.set('view', view);
-          url = `${airtableBaseUrl}?${params.toString()}`;
+    const airtableResp = await fetch(airtableUrl, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!airtableResp.ok) {
+      const errText = await airtableResp.text();
+      console.error('Airtable error:', airtableResp.status, errText);
+      if (airtableResp.status === 401) {
+        return new Response(
+          JSON.stringify({
+            error: 'Airtable authentication failed',
+            details: 'Invalid or insufficient token. Ensure AIRTABLE_API_KEY has data.records:read scope and access to the base.',
+          }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(JSON.stringify({ error: 'Failed to fetch from Airtable', details: errText }), {
+        status: airtableResp.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const airtableData = await airtableResp.json();
+    const records = airtableData.records || [];
+
+    // Extract all SaaS record IDs for batch pricing fetch
+    const saasIds = records.map((r: any) => r.id);
+    console.log(`Found ${records.length} SaaS records:`, saasIds);
+    
+    // Fetch ALL pricing records from tbl5qcovjk1Id7Hj5 that link to any of these SaaS
+    const fetchAllPricingPlans = async () => {
+      if (saasIds.length === 0) {
+        console.log('No SaaS IDs found, skipping pricing fetch');
+        return [];
+      }
+      
+      try {
+        // First, try to fetch ALL pricing records to debug field names
+        const debugParams = new URLSearchParams();
+        debugParams.set('view', 'viwxJnfTzP1MqTcXu');
+        debugParams.set('pageSize', '5'); // Small sample for debugging
+        
+        const debugUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${debugParams.toString()}`;
+        console.log('Debug: Fetching sample pricing records from:', debugUrl);
+        
+        const debugResp = await fetch(debugUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (debugResp.ok) {
+          const debugData = await debugResp.json();
+          console.log('Debug: Sample pricing record fields:', 
+            debugData.records?.[0] ? Object.keys(debugData.records[0].fields || {}) : 'No records found'
+          );
+          if (debugData.records?.[0]?.fields) {
+            console.log('Debug: Full sample record:', JSON.stringify(debugData.records[0].fields, null, 2));
+          }
         }
         
-        console.log('📊 Fetching SaaS records...');
-        return await getAllRecords(url, apiKey);
-      })(),
-      
-      // Fetch ALL pricing records in parallel
-      (async () => {
-        try {
-          console.log('💰 Fetching pricing records...');
-          const pricingBaseUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5`;
-          const params = new URLSearchParams();
-          params.set('view', 'viwxJnfTzP1MqTcXu');
-          const pricingUrl = `${pricingBaseUrl}?${params.toString()}`;
+        // Now try multiple possible field names for the SaaS link
+        const possibleLinkFields = ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas'];
+        
+        for (const linkField of possibleLinkFields) {
+          console.log(`Trying to fetch pricing with link field: "${linkField}"`);
           
-          return await getAllRecords(pricingUrl, apiKey);
-        } catch (error) {
-          console.warn('⚠️ Pricing fetch failed:', error);
+          // Build filterByFormula to match ANY SaaS in the link field
+          const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({${linkField}}))`).join(',')})`;
+          
+          const pricingParams = new URLSearchParams();
+          pricingParams.set('view', 'viwxJnfTzP1MqTcXu');
+          pricingParams.set('filterByFormula', filterFormula);
+          pricingParams.set('pageSize', '100');
+          
+          const pricingUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${pricingParams.toString()}`;
+          
+          console.log(`Fetching pricing plans with formula (${linkField}):`, filterFormula);
+          
+          const pricingResp = await fetch(pricingUrl, {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          
+          if (!pricingResp.ok) {
+            console.warn(`Failed to fetch pricing data with ${linkField}:`, pricingResp.status, await pricingResp.text());
+            continue;
+          }
+          
+          const pricingData = await pricingResp.json();
+          const recordCount = pricingData.records?.length || 0;
+          console.log(`Fetched ${recordCount} pricing records using "${linkField}" field`);
+          
+          if (recordCount > 0) {
+            console.log('Success! Found pricing records with field:', linkField);
+            return pricingData.records || [];
+          }
+        }
+        
+        // If no filtered results, try getting ALL records as fallback
+        console.log('No filtered results found, trying to fetch ALL pricing records as fallback');
+        const fallbackParams = new URLSearchParams();
+        fallbackParams.set('view', 'viwxJnfTzP1MqTcXu');
+        fallbackParams.set('pageSize', '100');
+        
+        const fallbackUrl = `https://api.airtable.com/v0/${baseId}/tbl5qcovjk1Id7Hj5?${fallbackParams.toString()}`;
+        
+        const fallbackResp = await fetch(fallbackUrl, {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!fallbackResp.ok) {
+          console.warn('Failed to fetch fallback pricing data:', fallbackResp.status, await fallbackResp.text());
           return [];
         }
-      })()
-    ]);
+        
+        const fallbackData = await fallbackResp.json();
+        console.log(`Fallback: Fetched ${fallbackData.records?.length || 0} total pricing records`);
+        
+        return fallbackData.records || [];
+      } catch (error) {
+        console.warn('Error fetching pricing records:', error);
+        return [];
+      }
+    };
 
-    console.log(`✅ Parallel fetch complete: ${saasRecords.length} SaaS + ${pricingRecords.length} pricing records`);
-
-    // Extract all SaaS record IDs for linking with pricing
-    const saasIds = saasRecords.map((r: any) => r.id);
-    console.log(`🔗 Processing ${saasIds.length} SaaS records for pricing linkage`);
+    const allPricingRecords = await fetchAllPricingPlans();
     
-    // Group pricing records by SaaS ID using optimized mapping
+    // Group pricing records by SaaS ID
     const pricingBySaasId = new Map<string, any[]>();
-    pricingRecords.forEach((pr: any) => {
+    allPricingRecords.forEach((pr: any) => {
       const fields = pr.fields || {};
       
       // Try multiple possible field names for the SaaS link
       const linkedSaasIds = toArray<string>(
         pick<string | string[]>(fields, ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas']) || []
       );
+      
+      console.log(`Processing pricing record ${pr.id} with linked SaaS IDs:`, linkedSaasIds);
       
       linkedSaasIds.forEach(saasId => {
         if (!pricingBySaasId.has(saasId)) {
@@ -292,10 +283,9 @@ serve(async (req) => {
       });
     });
 
-    console.log(`🎯 Pricing linkage: ${pricingBySaasId.size} SaaS items have pricing plans (${pricingRecords.length} total plans)`);
+    console.log(`Processed pricing for ${pricingBySaasId.size} SaaS items with ${allPricingRecords.length} total plans`);
 
-    // Transform SaaS records with linked pricing data
-    const mapped = saasRecords.map((r: any) => {
+    const mapped = records.map((r: any) => {
       const f = r.fields || {};
       const name = pick<string>(f, ['Nom', 'name', 'Name', 'Titre', 'Title']) || '';
       const tagline = pick<string>(f, ['Tagline', 'tagline', 'Slogan']) || '';
@@ -345,6 +335,9 @@ serve(async (req) => {
         
         return priceA - priceB;
       });
+      
+      console.log(`SaaS ${r.id} (${name}) has ${pricingLinked.length} pricing plans:`, 
+        pricingLinked.map(p => `${p.plan}: ${p.price} ${p.popular ? '(Popular)' : ''}`));
 
       return {
         id: r.id,
@@ -369,40 +362,8 @@ serve(async (req) => {
       };
     });
 
-    // Create response data
-    const responseData = { items: mapped };
-    const etag = generateETag(responseData);
-    
-    // Cache the result
-    cache.set(cacheKey, {
-      data: responseData,
-      timestamp: Date.now(),
-      etag,
-    });
-
-    // Clean old cache entries (simple cleanup)
-    if (cache.size > 100) {
-      const oldestKeys = Array.from(cache.keys()).slice(0, 10);
-      oldestKeys.forEach(key => cache.delete(key));
-    }
-
-    const responseTime = performance.now() - startTime;
-    metrics.avgResponseTime = (metrics.avgResponseTime + responseTime) / 2;
-
-    console.log(`🎉 Response ready: ${mapped.length} SaaS items (${responseTime.toFixed(2)}ms)`);
-    console.log(`📊 Cache stats: ${metrics.cacheHits} hits, ${metrics.cacheMisses} misses, ${metrics.totalRequests} total requests`);
-
-    return new Response(JSON.stringify(responseData), {
-      headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json',
-        'ETag': etag,
-        'Cache-Control': 'public, max-age=300',
-        'X-Cache': 'MISS',
-        'X-Response-Time': `${responseTime.toFixed(2)}ms`,
-        'X-Total-Records': mapped.length.toString(),
-        'Content-Encoding': 'gzip', // Browser will handle compression
-      },
+    return new Response(JSON.stringify({ items: mapped }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
     console.error('get-saas-from-airtable error:', e);
