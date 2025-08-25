@@ -138,29 +138,49 @@ serve(async (req) => {
 
     // If a UI URL is provided, parse base/table/view IDs from it
     if (!baseId && uiUrl) {
+      console.log('🔍 Parsing UI URL:', uiUrl);
       try {
-        const parts = new URL(uiUrl).pathname.split('/').filter(Boolean);
-        // Expecting: /app.../tbl.../viw...
-        const appPart = parts.find(p => p.startsWith('app'));
-        const tblPart = parts.find(p => p.startsWith('tbl'));
-        const viwPart = parts.find(p => p.startsWith('viw'));
-        if (appPart) baseId = appPart;
-        if (tblPart) table = tblPart;
-        if (viwPart) view = viwPart;
+        // Handle URLs like: https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf
+        // Using robust regex patterns
+        const baseMatch = uiUrl.match(/\/app([a-zA-Z0-9]{14})/);
+        const tableMatch = uiUrl.match(/\/tbl([a-zA-Z0-9]{14})/);
+        const viewMatch = uiUrl.match(/\/viw([a-zA-Z0-9]{14})/);
+        
+        if (baseMatch) {
+          baseId = baseMatch[0].substring(1); // Remove leading slash
+          console.log('✅ Extracted baseId:', baseId);
+        }
+        if (tableMatch) {
+          table = tableMatch[0].substring(1); // Remove leading slash  
+          console.log('✅ Extracted table:', table);
+        }
+        if (viewMatch) {
+          view = viewMatch[0].substring(1); // Remove leading slash
+          console.log('✅ Extracted view:', view);
+        }
+        
+        console.log('📋 Parsed URL components:', { baseId, table, view });
       } catch (e) {
-        console.warn('Failed to parse uiUrl:', e);
+        console.error('❌ Failed to parse uiUrl:', e);
       }
     }
 
     // Fallback to secrets if still missing
     if (!baseId) {
+      console.log('🔑 No baseId parsed from URL, checking environment variables...');
       const envBase = Deno.env.get('AIRTABLE_BASE_ID') || '';
       const envTable = Deno.env.get('AIRTABLE_TABLE_ID') || '';
       const envView = Deno.env.get('AIRTABLE_VIEW_ID') || '';
+      console.log('🌍 Environment variables:', { 
+        hasEnvBase: !!envBase, 
+        hasEnvTable: !!envTable, 
+        hasEnvView: !!envView 
+      });
       if (envBase) {
         baseId = envBase;
         if (!table) table = envTable;
         if (!view) view = envView;
+        console.log('✅ Using environment variables:', { baseId, table, view });
       }
     }
 
@@ -208,11 +228,15 @@ serve(async (req) => {
     console.log(`💾 Cache MISS for ${cacheKey}`);
 
     const airtableBaseUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}`;
+    console.log('🔧 Constructed Airtable base URL:', airtableBaseUrl);
+    
     if (view) {
       const viewParam = new URLSearchParams();
       viewParam.set('view', view);
       const fullUrl = `${airtableBaseUrl}?${viewParam.toString()}`;
-      console.log(`🎯 Base URL with view: ${fullUrl}`);
+      console.log(`🎯 Full URL with view: ${fullUrl}`);
+    } else {
+      console.log('⚠️ No view specified, fetching all records from table');
     }
 
     // Resolve API key from secrets (support both conventional and legacy names)

@@ -101,12 +101,9 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     setErrorMsg(null);
 
     (async () => {
-      console.log('🚀 Fetching SaaS data from edge function...');
       const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
         body: { uiUrl },
       });
-      
-      console.log('📥 Edge function response:', { data, error });
       
       if (error) {
         console.error('Airtable fetch error', error);
@@ -123,8 +120,6 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
       }
       
       const items = (data as any)?.items as SaaSItem[];
-      console.log('📊 Extracted items:', items, 'Length:', items?.length);
-      
       setSaasData(items || []);
       setDisplayData(items || []);
       setCacheData(items || []); // Cache the data
