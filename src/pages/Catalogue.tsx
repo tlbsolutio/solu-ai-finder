@@ -350,11 +350,18 @@ const totalItems = filteredSaaS.length;
                     <div className="space-y-3 flex-1">
                       {/* Categories */}
                       <div className="flex flex-wrap gap-1">
-                        {saas.categories.map((cat, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs">
-                            {categoryLabels[cat] || cat}
-                          </Badge>
-                        ))}
+                        {saas.categories.map((cat, idx) => {
+                          const isActiveFilter = selectedCategory === cat;
+                          return (
+                            <Badge 
+                              key={idx} 
+                              variant={isActiveFilter ? "default" : "secondary"} 
+                              className={`text-xs ${isActiveFilter ? 'ring-2 ring-primary/50 bg-primary text-primary-foreground' : ''}`}
+                            >
+                              {categoryLabels[cat] || cat}
+                            </Badge>
+                          );
+                        })}
                       </div>
 
                       {/* Tagline */}
@@ -399,11 +406,30 @@ const totalItems = filteredSaaS.length;
 
                       {/* Targets */}
                       <div className="flex flex-wrap gap-1">
-                        {saas.targets?.slice(0, 2).map((target, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            {targetLabels[target] || target}
-                          </Badge>
-                        ))}
+                        {(() => {
+                          if (!saas.targets) return null;
+                          
+                          // Prioritize selected target first, then show others (max 4 total)
+                          const targetsToShow = [...saas.targets];
+                          if (selectedTarget && targetsToShow.includes(selectedTarget)) {
+                            // Move selected target to front
+                            const filtered = targetsToShow.filter(t => t !== selectedTarget);
+                            targetsToShow.splice(0, targetsToShow.length, selectedTarget, ...filtered);
+                          }
+                          
+                          return targetsToShow.slice(0, 4).map((target, idx) => {
+                            const isActiveFilter = selectedTarget === target;
+                            return (
+                              <Badge 
+                                key={idx} 
+                                variant={isActiveFilter ? "default" : "outline"} 
+                                className={`text-xs ${isActiveFilter ? 'ring-2 ring-primary/50 bg-primary text-primary-foreground' : ''}`}
+                              >
+                                {targetLabels[target] || target}
+                              </Badge>
+                            );
+                          });
+                        })()}
                       </div>
 
                       <div className="mt-auto pt-4">
