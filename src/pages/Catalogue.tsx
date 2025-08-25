@@ -11,6 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CatalogueCardSkeleton } from '@/components/ui/loading-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSaasCache } from '@/hooks/useSaasCache';
 import { Link } from 'react-router-dom';

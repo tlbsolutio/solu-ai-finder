@@ -7,9 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Mail, Phone, MessageCircle, Clock, CheckCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from '@/hooks/use-toast';
+import MetaTags from '@/components/seo/MetaTags';
 
 const Contact = () => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,12 +20,66 @@ const Contact = () => {
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Le nom est requis';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = 'L\'email est requis';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Format d\'email invalide';
+    }
+    
+    if (!formData.message.trim()) {
+      newErrors.message = 'Le message est requis';
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Le message doit contenir au moins 10 caractères';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In real app, send email and process form
-    console.log('Form submitted:', formData);
-    setIsSubmitted(true);
+    
+    if (!validateForm()) {
+      toast({
+        title: "Erreur de validation",
+        description: "Veuillez corriger les erreurs dans le formulaire",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Form submitted:', formData);
+      setIsSubmitted(true);
+      
+      toast({
+        title: "Message envoyé !",
+        description: "Nous vous répondrons dans les plus brefs délais.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Une erreur s'est produite. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -30,11 +87,24 @@ const Contact = () => {
       ...prev,
       [field]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-subtle">
+        <MetaTags 
+          title="Message envoyé - Contact"
+          description="Votre message a été envoyé avec succès. Nous vous répondrons rapidement."
+          noIndex={true}
+        />
         <Navigation />
         
         <div className="container mx-auto px-4 py-20">
@@ -55,6 +125,11 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      <MetaTags 
+        title={t('contact.title')}
+        description={t('contact.subtitle')}
+        type="website"
+      />
       
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
@@ -75,23 +150,30 @@ const Contact = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium">
-                      {t('contact.name_label')}
+                      {t('contact.name_label')} <span className="text-destructive">*</span>
                     </label>
                     <Input
                       id="name"
                       placeholder={t('contact.name_placeholder')}
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
+                      className={errors.name ? 'border-destructive focus:ring-destructive' : ''}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
                       required
                     />
+                    {errors.name && (
+                      <p id="name-error" className="text-sm text-destructive" role="alert">
+                        {errors.name}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-sm font-medium">
-                      {t('contact.email_label')}
+                      {t('contact.email_label')} <span className="text-destructive">*</span>
                     </label>
                     <Input
                       id="email"
@@ -99,8 +181,15 @@ const Contact = () => {
                       placeholder={t('contact.email_placeholder')}
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
+                      className={errors.email ? 'border-destructive focus:ring-destructive' : ''}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
                       required
                     />
+                    {errors.email && (
+                      <p id="email-error" className="text-sm text-destructive" role="alert">
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -118,21 +207,44 @@ const Contact = () => {
 
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium">
-                    {t('contact.message_label')}
+                    {t('contact.message_label')} <span className="text-destructive">*</span>
                   </label>
                   <Textarea
                     id="message"
                     placeholder={t('contact.message_placeholder')}
-                    className="min-h-[120px] resize-none"
+                    className={`min-h-[120px] resize-none ${errors.message ? 'border-destructive focus:ring-destructive' : ''}`}
                     value={formData.message}
                     onChange={(e) => handleInputChange('message', e.target.value)}
+                    aria-describedby={errors.message ? 'message-error' : undefined}
                     required
                   />
+                  {errors.message && (
+                    <p id="message-error" className="text-sm text-destructive" role="alert">
+                      {errors.message}
+                    </p>
+                  )}
                 </div>
 
-                <Button type="submit" className="w-full" variant="hero" size="lg">
-                  {t('contact.submit_button')}
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  variant="hero" 
+                  size="lg"
+                  disabled={isSubmitting}
+                  aria-describedby="submit-button-description"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    t('contact.submit_button')
+                  )}
                 </Button>
+                <p id="submit-button-description" className="text-xs text-muted-foreground text-center">
+                  En soumettant ce formulaire, vous acceptez d'être contacté par notre équipe.
+                </p>
               </form>
             </CardContent>
           </Card>
@@ -204,6 +316,7 @@ const Contact = () => {
                   variant="premium" 
                   size="lg"
                   asChild
+                  aria-label="Réserver un appel de conseil gratuit avec notre équipe"
                 >
                   <a href="https://calendly.com/solutio-expert" target="_blank" rel="noopener noreferrer">
                     <Calendar className="h-4 w-4 mr-2" />

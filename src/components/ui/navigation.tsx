@@ -4,6 +4,7 @@ import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Languages } from 'lucide-react';
+import MobileNav from './mobile-nav';
 
 const Navigation = () => {
   const location = useLocation();
@@ -45,20 +46,23 @@ const Navigation = () => {
         </div>
 
         <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
-            className="flex"
-          >
-            <Languages className="h-4 w-4 mr-2" />
-            {language === 'fr' ? 'EN' : 'FR'}
-          </Button>
-          <Link to="/diagnostic">
-            <Button variant="default" className="bg-gradient-primary hover:opacity-90">
-              {t('nav.start_diagnostic')}
+          <div className="hidden md:flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLanguage(language === 'fr' ? 'en' : 'fr')}
+              className="flex"
+            >
+              <Languages className="h-4 w-4 mr-2" />
+              {language === 'fr' ? 'EN' : 'FR'}
             </Button>
-          </Link>
+            <Link to="/diagnostic">
+              <Button variant="default" className="bg-gradient-primary hover:opacity-90">
+                {t('nav.start_diagnostic')}
+              </Button>
+            </Link>
+          </div>
+          <MobileNav />
         </div>
       </div>
     </nav>

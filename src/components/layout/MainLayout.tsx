@@ -21,7 +21,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {/* Footer */}
       <footer className="bg-background border-t border-border py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <img src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" alt="Solutio" className="h-8 w-auto mb-4" />
               <p className="text-muted-foreground text-sm">
@@ -34,13 +34,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="space-y-2 text-sm">
                 <Link to="/diagnostic" className="block text-muted-foreground hover:text-primary">{t('nav.diagnostic')}</Link>
                 <Link to="/catalogue" className="block text-muted-foreground hover:text-primary">{t('nav.catalogue')}</Link>
-                <Link to="/contact" className="block text-muted-foreground hover:text-primary">{t('nav.contact')}</Link>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">{t('footer.support')}</h4>
-              <div className="space-y-2 text-sm">
                 <Link to="/contact" className="block text-muted-foreground hover:text-primary">{t('nav.contact')}</Link>
               </div>
             </div>

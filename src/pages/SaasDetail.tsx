@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SaasDetailSkeleton } from '@/components/ui/loading-skeleton';
 import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft, Gauge } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,28 +93,7 @@ const SaasDetail = () => {
           <div className="mb-6">
             <Skeleton className="h-10 w-40" />
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <Skeleton className="w-full h-64" />
-                <CardHeader>
-                  <Skeleton className="h-8 w-1/2" />
-                  <Skeleton className="h-4 w-3/4" />
-                </CardHeader>
-              </Card>
-            </div>
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <Skeleton className="h-6 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-10 w-full mb-4" />
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <SaasDetailSkeleton />
         </div>
       </div>
     );

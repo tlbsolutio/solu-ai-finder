@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import MetaTags from '@/components/seo/MetaTags';
 const Index = () => {
   const { t } = useLanguage();
   
@@ -131,6 +132,40 @@ const Index = () => {
     slug: "legaltech-juridique"
   }];
   return <div className="min-h-screen bg-gradient-subtle">
+      <MetaTags 
+        title={t('hero.title')}
+        description={t('hero.description')}
+        type="website"
+      />
+      
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Solutio",
+          "url": "https://solutio.fr",
+          "logo": "https://solutio.fr/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
+          "description": "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+33-1-23-45-67-89",
+            "contactType": "customer service",
+            "availableLanguage": ["French", "English"]
+          },
+          "service": [
+            {
+              "@type": "Service",
+              "name": "Diagnostic SaaS",
+              "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
+            },
+            {
+              "@type": "Service", 
+              "name": "Catalogue SaaS",
+              "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
+            }
+          ]
+        })}
+      </script>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-32 lg:py-48">
@@ -177,22 +212,22 @@ const Index = () => {
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
-              <Link to="/diagnostic">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12">
+              <Link to="/diagnostic" className="w-full sm:w-auto">
                 <Button 
                   variant="hero" 
                   size="xl" 
-                  className="w-full sm:w-auto px-8 py-4 text-lg font-semibold bg-white text-slate-900 hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 border-0"
+                  className="w-full px-8 py-4 text-lg font-semibold bg-white text-slate-900 hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 border-0"
                 >
                   <Brain className="h-6 w-6 mr-3" />
                   {t('hero.cta_diagnostic')}
                 </Button>
               </Link>
-              <Link to="/catalogue">
+              <Link to="/catalogue" className="w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   size="xl" 
-                  className="w-full sm:w-auto px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
+                  className="w-full px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
                 >
                   {t('hero.cta_catalog')}
                 </Button>
@@ -200,7 +235,7 @@ const Index = () => {
             </div>
 
             {/* Trust indicators */}
-            <div className="flex items-center justify-center space-x-8 text-white/70">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-white/70">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
                 <span className="text-sm font-medium">{t('home.free')}</span>
@@ -345,20 +380,20 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/diagnostic">
-                <Button variant="secondary" size="xl" className="w-full sm:w-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Link to="/diagnostic" className="w-full sm:w-auto">
+                <Button variant="secondary" size="xl" className="w-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <Brain className="h-5 w-5 mr-2" />
                   {t('home.diagnostic_5min')}
                 </Button>
               </Link>
-              <Link to="/catalogue">
-                <Button variant="outline" size="xl" className="w-full sm:w-auto border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Link to="/catalogue" className="w-full sm:w-auto">
+                <Button variant="outline" size="xl" className="w-full border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   {t('home.explore_catalogue')}
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-8 grid grid-cols-3 gap-8 text-center">
+            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold">500+</div>
                 <div className="text-white/80">{t('home.solutions_count')}</div>
