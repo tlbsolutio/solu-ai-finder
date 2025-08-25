@@ -101,11 +101,9 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     setErrorMsg(null);
 
     (async () => {
-      console.log('🚀 Fetching SaaS data - clearing caches first');
       const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
-        body: { uiUrl, clearCache: true },
+        body: { uiUrl },
       });
-      
       if (error) {
         console.error('Airtable fetch error', error);
         const status: number | undefined = (error as any)?.status;
@@ -119,7 +117,6 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
         setLoading(false);
         return;
       }
-      
       const items = (data as any)?.items as SaaSItem[];
       setSaasData(items || []);
       setDisplayData(items || []);
