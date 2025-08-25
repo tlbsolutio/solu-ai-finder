@@ -11,10 +11,9 @@ const corsHeaders = {
 interface CacheEntry {
   data: any;
   timestamp: number;
-  etag: string;
 }
 
-const cache = new Map<string, CacheEntry>();
+const cache: Record<string, CacheEntry> = {};
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Performance metrics
@@ -22,7 +21,7 @@ const metrics = {
   totalRequests: 0,
   cacheHits: 0,
   cacheMisses: 0,
-  avgResponseTime: 0,
+  totalResponseTime: 0,
 };
 
 function toArray<T>(val: unknown): T[] {
@@ -57,7 +56,10 @@ function generateETag(data: any): string {
 
 // Check if cache entry is valid
 function isCacheValid(entry: CacheEntry): boolean {
-  return Date.now() - entry.timestamp < CACHE_TTL;
+  const isNotExpired = Date.now() - entry.timestamp < CACHE_TTL;
+  const hasValidData = entry.data && Array.isArray(entry.data.items) && entry.data.items.length > 0;
+  console.log(`🔍 Cache validation: expired=${!isNotExpired}, hasData=${hasValidData}, dataLength=${entry.data?.items?.length || 0}`);
+  return isNotExpired && hasValidData;
 }
 
 // Robust pagination function to get ALL records
@@ -108,6 +110,30 @@ async function getAllRecords(baseUrl: string, apiKey: string, maxRecords = 1000)
   return allRecords;
 }
 
+async function parseRequest(req: Request) {
+  const url = new URL(req.url);
+  const isGet = req.method === 'GET';
+
+  let baseId = url.searchParams.get('baseId') || '';
+  let table = url.searchParams.get('table') || '';
+  let view = url.searchParams.get('view') || '';
+  let path = url.searchParams.get('path') || '';
+  let uiUrl = url.searchParams.get('uiUrl') || '';
+  let clearCache = url.searchParams.get('clearCache') === 'true';
+
+  if (!isGet) {
+    const body = await req.json().catch(() => ({}));
+    baseId = body.baseId || baseId;
+    table = body.table || table;
+    view = body.view || view;
+    path = body.path || path;
+    uiUrl = body.uiUrl || uiUrl;
+    clearCache = body.clearCache || clearCache;
+  }
+
+  return { baseId, table, view, path, uiUrl, clearCache };
+}
+
 serve(async (req) => {
   const startTime = performance.now();
   metrics.totalRequests++;
@@ -118,22 +144,12 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const isGet = req.method === 'GET';
+    let { baseId, table, view, path, uiUrl, clearCache } = await parseRequest(req);
 
-    let baseId = url.searchParams.get('baseId') || '';
-    let table = url.searchParams.get('table') || '';
-    let view = url.searchParams.get('view') || '';
-    let path = url.searchParams.get('path') || '';
-    let uiUrl = url.searchParams.get('uiUrl') || '';
-
-    if (!isGet) {
-      const body = await req.json().catch(() => ({}));
-      baseId = body.baseId || baseId;
-      table = body.table || table;
-      view = body.view || view;
-      path = body.path || path;
-      uiUrl = body.uiUrl || uiUrl;
+    // Clear cache if requested
+    if (clearCache) {
+      console.log('🧹 Clearing all cache entries as requested');
+      Object.keys(cache).forEach(key => delete cache[key]);
     }
 
     // If a UI URL is provided, parse base/table/view IDs from it
@@ -142,20 +158,20 @@ serve(async (req) => {
       try {
         // Handle URLs like: https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf
         // Using robust regex patterns
-        const baseMatch = uiUrl.match(/\/app([a-zA-Z0-9]{14})/);
-        const tableMatch = uiUrl.match(/\/tbl([a-zA-Z0-9]{14})/);
-        const viewMatch = uiUrl.match(/\/viw([a-zA-Z0-9]{14})/);
+        const baseMatch = uiUrl.match(/app([a-zA-Z0-9]{14})/);
+        const tableMatch = uiUrl.match(/tbl([a-zA-Z0-9]{14})/);
+        const viewMatch = uiUrl.match(/viw([a-zA-Z0-9]{14})/);
         
         if (baseMatch) {
-          baseId = baseMatch[0].substring(1); // Remove leading slash
+          baseId = 'app' + baseMatch[1];
           console.log('✅ Extracted baseId:', baseId);
         }
         if (tableMatch) {
-          table = tableMatch[0].substring(1); // Remove leading slash  
+          table = 'tbl' + tableMatch[1];
           console.log('✅ Extracted table:', table);
         }
         if (viewMatch) {
-          view = viewMatch[0].substring(1); // Remove leading slash
+          view = 'viw' + viewMatch[1];
           console.log('✅ Extracted view:', view);
         }
         
@@ -200,23 +216,23 @@ serve(async (req) => {
       });
     }
 
-    // Create cache key
-    const cacheKey = `saas-${baseId}-${tableSegment}-${view}`;
+    // Check cache first (unless clearCache was requested)
+    const cacheKey = `saas-${baseId}-${table}-${view || 'default'}`;
+    const cachedEntry = cache[cacheKey];
     
-    // Check cache first
-    const cachedEntry = cache.get(cacheKey);
-    if (cachedEntry && isCacheValid(cachedEntry)) {
+    if (cachedEntry && isCacheValid(cachedEntry) && !clearCache) {
+      const age = (Date.now() - cachedEntry.timestamp) / 1000;
+      console.log(`💨 Cache HIT for ${cacheKey} (age: ${age.toFixed(3)}s)`);
       metrics.cacheHits++;
-      console.log(`💨 Cache HIT for ${cacheKey} (age: ${(Date.now() - cachedEntry.timestamp) / 1000}s)`);
       
       const responseTime = performance.now() - startTime;
-      metrics.avgResponseTime = (metrics.avgResponseTime + responseTime) / 2;
+      metrics.totalResponseTime += responseTime;
       
       return new Response(JSON.stringify(cachedEntry.data), {
         headers: { 
           ...corsHeaders, 
           'Content-Type': 'application/json',
-          'ETag': cachedEntry.etag,
+          'ETag': generateETag(cachedEntry.data),
           'Cache-Control': 'public, max-age=300',
           'X-Cache': 'HIT',
           'X-Response-Time': `${responseTime.toFixed(2)}ms`
@@ -224,7 +240,6 @@ serve(async (req) => {
       });
     }
     
-    metrics.cacheMisses++;
     console.log(`💾 Cache MISS for ${cacheKey}`);
 
     const airtableBaseUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}`;
@@ -394,38 +409,35 @@ serve(async (req) => {
     });
 
     // Create response data
-    const responseData = { items: mapped };
-    const etag = generateETag(responseData);
+    const finalData = { items: mapped };
     
-    // Cache the result
-    cache.set(cacheKey, {
-      data: responseData,
-      timestamp: Date.now(),
-      etag,
-    });
-
-    // Clean old cache entries (simple cleanup)
-    if (cache.size > 100) {
-      const oldestKeys = Array.from(cache.keys()).slice(0, 10);
-      oldestKeys.forEach(key => cache.delete(key));
+    // Only cache if we have valid data
+    if (finalData && finalData.items && finalData.items.length > 0) {
+      cache[cacheKey] = {
+        data: finalData,
+        timestamp: Date.now(),
+      };
+      console.log(`💾 Cached ${finalData.items.length} items for key: ${cacheKey}`);
+    } else {
+      console.log(`⚠️ Not caching empty data for key: ${cacheKey}`);
     }
-
+    
+    metrics.cacheMisses++;
     const responseTime = performance.now() - startTime;
-    metrics.avgResponseTime = (metrics.avgResponseTime + responseTime) / 2;
+    metrics.totalResponseTime += responseTime;
 
     console.log(`🎉 Response ready: ${mapped.length} SaaS items (${responseTime.toFixed(2)}ms)`);
     console.log(`📊 Cache stats: ${metrics.cacheHits} hits, ${metrics.cacheMisses} misses, ${metrics.totalRequests} total requests`);
 
-    return new Response(JSON.stringify(responseData), {
+    return new Response(JSON.stringify(finalData), {
       headers: { 
         ...corsHeaders, 
         'Content-Type': 'application/json',
-        'ETag': etag,
+        'ETag': generateETag(finalData),
         'Cache-Control': 'public, max-age=300',
         'X-Cache': 'MISS',
         'X-Response-Time': `${responseTime.toFixed(2)}ms`,
         'X-Total-Records': mapped.length.toString(),
-        'Content-Encoding': 'gzip', // Browser will handle compression
       },
     });
   } catch (e) {

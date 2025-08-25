@@ -48,8 +48,10 @@ export const useSaasCache = () => {
 
       const data: CacheData = JSON.parse(cached);
       const isExpired = Date.now() - data.timestamp > CACHE_DURATION;
+      const hasValidData = data.items && Array.isArray(data.items) && data.items.length > 0;
 
-      if (isExpired) {
+      if (isExpired || !hasValidData) {
+        console.log('🧹 Clearing invalid/empty localStorage cache');
         localStorage.removeItem(CACHE_KEY);
         return null;
       }
@@ -63,12 +65,18 @@ export const useSaasCache = () => {
 
   const setCacheData = (items: SaaSItem[]) => {
     try {
-      const cacheData: CacheData = {
-        items,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-      setCachedData(items);
+      // Only cache if we have valid data
+      if (items && Array.isArray(items) && items.length > 0) {
+        const cacheData: CacheData = {
+          items,
+          timestamp: Date.now(),
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+        setCachedData(items);
+        console.log(`💾 Cached ${items.length} SaaS items to localStorage`);
+      } else {
+        console.warn('⚠️ Not caching empty SaaS data');
+      }
     } catch (error) {
       console.warn('Failed to cache SaaS data:', error);
     }

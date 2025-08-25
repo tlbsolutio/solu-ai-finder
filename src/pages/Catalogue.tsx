@@ -101,8 +101,9 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     setErrorMsg(null);
 
     (async () => {
+      console.log('🚀 Fetching SaaS data - clearing caches first');
       const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
-        body: { uiUrl },
+        body: { uiUrl, clearCache: true },
       });
       
       if (error) {
