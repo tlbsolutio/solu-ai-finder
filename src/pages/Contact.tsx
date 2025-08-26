@@ -61,29 +61,16 @@ const Contact = () => {
     setIsSubmitting(true);
     
     try {
-      const formspreeData = new FormData();
-      formspreeData.append('name', formData.name);
-      formspreeData.append('email', formData.email);
-      formspreeData.append('company', formData.company);
-      formspreeData.append('message', formData.message);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const response = await fetch('https://formspree.io/f/myzdypaw', {
-        method: 'POST',
-        body: formspreeData,
-        headers: {
-          'Accept': 'application/json'
-        }
+      console.log('Form submitted:', formData);
+      setIsSubmitted(true);
+      
+      toast({
+        title: "Message envoyé !",
+        description: "Nous vous répondrons dans les plus brefs délais.",
       });
-      
-      if (response.ok) {
-        setIsSubmitted(true);
-        toast({
-          title: "Message envoyé !",
-          description: "Nous vous répondrons dans les plus brefs délais.",
-        });
-      } else {
-        throw new Error('Erreur lors de l\'envoi');
-      }
     } catch (error) {
       toast({
         title: "Erreur",
@@ -274,7 +261,15 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <p className="font-medium">{t('contact.email_label_info')}</p>
-                    <p className="text-muted-foreground">tlb@solutio.work</p>
+                    <p className="text-muted-foreground">contact@solutio.fr</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center">
+                  <Phone className="h-5 w-5 text-primary mr-3" />
+                  <div>
+                    <p className="font-medium">{t('contact.phone_label')}</p>
+                    <p className="text-muted-foreground">+33 1 23 45 67 89</p>
                   </div>
                 </div>
 

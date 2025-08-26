@@ -304,37 +304,13 @@ serve(async (req) => {
       const affiliate = pick<string>(f, ['Lien d\'affiliation', 'affiliate_link', 'Affiliate']) || '';
       const trialUrl = pick<string>(f, ['Bouton Essayer gratuitement', 'free_trial_link', 'Try Free', 'Free Trial']) || '';
 
-      // Logo: prioritize URL, then attachment with better error handling
-      let logoUrl = pick<string>(f, [
-        'Logo (URL ou attachement)', 
-        'Logo URL', 
-        'logo_url',
-        'image', 
-        'Image', 
-        'Logo', 
-        'logo'
-      ]) || '';
-      
+      // Logo: prioritize URL, then attachment
+      let logoUrl = pick<string>(f, ['Logo (URL ou attachement)', 'image', 'Image', 'Logo', 'logo', 'Image URL']) || '';
       if (!logoUrl) {
-        const att = pick<any[]>(f, [
-          'Logo (URL ou attachement)', 
-          'Logo', 
-          'Image', 
-          'Attachments', 
-          'Attachment',
-          'logo',
-          'images'
-        ]);
+        const att = pick<any[]>(f, ['Logo (URL ou attachement)', 'Logo', 'Image', 'Attachments', 'Attachment']);
         if (Array.isArray(att) && att.length > 0 && att[0]?.url) {
           logoUrl = att[0].url;
         }
-      }
-      
-      console.log(`Logo for ${name} (${r.id}): ${logoUrl || 'No logo found'}`);
-      
-      // Ensure logo URL is valid and accessible
-      if (logoUrl && !logoUrl.startsWith('http')) {
-        logoUrl = '';
       }
 
       // Get pricing plans linked to this SaaS

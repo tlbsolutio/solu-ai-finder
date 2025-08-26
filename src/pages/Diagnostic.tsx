@@ -8,11 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { DiagnosticFormSkeleton } from '@/components/ui/loading-skeleton';
 import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useToast } from '@/hooks/use-toast';
 
 const Diagnostic = () => {
   const { t } = useLanguage();
-  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [showResults, setShowResults] = useState(false);
   const [responses, setResponses] = useState({
@@ -262,58 +260,7 @@ const Diagnostic = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     {t('diagnostic.receive_email_subtitle')}
                   </p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={async () => {
-                      try {
-                        const diagnosticSummary = `
-Diagnostic d'automatisation Solutio
-
-Score d'automatisation: ${score}%
-Temps estimé gagné: ${timeSaved}%
-
-Résumé des réponses:
-- Tâche à automatiser: ${responses.task}
-- Fréquence: ${responses.frequency}
-- Secteur: ${responses.sector}
-- Outils actuels: ${responses.tools}
-- Livrable attendu: ${responses.deliverable}
-- Contraintes: ${responses.constraints}
-
-Recommandations:
-${recommendations.map((tool, i) => `${i + 1}. ${tool}`).join('\n')}
-
-Généré par Solutio - https://solutio.work
-                        `;
-
-                        const formspreeData = new FormData();
-                        formspreeData.append('diagnostic_summary', diagnosticSummary);
-                        formspreeData.append('user_email', 'email-utilisateur@exemple.com'); // À remplacer par l'email utilisateur
-                        formspreeData.append('score', score.toString());
-                        formspreeData.append('recommendations', recommendations.join(', '));
-                        
-                        await fetch('https://formspree.io/f/mqadkloe', {
-                          method: 'POST',
-                          body: formspreeData,
-                          headers: {
-                            'Accept': 'application/json'
-                          }
-                        });
-                        
-                        toast({
-                          title: "Rapport envoyé !",
-                          description: "Vous recevrez le récapitulatif par email.",
-                        });
-                      } catch (error) {
-                        toast({
-                          title: "Erreur",
-                          description: "Impossible d'envoyer le rapport.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                  >
+                  <Button variant="outline" className="w-full">
                     {t('diagnostic.send_report')}
                   </Button>
                 </CardContent>
@@ -326,14 +273,8 @@ Généré par Solutio - https://solutio.work
                   <p className="text-sm text-muted-foreground mb-4">
                     {t('diagnostic.free_consultation_subtitle')}
                   </p>
-                  <Button 
-                    variant="hero" 
-                    className="w-full"
-                    asChild
-                  >
-                    <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
-                      {t('diagnostic.book_slot')}
-                    </a>
+                  <Button variant="hero" className="w-full">
+                    {t('diagnostic.book_slot')}
                   </Button>
                 </CardContent>
               </Card>
