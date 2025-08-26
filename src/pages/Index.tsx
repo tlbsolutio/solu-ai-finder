@@ -138,34 +138,38 @@ const Index = () => {
         type="website"
       />
       
-      <script type="application/ld+json">
-        {JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          "name": "Solutio",
-          "url": "https://solutio.fr",
-          "logo": "https://solutio.fr/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
-          "description": "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "telephone": "+33-1-23-45-67-89",
-            "contactType": "customer service",
-            "availableLanguage": ["French", "English"]
-          },
-          "service": [
-            {
-              "@type": "Service",
-              "name": "Diagnostic SaaS",
-              "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
-            },
-            {
-              "@type": "Service", 
-              "name": "Catalogue SaaS",
-              "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
-            }
-          ]
-        })}
-      </script>
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Solutio",
+              "url": "https://solutio.work",
+              "logo": "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
+              "description": "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "email": "tlb@solutio.work",
+                "contactType": "customer service",
+                "availableLanguage": ["French", "English"]
+              },
+              "sameAs": [
+                "https://www.linkedin.com/company/solutio-work/",
+                "https://www.linkedin.com/in/theo-le-breton/"
+              ],
+              "service": [
+                {
+                  "@type": "Service",
+                  "name": "Diagnostic SaaS",
+                  "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
+                },
+                {
+                  "@type": "Service", 
+                  "name": "Catalogue SaaS",
+                  "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
+                }
+              ]
+            })}
+          </script>
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-32 lg:py-48">
