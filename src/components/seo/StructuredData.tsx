@@ -18,16 +18,17 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
       case 'Organization':
         return {
           ...baseData,
-          url: "https://solutio.fr",
-          logo: "https://solutio.fr/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
+          url: "https://solutio.work",
+          logo: "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
           contactPoint: {
             "@type": "ContactPoint",
-            telephone: "+33-1-23-45-67-89",
+            email: "tlb@solutio.work",
             contactType: "customer service",
             availableLanguage: ["French", "English"]
           },
           sameAs: [
-            // Add social media URLs when available
+            "https://www.linkedin.com/company/solutio-work/",
+            "https://www.linkedin.com/in/theo-le-breton/"
           ]
         };
       
