@@ -318,7 +318,7 @@ const Contact = () => {
                   asChild
                   aria-label="Réserver un appel de conseil gratuit avec notre équipe"
                 >
-                  <a href="https://calendly.com/solutio-expert" target="_blank" rel="noopener noreferrer">
+                  <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
                     <Calendar className="h-4 w-4 mr-2" />
                     {t('contact.book_call_button')}
                   </a>
