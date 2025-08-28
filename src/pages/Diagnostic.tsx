@@ -96,7 +96,8 @@ const Diagnostic = () => {
 
   // Calculate financial savings
   const calculateFinancialSavings = () => {
-    const hourlyRate = 35; // €/hour
+    const hourlyRate = 43.5; // €/hour superbrut moyen France
+    const softwareCostMonthly = 35; // Coût moyen logiciel d'automatisation/mois
     let timePerTask = 1; // Default 1 hour
     let frequencyPerMonth = 1;
     
@@ -114,13 +115,22 @@ const Diagnostic = () => {
     
     const automationPotential = generateScore() / 100;
     const monthlyHours = timePerTask * frequencyPerMonth * automationPotential;
-    const monthlySavings = monthlyHours * hourlyRate;
-    const annualSavings = monthlySavings * 12;
+    const grossMonthlySavings = monthlyHours * hourlyRate;
+    const netMonthlySavings = grossMonthlySavings - softwareCostMonthly;
+    const netAnnualSavings = netMonthlySavings * 12;
     
     return {
-      monthly: Math.round(monthlySavings),
-      annual: Math.round(annualSavings),
-      hours: Math.round(monthlyHours)
+      monthly: Math.max(0, Math.round(netMonthlySavings)),
+      annual: Math.max(0, Math.round(netAnnualSavings)),
+      hours: Math.round(monthlyHours),
+      gross: Math.round(grossMonthlySavings),
+      calculation: {
+        timePerTask,
+        frequencyPerMonth,
+        hourlyRate,
+        softwareCostMonthly,
+        automationPotential: Math.round(automationPotential * 100)
+      }
     };
   };
 
@@ -312,6 +322,67 @@ const Diagnostic = () => {
                       <Badge variant="secondary">{t('diagnostic.high_score')}</Badge>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Calculation Details */}
+            <Card className="mb-6 shadow-medium">
+              <CardHeader>
+                <CardTitle>💰 Détail du calcul financier</CardTitle>
+                <p className="text-muted-foreground">Comment nous calculons vos économies potentielles</p>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Temps estimé par tâche:</span>
+                        <span className="font-medium">{financialSavings.calculation.timePerTask}h</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fréquence mensuelle:</span>
+                        <span className="font-medium">{financialSavings.calculation.frequencyPerMonth}x</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Potentiel d'automatisation:</span>
+                        <span className="font-medium">{financialSavings.calculation.automationPotential}%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Taux horaire superbrut:</span>
+                        <span className="font-medium">{financialSavings.calculation.hourlyRate}€/h</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coût logiciel estimé:</span>
+                        <span className="font-medium">{financialSavings.calculation.softwareCostMonthly}€/mois</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Temps économisé/mois:</span>
+                        <span className="font-medium">{financialSavings.hours}h</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex justify-between font-medium">
+                      <span>Économies brutes/mois:</span>
+                      <span className="text-green-600">{financialSavings.gross}€</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>- Coût logiciel/mois:</span>
+                      <span className="text-red-600">-{financialSavings.calculation.softwareCostMonthly}€</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>Économies nettes/mois:</span>
+                      <span className="text-primary">{financialSavings.monthly}€</span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
+                    <strong>Note:</strong> Ce calcul utilise le taux horaire superbrut moyen en France (43,5€/h) et déduit un coût moyen de logiciel d'automatisation (35€/mois). Les estimations peuvent varier selon votre situation spécifique.
+                  </div>
                 </div>
               </CardContent>
             </Card>
