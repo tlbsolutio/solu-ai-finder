@@ -21,7 +21,8 @@ const Diagnostic = () => {
     sector: '',
     tools: '',
     deliverable: '',
-    constraints: ''
+    constraints: '',
+    email: ''
   });
 
   const questions = [
@@ -78,11 +79,50 @@ const Diagnostic = () => {
       field: "constraints",
       placeholder: t('diagnostic.question_constraints_placeholder'),
       examples: ["RGPD", "Validation manuelle", "Budget limité", "Urgence", "Sécurité"]
+    },
+    {
+      id: 7,
+      title: "Votre adresse email",
+      subtitle: "Pour recevoir votre rapport personnalisé par email",
+      type: "input",
+      field: "email",
+      placeholder: "votre.email@exemple.com",
+      examples: []
     }
   ];
 
   const currentQuestion = questions[currentStep - 1];
   const progress = (currentStep / questions.length) * 100;
+
+  // Calculate financial savings
+  const calculateFinancialSavings = () => {
+    const hourlyRate = 35; // €/hour
+    let timePerTask = 1; // Default 1 hour
+    let frequencyPerMonth = 1;
+    
+    // Estimate time based on task description
+    const taskLower = responses.task.toLowerCase();
+    if (taskLower.includes('rapport') || taskLower.includes('analyse')) timePerTask = 3;
+    else if (taskLower.includes('email') || taskLower.includes('saisie')) timePerTask = 0.5;
+    else if (taskLower.includes('planification') || taskLower.includes('gestion')) timePerTask = 2;
+    
+    // Convert frequency to monthly
+    const freqLower = responses.frequency.toLowerCase();
+    if (freqLower.includes('jour') || freqLower.includes('quotidien')) frequencyPerMonth = 22;
+    else if (freqLower.includes('semaine') || freqLower.includes('hebdo')) frequencyPerMonth = 4;
+    else if (freqLower.includes('mois') || freqLower.includes('mensuel')) frequencyPerMonth = 1;
+    
+    const automationPotential = generateScore() / 100;
+    const monthlyHours = timePerTask * frequencyPerMonth * automationPotential;
+    const monthlySavings = monthlyHours * hourlyRate;
+    const annualSavings = monthlySavings * 12;
+    
+    return {
+      monthly: Math.round(monthlySavings),
+      annual: Math.round(annualSavings),
+      hours: Math.round(monthlyHours)
+    };
+  };
 
   const handleNext = () => {
     if (currentStep < questions.length) {
@@ -106,7 +146,18 @@ const Diagnostic = () => {
     }));
   };
 
-  const isCurrentStepComplete = responses[currentQuestion?.field as keyof typeof responses]?.trim() !== '';
+  const isCurrentStepComplete = () => {
+    const currentValue = responses[currentQuestion?.field as keyof typeof responses]?.trim();
+    if (!currentValue) return false;
+    
+    // Email validation for the email field
+    if (currentQuestion?.field === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(currentValue);
+    }
+    
+    return currentValue !== '';
+  };
 
   // Generate AI-like recommendations
   const generateScore = () => {
@@ -141,14 +192,16 @@ const Diagnostic = () => {
       sector: '',
       tools: '',
       deliverable: '',
-      constraints: ''
+      constraints: '',
+      email: ''
     });
   };
 
   if (showResults) {
     const score = generateScore();
     const recommendations = getRecommendations();
-    const timeSaved = Math.round(score * 0.6); // Estimation du temps gagné en %
+    const timeSaved = Math.round(score * 0.6);
+    const financialSavings = calculateFinancialSavings();
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -167,35 +220,45 @@ const Diagnostic = () => {
             </div>
 
             {/* Score Card */}
-            <Card className="mb-6 shadow-medium">
+            <Card className="mb-6 shadow-elegant bg-gradient-to-br from-background to-secondary/50 animate-scale-in">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl">{t('diagnostic.automation_score')}</CardTitle>
+                <CardTitle className="text-2xl bg-gradient-primary bg-clip-text text-transparent">{t('diagnostic.automation_score')}</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <div className="w-32 h-32 rounded-full border-8 border-primary/20 flex items-center justify-center">
+                <div className="relative w-40 h-40 mx-auto mb-6">
+                  <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20 animate-pulse"></div>
+                  <div className="w-40 h-40 rounded-full border-8 border-primary/20 flex items-center justify-center bg-background/80 backdrop-blur-sm shadow-glow">
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-primary">{score}%</div>
+                      <div className="text-4xl font-bold text-primary animate-fade-in">{score}%</div>
                       <div className="text-sm text-muted-foreground">{t('diagnostic.potential_label')}</div>
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                  <div className="text-center">
-                    <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <div className="font-semibold">{timeSaved}%</div>
-                    <div className="text-sm text-muted-foreground">{t('diagnostic.time_saved_label')}</div>
-                  </div>
-                  <div className="text-center">
-                    <Clock className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <div className="font-semibold">{t('diagnostic.implementation_time')}</div>
-                    <div className="text-sm text-muted-foreground">{t('diagnostic.implementation_label')}</div>
-                  </div>
-                  <div className="text-center">
-                    <Target className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                    <div className="font-semibold">{t('diagnostic.roi_label')}</div>
-                    <div className="text-sm text-muted-foreground">{t('diagnostic.roi_value')}</div>
-                  </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                  <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+                    <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                    <div className="font-semibold text-green-700 dark:text-green-400">{timeSaved}%</div>
+                    <div className="text-xs text-green-600 dark:text-green-500">{t('diagnostic.time_saved_label')}</div>
+                  </Card>
+                  
+                  <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+                    <Clock className="h-6 w-6 text-blue-600 mx-auto mb-2" />
+                    <div className="font-semibold text-blue-700 dark:text-blue-400">{financialSavings.hours}h</div>
+                    <div className="text-xs text-blue-600 dark:text-blue-500">Temps/mois économisé</div>
+                  </Card>
+                  
+                  <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+                    <Target className="h-6 w-6 text-purple-600 mx-auto mb-2" />
+                    <div className="font-semibold text-purple-700 dark:text-purple-400">{financialSavings.monthly}€</div>
+                    <div className="text-xs text-purple-600 dark:text-purple-500">Économies/mois</div>
+                  </Card>
+                  
+                  <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+                    <TrendingUp className="h-6 w-6 text-orange-600 mx-auto mb-2" />
+                    <div className="font-semibold text-orange-700 dark:text-orange-400">{financialSavings.annual}€</div>
+                    <div className="text-xs text-orange-600 dark:text-orange-500">Économies/an</div>
+                  </Card>
                 </div>
               </CardContent>
             </Card>
@@ -289,7 +352,7 @@ Généré par Solutio - https://solutio.work
 
                         const formspreeData = new FormData();
                         formspreeData.append('diagnostic_summary', diagnosticSummary);
-                        formspreeData.append('user_email', 'email-utilisateur@exemple.com'); // À remplacer par l'email utilisateur
+                        formspreeData.append('user_email', responses.email);
                         formspreeData.append('score', score.toString());
                         formspreeData.append('recommendations', recommendations.join(', '));
                         
@@ -374,13 +437,13 @@ Généré par Solutio - https://solutio.work
               />
             </div>
             <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-              <span>{t('diagnostic.step_label')} {currentStep}/6</span>
+              <span>{t('diagnostic.step_label')} {currentStep}/7</span>
               <span>{Math.round(progress)}% {t('diagnostic.progress_completed')}</span>
             </div>
           </div>
 
           {/* Question Card */}
-          <Card className="shadow-medium animate-fade-in">
+          <Card className="shadow-elegant animate-fade-in hover-scale bg-gradient-to-br from-background to-secondary/20">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <Badge variant="secondary" className="text-primary">
@@ -414,21 +477,23 @@ Généré par Solutio - https://solutio.work
               </div>
 
               {/* Examples */}
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">{t('diagnostic.examples_label')}</p>
-                <div className="flex flex-wrap gap-2">
-                  {currentQuestion.examples.map((example, idx) => (
-                    <Badge
-                      key={idx}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                      onClick={() => handleInputChange(example)}
-                    >
+              {currentQuestion.examples.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">{t('diagnostic.examples_label')}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {currentQuestion.examples.map((example, idx) => (
+                      <Badge
+                        key={idx}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-105 hover:shadow-md"
+                        onClick={() => handleInputChange(example)}
+                      >
                       {example}
-                    </Badge>
-                  ))}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Navigation */}
               <div className="flex justify-between pt-6">
@@ -436,7 +501,7 @@ Généré par Solutio - https://solutio.work
                   variant="outline"
                   onClick={handleBack}
                   disabled={currentStep === 1}
-                  className="flex items-center"
+                  className="flex items-center transition-all duration-200 hover:scale-105"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   {t('diagnostic.previous_button')}
@@ -444,9 +509,9 @@ Généré par Solutio - https://solutio.work
                 
                 <Button
                   onClick={handleNext}
-                  disabled={!isCurrentStepComplete}
-                  variant="hero"
-                  className="flex items-center"
+                  disabled={!isCurrentStepComplete()}
+                  variant={currentStep === questions.length ? "hero" : "default"}
+                  className="flex items-center transition-all duration-200 hover:scale-105 shadow-lg"
                 >
                   {currentStep === questions.length ? t('diagnostic.see_recommendations') : t('diagnostic.next_button')}
                   <ArrowRight className="h-4 w-4 ml-2" />
