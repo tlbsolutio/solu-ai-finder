@@ -98,14 +98,36 @@ const Diagnostic = () => {
   const calculateFinancialSavings = () => {
     const hourlyRate = 43.5; // €/hour superbrut moyen France
     const softwareCostMonthly = 35; // Coût moyen logiciel d'automatisation/mois
-    let timePerTask = 1; // Default 1 hour
+    let timePerTask = 4; // Default 4 heures (au lieu de 1h)
     let frequencyPerMonth = 1;
     
-    // Estimate time based on task description
+    // Estimate time based on task description - estimations réalistes
     const taskLower = responses.task.toLowerCase();
-    if (taskLower.includes('rapport') || taskLower.includes('analyse')) timePerTask = 3;
-    else if (taskLower.includes('email') || taskLower.includes('saisie')) timePerTask = 0.5;
-    else if (taskLower.includes('planification') || taskLower.includes('gestion')) timePerTask = 2;
+    
+    // Rapports et analyses - tâches complexes
+    if (taskLower.includes('rapport') || taskLower.includes('analyse') || taskLower.includes('dashboard') || taskLower.includes('indicateur') || taskLower.includes('kpi')) {
+      timePerTask = 10; // 8-12h en moyenne
+    }
+    // Emails et saisie de données - tâches répétitives mais chronophages
+    else if (taskLower.includes('email') || taskLower.includes('saisie') || taskLower.includes('données') || taskLower.includes('import') || taskLower.includes('export')) {
+      timePerTask = 2.5; // 2-3h en moyenne
+    }
+    // Planification et gestion - tâches managériales
+    else if (taskLower.includes('planification') || taskLower.includes('gestion') || taskLower.includes('suivi') || taskLower.includes('coordination') || taskLower.includes('organisation')) {
+      timePerTask = 7; // 6-8h en moyenne
+    }
+    // Comptabilité et finance
+    else if (taskLower.includes('comptabilité') || taskLower.includes('facture') || taskLower.includes('commande') || taskLower.includes('devis') || taskLower.includes('budget')) {
+      timePerTask = 6; // 5-7h en moyenne
+    }
+    // Marketing et communication
+    else if (taskLower.includes('marketing') || taskLower.includes('communication') || taskLower.includes('newsletter') || taskLower.includes('contenu') || taskLower.includes('social')) {
+      timePerTask = 5; // 4-6h en moyenne
+    }
+    // RH et administratif
+    else if (taskLower.includes('recrutement') || taskLower.includes('formation') || taskLower.includes('administratif') || taskLower.includes('documentation')) {
+      timePerTask = 4.5; // 3-6h en moyenne
+    }
     
     // Convert frequency to monthly
     const freqLower = responses.frequency.toLowerCase();
