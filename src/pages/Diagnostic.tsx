@@ -6,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { DiagnosticFormSkeleton } from '@/components/ui/loading-skeleton';
-import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail, ExternalLink, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Link } from 'react-router-dom';
 
 const Diagnostic = () => {
   const { t } = useLanguage();
@@ -20,74 +24,81 @@ const Diagnostic = () => {
     frequency: '',
     sector: '',
     tools: '',
-    deliverable: '',
-    constraints: '',
-    email: ''
+    expectedResult: '',
+    envisagedAutomations: '',
+    priority: ''
   });
+  
+  // Email modal state
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailData, setEmailData] = useState({ email: '', acceptMarketing: false });
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
 
   const questions = [
     {
       id: 1,
-      title: t('diagnostic.question_task_title'),
-      subtitle: t('diagnostic.question_task_subtitle'),
+      title: "Tâche chronophage",
+      subtitle: "Quelle tâche vous fait le plus perdre de temps au quotidien et que vous aimeriez automatiser ?",
       type: "textarea",
       field: "task",
-      placeholder: t('diagnostic.question_task_placeholder'),
-      examples: ["Saisie de données", "Création de rapports", "Gestion des emails", "Planification"]
+      placeholder: "Par exemple, la saisie de données clients, la gestion de factures, etc.",
+      examples: ["Saisie de données clients", "Création de rapports", "Gestion des emails", "Planification de rendez-vous"]
     },
     {
       id: 2,
-      title: t('diagnostic.question_frequency_title'),
-      subtitle: t('diagnostic.question_frequency_subtitle'),
+      title: "Fréquence",
+      subtitle: "À quelle fréquence effectuez-vous cette tâche ?",
       type: "input",
       field: "frequency",
-      placeholder: t('diagnostic.question_frequency_placeholder'),
+      placeholder: "Tous les jours, quelques fois par semaine, une fois par mois",
       examples: ["Quotidien", "Hebdomadaire", "Mensuel", "Ponctuel"]
     },
     {
       id: 3,
-      title: t('diagnostic.question_sector_title'),
-      subtitle: t('diagnostic.question_sector_subtitle'),
-      type: "input", 
+      title: "Secteur d'activité et contraintes",
+      subtitle: "Dans quel secteur d'activité travaillez-vous et quelles sont vos contraintes spécifiques ?",
+      type: "textarea", 
       field: "sector",
-      placeholder: t('diagnostic.question_sector_placeholder'),
+      placeholder: "Secteur comptabilité avec contraintes de conformité, secteur commercial avec besoin de rapidité, etc.",
       examples: ["E-commerce", "Consulting", "SaaS", "Finance", "Marketing", "RH"]
     },
     {
       id: 4,
-      title: t('diagnostic.question_tools_title'),
-      subtitle: t('diagnostic.question_tools_subtitle'),
-      type: "textarea",
+      title: "Outils actuels",
+      subtitle: "Quels outils ou logiciels utilisez-vous actuellement pour cette tâche, s'il y en a ?",
+      type: "input",
       field: "tools",
-      placeholder: t('diagnostic.question_tools_placeholder'),
-      examples: ["Excel", "Google Sheets", "CRM", "ERP", "Email"]
+      placeholder: "Tableur Excel, logiciel de CRM, aucun outil spécifique",
+      examples: ["Excel", "Google Sheets", "CRM", "ERP", "Email", "Aucun outil"]
     },
     {
       id: 5,
-      title: t('diagnostic.question_deliverable_title'),
-      subtitle: t('diagnostic.question_deliverable_subtitle'),
+      title: "Résultat attendu",
+      subtitle: "Quel résultat final attendez-vous de l'automatisation ?",
       type: "textarea",
-      field: "deliverable",
-      placeholder: t('diagnostic.question_deliverable_placeholder'),
-      examples: ["Rapport", "Base de données", "Email", "Document", "Tableau de bord"]
+      field: "expectedResult",
+      placeholder: "Gagner 2 heures par semaine, réduire les erreurs de saisie, etc.",
+      examples: ["Gagner du temps", "Réduire les erreurs", "Améliorer la productivité", "Simplifier les processus"]
     },
     {
       id: 6,
-      title: t('diagnostic.question_constraints_title'),
-      subtitle: t('diagnostic.question_constraints_subtitle'),
+      title: "Automatisations envisagées",
+      subtitle: "Avez-vous déjà envisagé certains types d'automatisations ou des logiciels précis ?",
       type: "textarea",
-      field: "constraints",
-      placeholder: t('diagnostic.question_constraints_placeholder'),
-      examples: ["RGPD", "Validation manuelle", "Budget limité", "Urgence", "Sécurité"]
+      field: "envisagedAutomations",
+      placeholder: "Oui, des outils comme Zapier, non je n'ai pas encore exploré",
+      examples: ["Zapier", "Monday.com", "HubSpot", "Non, pas encore exploré", "Intégrations API"]
     },
     {
       id: 7,
-      title: "Votre adresse email",
-      subtitle: "Pour recevoir votre rapport personnalisé par email",
+      title: "Priorité",
+      subtitle: "Sur une échelle de 1 à 5, quelle est la priorité pour vous d'automatiser cette tâche ?",
       type: "input",
-      field: "email",
-      placeholder: "votre.email@exemple.com",
-      examples: []
+      field: "priority",
+      placeholder: "1 = Pas prioritaire, 5 = Très prioritaire",
+      examples: ["1", "2", "3", "4", "5"]
     }
   ];
 
@@ -223,10 +234,99 @@ const Diagnostic = () => {
       frequency: '',
       sector: '',
       tools: '',
-      deliverable: '',
-      constraints: '',
-      email: ''
+      expectedResult: '',
+      envisagedAutomations: '',
+      priority: ''
     });
+    setEmailData({ email: '', acceptMarketing: false });
+    setAiRecommendations([]);
+  };
+
+  // Email sending functionality
+  const handleSendEmail = async () => {
+    if (!emailData.email || !emailData.acceptMarketing) return;
+    
+    setIsLoadingEmail(true);
+    
+    try {
+      const score = generateScore();
+      const recommendations = getRecommendations();
+      const financialSavings = calculateFinancialSavings();
+      
+      // Send diagnostic data via Resend
+      const { data, error } = await supabase.functions.invoke('send-diagnostic-email', {
+        body: {
+          email: emailData.email,
+          acceptMarketing: emailData.acceptMarketing,
+          diagnosticData: {
+            responses,
+            score,
+            recommendations,
+            financialSavings
+          }
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Also send to Formspree for backup
+      const diagnosticSummary = `
+Diagnostic d'automatisation Solutio
+
+Score d'automatisation: ${score}%
+Économies mensuelles: ${financialSavings.monthly}€
+Économies annuelles: ${financialSavings.annual}€
+
+Résumé des réponses:
+- Tâche à automatiser: ${responses.task}
+- Fréquence: ${responses.frequency}
+- Secteur: ${responses.sector}
+- Outils actuels: ${responses.tools}
+- Résultat attendu: ${responses.expectedResult}
+- Automatisations envisagées: ${responses.envisagedAutomations}
+- Priorité: ${responses.priority}/5
+
+Recommandations:
+${recommendations.map((tool, i) => `${i + 1}. ${tool}`).join('\n')}
+
+Contact marketing accepté: ${emailData.acceptMarketing ? 'Oui' : 'Non'}
+
+Généré par Solutio - https://solutio.work
+      `;
+
+      const formspreeData = new FormData();
+      formspreeData.append('diagnostic_summary', diagnosticSummary);
+      formspreeData.append('user_email', emailData.email);
+      formspreeData.append('score', score.toString());
+      formspreeData.append('recommendations', recommendations.join(', '));
+      formspreeData.append('marketing_consent', emailData.acceptMarketing.toString());
+      
+      await fetch('https://formspree.io/f/mqadkloe', {
+        method: 'POST',
+        body: formspreeData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      toast({
+        title: "Récapitulatif envoyé !",
+        description: "Vous recevrez le diagnostic détaillé par email dans quelques minutes.",
+      });
+      
+      setShowEmailModal(false);
+      setEmailData({ email: '', acceptMarketing: false });
+      
+    } catch (error) {
+      console.error('Email sending error:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le récapitulatif. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingEmail(false);
+    }
   };
 
   if (showResults) {
@@ -301,24 +401,36 @@ const Diagnostic = () => {
                 <CardTitle>{t('diagnostic.summary_title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.task_to_automate')}</div>
-                    <p className="text-sm">{responses.task}</p>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.frequency_label_caps')}</div>
-                    <p className="text-sm">{responses.frequency}</p>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.sector_label_caps')}</div>
-                    <p className="text-sm">{responses.sector}</p>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm text-muted-foreground mb-1">{t('diagnostic.current_tools')}</div>
-                    <p className="text-sm">{responses.tools}</p>
-                  </div>
-                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Tâche à automatiser</div>
+                     <p className="text-sm">{responses.task}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Fréquence</div>
+                     <p className="text-sm">{responses.frequency}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Secteur et contraintes</div>
+                     <p className="text-sm">{responses.sector}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Outils actuels</div>
+                     <p className="text-sm">{responses.tools}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Résultat attendu</div>
+                     <p className="text-sm">{responses.expectedResult}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Automatisations envisagées</div>
+                     <p className="text-sm">{responses.envisagedAutomations}</p>
+                   </div>
+                   <div>
+                     <div className="font-semibold text-sm text-muted-foreground mb-1">Priorité</div>
+                     <p className="text-sm">{responses.priority}/5</p>
+                   </div>
+                 </div>
               </CardContent>
             </Card>
 
@@ -329,21 +441,26 @@ const Diagnostic = () => {
                 <p className="text-muted-foreground">{t('diagnostic.recommendations_subtitle')}</p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {recommendations.map((tool, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
-                          {idx + 1}
-                        </div>
-                        <div>
-                          <div className="font-semibold">{tool}</div>
-                          <div className="text-sm text-muted-foreground">{t('diagnostic.recommended_solution')}</div>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">{t('diagnostic.high_score')}</Badge>
-                    </div>
-                  ))}
+                 <div className="space-y-3">
+                   {recommendations.map((tool, idx) => (
+                     <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
+                       <div className="flex items-center">
+                         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
+                           {idx + 1}
+                         </div>
+                         <div>
+                           <div className="font-semibold">{tool}</div>
+                           <div className="text-sm text-muted-foreground">Solution recommandée • À partir de 15€/mois</div>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <Badge variant="secondary">Score élevé</Badge>
+                         <Link to={`/catalogue?search=${encodeURIComponent(tool)}`} className="text-primary hover:text-primary/80">
+                           <ExternalLink className="h-4 w-4" />
+                         </Link>
+                       </div>
+                     </div>
+                   ))}
                 </div>
               </CardContent>
             </Card>
@@ -418,60 +535,13 @@ const Diagnostic = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     {t('diagnostic.receive_email_subtitle')}
                   </p>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={async () => {
-                      try {
-                        const diagnosticSummary = `
-Diagnostic d'automatisation Solutio
-
-Score d'automatisation: ${score}%
-Temps estimé gagné: ${timeSaved}%
-
-Résumé des réponses:
-- Tâche à automatiser: ${responses.task}
-- Fréquence: ${responses.frequency}
-- Secteur: ${responses.sector}
-- Outils actuels: ${responses.tools}
-- Livrable attendu: ${responses.deliverable}
-- Contraintes: ${responses.constraints}
-
-Recommandations:
-${recommendations.map((tool, i) => `${i + 1}. ${tool}`).join('\n')}
-
-Généré par Solutio - https://solutio.work
-                        `;
-
-                        const formspreeData = new FormData();
-                        formspreeData.append('diagnostic_summary', diagnosticSummary);
-                        formspreeData.append('user_email', responses.email);
-                        formspreeData.append('score', score.toString());
-                        formspreeData.append('recommendations', recommendations.join(', '));
-                        
-                        await fetch('https://formspree.io/f/mqadkloe', {
-                          method: 'POST',
-                          body: formspreeData,
-                          headers: {
-                            'Accept': 'application/json'
-                          }
-                        });
-                        
-                        toast({
-                          title: "Rapport envoyé !",
-                          description: "Vous recevrez le récapitulatif par email.",
-                        });
-                      } catch (error) {
-                        toast({
-                          title: "Erreur",
-                          description: "Impossible d'envoyer le rapport.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                  >
-                    {t('diagnostic.send_report')}
-                  </Button>
+                   <Button 
+                     variant="outline" 
+                     className="w-full"
+                     onClick={() => setShowEmailModal(true)}
+                   >
+                     Recevoir le récapitulatif par email
+                   </Button>
                 </CardContent>
               </Card>
 
@@ -503,6 +573,16 @@ Généré par Solutio - https://solutio.work
             </div>
           </div>
         </div>
+        
+        {/* Email Modal */}
+        <EmailModal 
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+          emailData={emailData}
+          setEmailData={setEmailData}
+          onSendEmail={handleSendEmail}
+          isLoading={isLoadingEmail}
+        />
       </div>
     );
   }
@@ -619,3 +699,78 @@ Généré par Solutio - https://solutio.work
 };
 
 export default Diagnostic;
+
+// Email Modal Component (will be added at the end)
+const EmailModal = ({ 
+  isOpen, 
+  onClose, 
+  emailData, 
+  setEmailData, 
+  onSendEmail, 
+  isLoading 
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  emailData: { email: string; acceptMarketing: boolean };
+  setEmailData: (data: { email: string; acceptMarketing: boolean }) => void;
+  onSendEmail: () => void;
+  isLoading: boolean;
+}) => {
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Recevoir le récapitulatif par email
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Votre adresse email</label>
+            <Input
+              type="email"
+              placeholder="votre.email@exemple.com"
+              value={emailData.email}
+              onChange={(e) => setEmailData({ ...emailData, email: e.target.value })}
+              className="mt-1"
+            />
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="marketing"
+                checked={emailData.acceptMarketing}
+                onCheckedChange={(checked) => 
+                  setEmailData({ ...emailData, acceptMarketing: checked as boolean })
+                }
+                className="mt-1"
+              />
+              <label htmlFor="marketing" className="text-sm text-muted-foreground">
+                J'accepte d'être contacté par Solutio pour des conseils personnalisés 
+                et des informations sur leurs services d'automatisation. Mes clients 
+                sont des professionnels, je comprends que ce démarchage est pertinent 
+                pour mon activité.
+              </label>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 pt-4">
+            <Button variant="outline" onClick={onClose} className="flex-1">
+              Annuler
+            </Button>
+            <Button 
+              onClick={onSendEmail}
+              disabled={!emailData.email || !emailData.acceptMarketing || isLoading}
+              className="flex-1"
+            >
+              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Envoyer le récapitulatif
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
