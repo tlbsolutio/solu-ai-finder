@@ -35,6 +35,7 @@ const Diagnostic = () => {
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState([]);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [isLoadingResults, setIsLoadingResults] = useState(false);
 
   const questions = [
     {
@@ -173,7 +174,13 @@ const Diagnostic = () => {
     } else {
       // Show results page
       setShowResults(true);
+      // Start getting AI recommendations in background
+      getAIRecommendations();
     }
+  };
+
+  const isFormValid = () => {
+    return Object.values(responses).every(response => response.trim() !== '');
   };
 
   const handleBack = () => {
@@ -202,27 +209,73 @@ const Diagnostic = () => {
     return currentValue !== '';
   };
 
-  // Generate AI-like recommendations
+  // Get AI-powered recommendations
+  const getAIRecommendations = async () => {
+    try {
+      setIsLoadingResults(true);
+      const { data, error } = await supabase.functions.invoke('get-ai-recommendations', {
+        body: { diagnosticData: responses }
+      });
+      
+      if (error) throw error;
+      
+      setAiRecommendations(data.recommendations || []);
+      return {
+        score: data.score || 75,
+        recommendations: data.recommendations || [],
+        economiesHeures: data.economiesHeures || 15,
+        analysis: data.analysis || 'Analyse personnalisée de vos besoins'
+      };
+    } catch (error) {
+      console.error('Error getting AI recommendations:', error);
+      // Fallback to basic recommendations
+      return {
+        score: generateScore(),
+        recommendations: getBasicRecommendations(),
+        economiesHeures: 15,
+        analysis: 'Recommandations basées sur vos réponses'
+      };
+    } finally {
+      setIsLoadingResults(false);
+    }
+  };
+
+  // Fallback basic recommendations
   const generateScore = () => {
-    let score = 60; // Base score
+    let score = 60;
     if (responses.frequency.toLowerCase().includes('jour') || responses.frequency.toLowerCase().includes('quotidien')) score += 20;
     if (responses.task.length > 50) score += 10;
     if (responses.tools.toLowerCase().includes('excel') || responses.tools.toLowerCase().includes('manuel')) score += 15;
     return Math.min(score, 95);
   };
 
-  const getRecommendations = () => {
-    const sector = responses.sector.toLowerCase();
+  const getBasicRecommendations = () => {
     const task = responses.task.toLowerCase();
     
     if (task.includes('email') || task.includes('mail')) {
-      return ['Mailchimp', 'HubSpot CRM', 'Zapier'];
+      return [
+        { tool: 'Mailchimp', reason: 'Automatisation email marketing', priority: 1 },
+        { tool: 'HubSpot CRM', reason: 'CRM avec email automation', priority: 2 },
+        { tool: 'Zapier', reason: 'Connexion entre outils email', priority: 3 }
+      ];
     } else if (task.includes('rapport') || task.includes('données')) {
-      return ['Monday.com', 'Zapier', 'Google Sheets API'];
+      return [
+        { tool: 'Monday.com', reason: 'Rapports automatisés', priority: 1 },
+        { tool: 'Zapier', reason: 'Automatisation de données', priority: 2 },
+        { tool: 'Google Sheets API', reason: 'Gestion données spreadsheet', priority: 3 }
+      ];
     } else if (task.includes('rendez-vous') || task.includes('planning')) {
-      return ['Calendly', 'Acuity Scheduling', 'HubSpot CRM'];
+      return [
+        { tool: 'Calendly', reason: 'Prise de rendez-vous automatique', priority: 1 },
+        { tool: 'Acuity Scheduling', reason: 'Planification avancée', priority: 2 },
+        { tool: 'HubSpot CRM', reason: 'CRM avec planification', priority: 3 }
+      ];
     } else {
-      return ['Zapier', 'Monday.com', 'HubSpot CRM'];
+      return [
+        { tool: 'Zapier', reason: 'Automatisation workflow', priority: 1 },
+        { tool: 'Monday.com', reason: 'Gestion de projet', priority: 2 },
+        { tool: 'HubSpot CRM', reason: 'CRM complet', priority: 3 }
+      ];
     }
   };
 
@@ -249,8 +302,7 @@ const Diagnostic = () => {
     setIsLoadingEmail(true);
     
     try {
-      const score = generateScore();
-      const recommendations = getRecommendations();
+      const aiData = await getAIRecommendations();
       const financialSavings = calculateFinancialSavings();
       
       // Send diagnostic data via Resend
@@ -260,9 +312,10 @@ const Diagnostic = () => {
           acceptMarketing: emailData.acceptMarketing,
           diagnosticData: {
             responses,
-            score,
-            recommendations,
-            financialSavings
+            score: aiData.score,
+            recommendations: aiData.recommendations,
+            financialSavings,
+            analysis: aiData.analysis
           }
         }
       });
@@ -273,7 +326,7 @@ const Diagnostic = () => {
       const diagnosticSummary = `
 Diagnostic d'automatisation Solutio
 
-Score d'automatisation: ${score}%
+Score d'automatisation: ${aiData.score}%
 Économies mensuelles: ${financialSavings.monthly}€
 Économies annuelles: ${financialSavings.annual}€
 
@@ -287,7 +340,7 @@ Résumé des réponses:
 - Priorité: ${responses.priority}/5
 
 Recommandations:
-${recommendations.map((tool, i) => `${i + 1}. ${tool}`).join('\n')}
+${aiData.recommendations.map((rec, i) => `${i + 1}. ${rec.tool} - ${rec.reason}`).join('\n')}
 
 Contact marketing accepté: ${emailData.acceptMarketing ? 'Oui' : 'Non'}
 
@@ -297,8 +350,8 @@ Généré par Solutio - https://solutio.work
       const formspreeData = new FormData();
       formspreeData.append('diagnostic_summary', diagnosticSummary);
       formspreeData.append('user_email', emailData.email);
-      formspreeData.append('score', score.toString());
-      formspreeData.append('recommendations', recommendations.join(', '));
+      formspreeData.append('score', aiData.score.toString());
+      formspreeData.append('recommendations', aiData.recommendations.map(r => r.tool).join(', '));
       formspreeData.append('marketing_consent', emailData.acceptMarketing.toString());
       
       await fetch('https://formspree.io/f/mqadkloe', {
@@ -330,9 +383,6 @@ Généré par Solutio - https://solutio.work
   };
 
   if (showResults) {
-    const score = generateScore();
-    const recommendations = getRecommendations();
-    const timeSaved = Math.round(score * 0.6);
     const financialSavings = calculateFinancialSavings();
 
   return (
@@ -361,7 +411,10 @@ Généré par Solutio - https://solutio.work
                   <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20 animate-pulse"></div>
                   <div className="w-40 h-40 rounded-full border-8 border-primary/20 flex items-center justify-center bg-background/80 backdrop-blur-sm shadow-glow">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-primary animate-fade-in">{score}%</div>
+                      <div className="text-4xl font-bold text-primary animate-fade-in">
+                        {aiRecommendations.length > 0 ? 
+                          Math.round(aiRecommendations[0]?.score || 75) : 75}%
+                      </div>
                       <div className="text-sm text-muted-foreground">{t('diagnostic.potential_label')}</div>
                     </div>
                   </div>
@@ -370,7 +423,10 @@ Généré par Solutio - https://solutio.work
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
                   <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
                     <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
-                    <div className="font-semibold text-green-700 dark:text-green-400">{timeSaved}%</div>
+                    <div className="font-semibold text-green-700 dark:text-green-400">
+                      {Math.round((aiRecommendations.length > 0 ? 
+                        Math.round(aiRecommendations[0]?.score || 75) : 75) * 0.6)}%
+                    </div>
                     <div className="text-xs text-green-600 dark:text-green-500">{t('diagnostic.time_saved_label')}</div>
                   </Card>
                   
@@ -442,26 +498,53 @@ Généré par Solutio - https://solutio.work
               </CardHeader>
               <CardContent>
                  <div className="space-y-3">
-                   {recommendations.map((tool, idx) => (
-                     <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
-                       <div className="flex items-center">
-                         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
-                           {idx + 1}
-                         </div>
-                         <div>
-                           <div className="font-semibold">{tool}</div>
-                           <div className="text-sm text-muted-foreground">Solution recommandée • À partir de 15€/mois</div>
-                         </div>
-                       </div>
-                       <div className="flex items-center gap-2">
-                         <Badge variant="secondary">Score élevé</Badge>
-                         <Link to={`/catalogue?search=${encodeURIComponent(tool)}`} className="text-primary hover:text-primary/80">
-                           <ExternalLink className="h-4 w-4" />
-                         </Link>
-                       </div>
-                     </div>
-                   ))}
-                </div>
+                    {isLoadingResults ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="ml-2 text-muted-foreground">Analyse IA en cours...</span>
+                      </div>
+                    ) : aiRecommendations.length > 0 ? (
+                      aiRecommendations.map((rec, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <div className="font-semibold">{rec.tool}</div>
+                              <div className="text-sm text-muted-foreground">{rec.reason} • À partir de 15€/mois</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">IA Score</Badge>
+                            <Link to={`/catalogue?search=${encodeURIComponent(rec.tool)}`} className="text-primary hover:text-primary/80">
+                              <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      getBasicRecommendations().map((rec, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <div className="font-semibold">{rec.tool}</div>
+                              <div className="text-sm text-muted-foreground">{rec.reason} • À partir de 15€/mois</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">Score élevé</Badge>
+                            <Link to={`/catalogue?search=${encodeURIComponent(rec.tool)}`} className="text-primary hover:text-primary/80">
+                              <ExternalLink className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                 </div>
               </CardContent>
             </Card>
 
