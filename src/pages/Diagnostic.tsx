@@ -490,53 +490,218 @@ Généré par Solutio - https://solutio.work
               </CardContent>
             </Card>
 
-            {/* Recommendations */}
-            <Card className="mb-6 shadow-medium">
+            {/* AI Recommendations */}
+            <Card className="mb-6 shadow-elegant bg-gradient-to-br from-background to-secondary/50">
               <CardHeader>
-                <CardTitle>{t('diagnostic.recommendations_title')}</CardTitle>
-                <p className="text-muted-foreground">{t('diagnostic.recommendations_subtitle')}</p>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                  </div>
+                  {t('diagnostic.ai_recommendations_title')}
+                  {isLoadingResults && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Recommandations SaaS personnalisées basées sur votre diagnostic
+                </p>
               </CardHeader>
               <CardContent>
-                 <div className="space-y-3">
-                    {isLoadingResults ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        <span className="ml-2 text-muted-foreground">Analyse IA en cours...</span>
-                      </div>
-                    ) : aiRecommendations.length > 0 ? (
-                      aiRecommendations.map((rec, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
-                              {idx + 1}
+                <div className="space-y-4">
+                  {isLoadingResults ? (
+                    <div className="grid gap-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="animate-pulse">
+                          <div className="flex items-center space-x-4 p-4 bg-muted/30 rounded-lg">
+                            <div className="w-12 h-12 bg-muted rounded-lg"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-muted rounded w-3/4"></div>
+                              <div className="h-3 bg-muted rounded w-1/2"></div>
                             </div>
-                            <div>
-                              <div className="font-semibold">{rec.tool}</div>
-                              <div className="text-sm text-muted-foreground">{rec.reason} • À partir de 15€/mois</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">IA Score</Badge>
-                            <Link to={`/catalogue?search=${encodeURIComponent(rec.tool)}`} className="text-primary hover:text-primary/80">
-                              <ExternalLink className="h-4 w-4" />
-                            </Link>
                           </div>
                         </div>
-                      ))
-                    ) : (
-                      getBasicRecommendations().map((rec, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-all">
-                          <div className="flex items-center">
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold mr-3">
-                              {idx + 1}
+                      ))}
+                    </div>
+                  ) : aiRecommendations.length > 0 ? (
+                    <div className="grid gap-6">
+                      {aiRecommendations.map((rec: any, index: number) => {
+                        const saas = rec.saasData;
+                        
+                        return (
+                          <div
+                            key={index}
+                            className="group relative overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-background to-secondary/30 p-6 shadow-medium hover:shadow-elegant transition-all duration-300 hover:-translate-y-1"
+                          >
+                            {/* Priority Badge */}
+                            <div className="absolute top-4 right-4">
+                              <Badge variant={rec.priority === 1 ? "default" : "secondary"} className="text-xs">
+                                Priorité #{rec.priority}
+                              </Badge>
+                            </div>
+
+                            {/* Header with logo and basic info */}
+                            <div className="flex items-start gap-4 mb-4">
+                              <div className="flex-shrink-0">
+                                {saas?.logoUrl ? (
+                                  <img 
+                                    src={saas.logoUrl} 
+                                    alt={`${saas.name} logo`}
+                                    className="w-16 h-16 rounded-xl object-contain bg-background p-2 border border-border/20 shadow-sm"
+                                    onError={(e) => {
+                                      e.currentTarget.src = '/placeholder.svg';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center border border-border/20">
+                                    <TrendingUp className="h-8 w-8 text-primary" />
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                                  {saas?.name || rec.name || rec.tool}
+                                </h3>
+                                
+                                {saas?.tagline && (
+                                  <p className="text-sm text-muted-foreground mb-2 leading-relaxed">
+                                    {saas.tagline}
+                                  </p>
+                                )}
+                                
+                                {/* Pricing */}
+                                {saas?.pricingLinked?.length > 0 && (
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-950/20 dark:text-green-400 dark:border-green-800">
+                                      À partir de {saas.pricingLinked[0].price}
+                                    </Badge>
+                                    {saas.pricingLinked[0].popular && (
+                                      <Badge variant="secondary" className="text-xs">
+                                        Populaire
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* AI Recommendation reason */}
+                            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                              <div className="flex items-start gap-2">
+                                <div className="p-1 bg-blue-100 dark:bg-blue-900/50 rounded">
+                                  <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">
+                                    Recommandation IA personnalisée
+                                  </p>
+                                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                                    {rec.reason}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Pros/Advantages */}
+                            {saas?.pros?.length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  Avantages principaux
+                                </h4>
+                                <div className="grid gap-1">
+                                  {saas.pros.slice(0, 3).map((pro: string, i: number) => (
+                                    <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                                      {pro}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Scores */}
+                            {saas && (
+                              <div className="mb-4">
+                                <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1">
+                                  📊 Évaluation
+                                </h4>
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="text-center p-2 bg-muted/30 rounded-lg">
+                                    <div className="text-lg font-bold text-green-600">{saas.automation || 0}%</div>
+                                    <div className="text-xs text-muted-foreground">Automatisation</div>
+                                  </div>
+                                  <div className="text-center p-2 bg-muted/30 rounded-lg">
+                                    <div className="text-lg font-bold text-blue-600">{saas.ease || 0}%</div>
+                                    <div className="text-xs text-muted-foreground">Facilité</div>
+                                  </div>
+                                  <div className="text-center p-2 bg-muted/30 rounded-lg">
+                                    <div className="text-lg font-bold text-primary">{rec.automationScore || saas.score || 0}</div>
+                                    <div className="text-xs text-muted-foreground">Score IA</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Action buttons */}
+                            <div className="flex flex-wrap gap-2 pt-4 border-t border-border/20">
+                              {saas?.website && (
+                                <Button
+                                  asChild
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 min-w-[120px] hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                                >
+                                  <a href={saas.website} target="_blank" rel="noopener noreferrer">
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    Site web
+                                  </a>
+                                </Button>
+                              )}
+                              
+                              {saas?.trialUrl && (
+                                <Button
+                                  asChild
+                                  variant="default"
+                                  size="sm"
+                                  className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                                >
+                                  <a href={saas.trialUrl} target="_blank" rel="noopener noreferrer">
+                                    🆓 Essai gratuit
+                                  </a>
+                                </Button>
+                              )}
+                              
+                              <Button
+                                asChild
+                                variant="hero"
+                                size="sm"
+                                className="flex-1 min-w-[120px] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                              >
+                                <Link to={`/saas-detail/${saas?.id || encodeURIComponent(rec.name || rec.tool)}`}>
+                                  📋 Voir les détails
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                      // Fallback basic recommendations
+                      getBasicRecommendations().map((rec: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/20">
+                          <div className="flex items-center space-x-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <TrendingUp className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <div className="font-semibold">{rec.tool}</div>
-                              <div className="text-sm text-muted-foreground">{rec.reason} • À partir de 15€/mois</div>
+                              <h3 className="font-semibold">{rec.tool}</h3>
+                              <p className="text-sm text-muted-foreground">{rec.reason}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Score élevé</Badge>
+                            <Badge variant={rec.priority === 1 ? 'default' : 'secondary'}>
+                              #{rec.priority}
+                            </Badge>
                             <Link to={`/catalogue?search=${encodeURIComponent(rec.tool)}`} className="text-primary hover:text-primary/80">
                               <ExternalLink className="h-4 w-4" />
                             </Link>
