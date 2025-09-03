@@ -44,7 +44,7 @@ interface DiagnosticData {
   sector: string;
   tools: string;
   expectedResult: string;
-  envisagedAutomations: string;
+  constraints: string;
   priority: string;
 }
 
@@ -64,44 +64,56 @@ serve(async (req) => {
     
     // Create a comprehensive list of available SaaS for the AI
     const saasListForAI = allSaas.map(s => 
-      `- ${s.name}: ${s.tagline || s.description} (Automation: ${s.automation}%, Ease: ${s.ease}%)`
+      `- ${s.name}: ${s.tagline || s.description} (Automation: ${s.automation}%, Ease: ${s.ease}%, Price: ${s.priceText})`
     ).join('\n');
 
-    const prompt = `Tu es un consultant expert en automatisation d'entreprise chez Solutio. Analyse ce diagnostic client et recommande 3-5 solutions SaaS spécifiques parmi celles disponibles.
+    const prompt = `Tu es un consultant expert en automatisation d'entreprise chez Solutio. Analyse ce diagnostic client et recommande OBLIGATOIREMENT au moins 3 solutions SaaS pertinentes, idéalement 4-5 solutions.
 
 DIAGNOSTIC CLIENT:
 - Tâche à automatiser: ${diagnosticData.task}
 - Fréquence: ${diagnosticData.frequency}  
-- Secteur: ${diagnosticData.sector}
+- Secteur et contraintes: ${diagnosticData.sector}
 - Outils actuels: ${diagnosticData.tools}
 - Résultat attendu: ${diagnosticData.expectedResult}
-- Automatisations envisagées: ${diagnosticData.envisagedAutomations}
+- Contraintes spécifiques: ${diagnosticData.constraints}
 - Priorité (1-5): ${diagnosticData.priority}
 
 SOLUTIONS SAAS DISPONIBLES:
 ${saasListForAI}
 
-INSTRUCTIONS:
-1. Analyse le besoin spécifique du client
-2. Recommande 3-5 solutions les PLUS pertinentes parmi celles disponibles
-3. Explique pourquoi chaque solution correspond exactement au besoin
-4. Estime un score d'automatisation réaliste (60-95%)
-5. Calcule des économies potentielles (heures/mois)
-6. IMPORTANT: Utilise uniquement les noms EXACTS des SaaS de la liste fournie
+INSTRUCTIONS CRITIQUES:
+1. OBLIGATOIRE: Recommande AU MINIMUM 3 solutions, idéalement 4-5
+2. Analyse en profondeur le secteur, la fréquence et les contraintes spécifiques
+3. Pour chaque SaaS recommandé:
+   - Explique en détail la correspondance avec le besoin (100-150 mots)
+   - Justifie le scoring d'automatisation précis (70-95%)
+   - Estime les économies réalistes basées sur les tarifs réels du SaaS
+4. Calcule des économies personnalisées selon la taille d'entreprise et le secteur
+5. Fournis une analyse stratégique approfondie (200+ mots)
+6. CRITIQUE: Utilise uniquement les noms EXACTS des SaaS de la liste fournie
 
-FORMAT DE RÉPONSE JSON:
+SCORING PERSONNALISÉ:
+- Secteur réglementé (finance, santé): -5 points facilité
+- Tâches quotidiennes: +15 points automatisation  
+- Outils Excel/manuels: +20 points potentiel
+- PME (<50 employés): Privilégier solutions simples
+- Grandes entreprises: Privilégier solutions enterprise
+
+FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
   "score": 85,
   "economiesHeures": 20,
   "recommendations": [
     {
-      "name": "Nom exact du SaaS de la liste",
-      "reason": "Explication détaillée pourquoi ce SaaS répond au besoin spécifique",
+      "name": "Nom exact du SaaS",
+      "reason": "Analyse détaillée de 100-150 mots expliquant pourquoi ce SaaS est parfait pour ce besoin spécifique, en tenant compte du secteur, de la fréquence et des contraintes",
       "priority": 1,
-      "automationScore": 85
+      "automationScore": 85,
+      "estimatedMonthlyCost": 45,
+      "estimatedROI": "300%"
     }
   ],
-  "analysis": "Analyse personnalisée détaillée du diagnostic"
+  "analysis": "Analyse stratégique approfondie de 200+ mots sur les enjeux d'automatisation dans ce secteur, les risques, opportunités et recommandations d'implémentation"
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -111,12 +123,12 @@ FORMAT DE RÉPONSE JSON:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-mini-2025-08-07',
+        model: 'gpt-5-2025-08-07',
         messages: [
-          { role: 'system', content: 'Tu es un expert consultant en automatisation SaaS chez Solutio. Réponds uniquement en JSON valide avec les noms exacts des SaaS fournis.' },
+          { role: 'system', content: 'Tu es un expert consultant en automatisation SaaS chez Solutio. Réponds uniquement en JSON valide avec les noms exacts des SaaS fournis. Garantis minimum 3 recommandations pertinentes.' },
           { role: 'user', content: prompt }
         ],
-        max_completion_tokens: 1200,
+        max_completion_tokens: 2000,
       }),
     });
 
@@ -132,15 +144,16 @@ FORMAT DE RÉPONSE JSON:
       aiResponse = JSON.parse(data.choices[0].message.content);
     } catch (e) {
       console.error('Failed to parse JSON response:', data.choices[0].message.content);
-      // Fallback to basic recommendations
+      // Fallback to basic recommendations - ensure minimum 3
       aiResponse = {
         score: 75,
         economiesHeures: 15,
         recommendations: [
-          { name: 'Zapier', reason: 'Solution d\'automatisation polyvalente adaptée à votre besoin', priority: 1, automationScore: 80 },
-          { name: 'Monday.com', reason: 'Plateforme de gestion complète avec automatisations', priority: 2, automationScore: 70 }
+          { name: 'Zapier', reason: 'Solution d\'automatisation polyvalente qui peut connecter vos outils existants et automatiser vos workflows répétitifs. Parfait pour commencer l\'automatisation sans compétences techniques.', priority: 1, automationScore: 80, estimatedMonthlyCost: 29, estimatedROI: '200%' },
+          { name: 'Monday.com', reason: 'Plateforme de gestion de projet avec automatisations intégrées qui permet de centraliser vos tâches et de créer des workflows automatisés visuellement.', priority: 2, automationScore: 70, estimatedMonthlyCost: 39, estimatedROI: '150%' },
+          { name: 'HubSpot', reason: 'CRM gratuit avec automatisations marketing et commerciales intégrées, idéal pour automatiser la gestion client et les suivis commerciaux.', priority: 3, automationScore: 75, estimatedMonthlyCost: 0, estimatedROI: '300%' }
         ],
-        analysis: 'Analyse automatique basée sur vos réponses'
+        analysis: 'Analyse automatique basée sur vos réponses. Ces outils offrent un bon point de départ pour l\'automatisation de vos processus métier avec des interfaces intuitives et des intégrations robustes.'
       };
     }
 
@@ -195,13 +208,15 @@ FORMAT DE RÉPONSE JSON:
     console.error('Error in get-ai-recommendations function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      // Fallback recommendations
+      // Fallback recommendations - ensure minimum 3
       score: 70,
       economiesHeures: 10,
       recommendations: [
-        { tool: 'Zapier', reason: 'Solution d\'automatisation recommandée', priority: 1 }
+        { name: 'Zapier', reason: 'Solution d\'automatisation polyvalente recommandée pour votre contexte', priority: 1, automationScore: 75, estimatedMonthlyCost: 29, estimatedROI: '200%' },
+        { name: 'Monday.com', reason: 'Plateforme de gestion avec automatisations adaptée à vos besoins', priority: 2, automationScore: 70, estimatedMonthlyCost: 39, estimatedROI: '150%' },
+        { name: 'HubSpot', reason: 'CRM avec automatisations pour optimiser vos processus', priority: 3, automationScore: 75, estimatedMonthlyCost: 0, estimatedROI: '300%' }
       ],
-      analysis: 'Analyse de base - erreur lors du traitement IA'
+      analysis: 'Analyse de base - erreur lors du traitement IA. Ces recommandations sont basées sur les meilleures pratiques d\'automatisation.'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

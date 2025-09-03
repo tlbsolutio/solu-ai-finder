@@ -25,7 +25,7 @@ const Diagnostic = () => {
     sector: '',
     tools: '',
     expectedResult: '',
-    envisagedAutomations: '',
+    constraints: '',
     priority: ''
   });
   
@@ -288,7 +288,7 @@ const Diagnostic = () => {
       sector: '',
       tools: '',
       expectedResult: '',
-      envisagedAutomations: '',
+      constraints: '',
       priority: ''
     });
     setEmailData({ email: '', acceptMarketing: false });
@@ -336,7 +336,7 @@ Résumé des réponses:
 - Secteur: ${responses.sector}
 - Outils actuels: ${responses.tools}
 - Résultat attendu: ${responses.expectedResult}
-- Automatisations envisagées: ${responses.envisagedAutomations}
+- Contraintes spécifiques: ${responses.constraints}
 - Priorité: ${responses.priority}/5
 
 Recommandations:
@@ -479,8 +479,8 @@ Généré par Solutio - https://solutio.work
                      <p className="text-sm">{responses.expectedResult}</p>
                    </div>
                    <div>
-                     <div className="font-semibold text-sm text-muted-foreground mb-1">Automatisations envisagées</div>
-                     <p className="text-sm">{responses.envisagedAutomations}</p>
+                      <div className="font-semibold text-sm text-muted-foreground mb-1">Contraintes spécifiques</div>
+                      <p className="text-sm">{responses.constraints}</p>
                    </div>
                    <div>
                      <div className="font-semibold text-sm text-muted-foreground mb-1">Priorité</div>

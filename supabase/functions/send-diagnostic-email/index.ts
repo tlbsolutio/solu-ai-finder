@@ -17,9 +17,9 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, acceptMarketing, diagnosticData } = await req.json();
 
     const emailResponse = await resend.emails.send({
-      from: "Solutio <onboarding@resend.dev>",
+      from: "Solutio Diagnostic <no-reply@resend.dev>",
       to: [email],
-      subject: "Votre diagnostic d'automatisation - Solutio",
+      subject: "🎯 Votre diagnostic d'automatisation personnalisé - Solutio",
       html: `
         <!DOCTYPE html>
         <html>
@@ -172,6 +172,12 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     console.log("Email sent successfully:", emailResponse);
+    console.log("Email details:", {
+      id: emailResponse.data?.id,
+      to: email,
+      acceptMarketing: acceptMarketing,
+      timestamp: new Date().toISOString()
+    });
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
