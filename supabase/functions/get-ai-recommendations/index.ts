@@ -6,6 +6,7 @@ const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
 // Fetch SaaS data from Airtable
@@ -82,15 +83,16 @@ SOLUTIONS SAAS DISPONIBLES:
 ${saasListForAI}
 
 INSTRUCTIONS CRITIQUES:
-1. OBLIGATOIRE: Recommande AU MINIMUM 3 solutions, idéalement 4-5
-2. Analyse en profondeur le secteur, la fréquence et les contraintes spécifiques
+1. OBLIGATOIRE: Recommande EXACTEMENT 4-5 solutions SaaS pertinentes (jamais moins de 4)
+2. Analyse experte du secteur "${diagnosticData.sector}" avec contraintes "${diagnosticData.constraints}"
 3. Pour chaque SaaS recommandé:
-   - Explique en détail la correspondance avec le besoin (100-150 mots)
-   - Justifie le scoring d'automatisation précis (70-95%)
-   - Estime les économies réalistes basées sur les tarifs réels du SaaS
-4. Calcule des économies personnalisées selon la taille d'entreprise et le secteur
-5. Fournis une analyse stratégique approfondie (200+ mots)
+   - Correspondance détaillée avec le besoin spécifique (120-180 mots d'analyse)
+   - Scoring automatisation personnalisé basé sur la fréquence "${diagnosticData.frequency}" (75-95%)
+   - Calcul ROI précis selon les tarifs réels Airtable du SaaS
+4. Économies différenciées par SaaS selon secteur et taille d'entreprise
+5. Analyse stratégique de consultant expert (250+ mots) sur les enjeux d'automatisation
 6. CRITIQUE: Utilise uniquement les noms EXACTS des SaaS de la liste fournie
+7. Évite les prix répétitifs - chaque SaaS doit avoir son propre calcul basé sur ses tarifs réels
 
 SCORING PERSONNALISÉ:
 - Secteur réglementé (finance, santé): -5 points facilité
