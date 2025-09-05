@@ -85,12 +85,12 @@ const Diagnostic = () => {
     },
     {
       id: 6,
-      title: "Automatisations envisagées",
-      subtitle: "Avez-vous déjà envisagé certains types d'automatisations ou des logiciels précis ?",
+      title: "Contraintes techniques ou budgétaires",
+      subtitle: "Avez-vous des contraintes techniques (intégrations, sécurité) ou budgétaires spécifiques ?",
       type: "textarea",
-      field: "envisagedAutomations",
-      placeholder: "Oui, des outils comme Zapier, non je n'ai pas encore exploré",
-      examples: ["Zapier", "Monday.com", "HubSpot", "Non, pas encore exploré", "Intégrations API"]
+      field: "constraints",
+      placeholder: "Budget limité, besoin d'intégration avec ERP existant, contraintes RGPD...",
+      examples: ["Budget < 100€/mois", "Intégration ERP obligatoire", "Conformité RGPD", "Hébergement France", "Aucune contrainte"]
     },
     {
       id: 7,
@@ -251,32 +251,67 @@ const Diagnostic = () => {
 
   const getBasicRecommendations = () => {
     const task = responses.task.toLowerCase();
+    const sector = responses.sector?.toLowerCase() || '';
+    
+    // Base recommendations with 4-5 tools guaranteed
+    let recommendations = [];
     
     if (task.includes('email') || task.includes('mail')) {
-      return [
-        { tool: 'Mailchimp', reason: 'Automatisation email marketing', priority: 1 },
-        { tool: 'HubSpot CRM', reason: 'CRM avec email automation', priority: 2 },
-        { tool: 'Zapier', reason: 'Connexion entre outils email', priority: 3 }
+      recommendations = [
+        { tool: 'Mailchimp', reason: 'Automatisation email marketing professionnel', priority: 1 },
+        { tool: 'HubSpot CRM', reason: 'CRM avec email automation intégrée', priority: 2 },
+        { tool: 'ActiveCampaign', reason: 'Email automation avancée', priority: 3 },
+        { tool: 'Zapier', reason: 'Connexion entre tous vos outils email', priority: 4 }
       ];
-    } else if (task.includes('rapport') || task.includes('données')) {
-      return [
-        { tool: 'Monday.com', reason: 'Rapports automatisés', priority: 1 },
-        { tool: 'Zapier', reason: 'Automatisation de données', priority: 2 },
-        { tool: 'Google Sheets API', reason: 'Gestion données spreadsheet', priority: 3 }
+    } else if (task.includes('rapport') || task.includes('données') || task.includes('analyse')) {
+      recommendations = [
+        { tool: 'Monday.com', reason: 'Rapports automatisés et dashboard temps réel', priority: 1 },
+        { tool: 'Power BI', reason: 'Analyse de données avancée Microsoft', priority: 2 },
+        { tool: 'Zapier', reason: 'Automatisation collecte de données', priority: 3 },
+        { tool: 'Tableau', reason: 'Visualisation professionnelle des données', priority: 4 },
+        { tool: 'Google Data Studio', reason: 'Rapports Google gratuits', priority: 5 }
       ];
-    } else if (task.includes('rendez-vous') || task.includes('planning')) {
-      return [
+    } else if (task.includes('rendez-vous') || task.includes('planning') || task.includes('calendrier')) {
+      recommendations = [
         { tool: 'Calendly', reason: 'Prise de rendez-vous automatique', priority: 1 },
-        { tool: 'Acuity Scheduling', reason: 'Planification avancée', priority: 2 },
-        { tool: 'HubSpot CRM', reason: 'CRM avec planification', priority: 3 }
+        { tool: 'Acuity Scheduling', reason: 'Planification avancée avec paiements', priority: 2 },
+        { tool: 'HubSpot CRM', reason: 'CRM avec planification intégrée', priority: 3 },
+        { tool: 'SimplyBook.me', reason: 'Réservation en ligne complète', priority: 4 }
+      ];
+    } else if (task.includes('facture') || task.includes('comptab') || task.includes('finance')) {
+      recommendations = [
+        { tool: 'Stripe', reason: 'Facturation et paiements automatisés', priority: 1 },
+        { tool: 'QuickBooks', reason: 'Comptabilité automatisée', priority: 2 },
+        { tool: 'Pennylane', reason: 'Comptabilité française automatisée', priority: 3 },
+        { tool: 'Zapier', reason: 'Intégration systèmes financiers', priority: 4 }
+      ];
+    } else if (task.includes('client') || task.includes('crm') || task.includes('commercial')) {
+      recommendations = [
+        { tool: 'HubSpot CRM', reason: 'CRM gratuit complet', priority: 1 },
+        { tool: 'Pipedrive', reason: 'CRM commercial optimisé', priority: 2 },
+        { tool: 'Monday.com', reason: 'Gestion clients et projets', priority: 3 },
+        { tool: 'Zapier', reason: 'Automatisation du parcours client', priority: 4 }
       ];
     } else {
-      return [
-        { tool: 'Zapier', reason: 'Automatisation workflow', priority: 1 },
-        { tool: 'Monday.com', reason: 'Gestion de projet', priority: 2 },
-        { tool: 'HubSpot CRM', reason: 'CRM complet', priority: 3 }
+      // Recommandations génériques avec 4 outils minimum
+      recommendations = [
+        { tool: 'Zapier', reason: 'Automatisation universelle entre outils', priority: 1 },
+        { tool: 'Monday.com', reason: 'Gestion de projet et processus', priority: 2 },
+        { tool: 'HubSpot CRM', reason: 'CRM gratuit polyvalent', priority: 3 },
+        { tool: 'Google Workspace', reason: 'Suite bureautique collaborative', priority: 4 }
       ];
     }
+    
+    // S'assurer qu'on a au moins 4 recommandations
+    if (recommendations.length < 4) {
+      const additionalTools = [
+        { tool: 'Zapier', reason: 'Automatisation workflow', priority: 4 },
+        { tool: 'Notion', reason: 'Organisation et documentation', priority: 5 }
+      ];
+      recommendations = [...recommendations, ...additionalTools.slice(0, 4 - recommendations.length)];
+    }
+    
+    return recommendations.slice(0, 5); // Maximum 5 recommandations
   };
 
   const startNewDiagnostic = () => {
@@ -676,7 +711,7 @@ Généré par Solutio - https://solutio.work
                                 size="sm"
                                 className="flex-1 min-w-[120px] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                               >
-                                <Link to={`/saas-detail/${saas?.id || encodeURIComponent(rec.name || rec.tool)}`}>
+                                <Link to={`/saas/${saas?.id || encodeURIComponent(rec.name || rec.tool)}`}>
                                   📋 Voir les détails
                                 </Link>
                               </Button>
