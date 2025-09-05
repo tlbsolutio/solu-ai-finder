@@ -62,10 +62,19 @@ const SaasDetail = () => {
         if (error) throw error;
 
         const saasItems = data?.items || [];
-        const saas = saasItems.find((item: SaaSItem) => item.id === id);
+        // Try to find by ID first, then by name (for encoded URLs)
+        let saas = saasItems.find((item: SaaSItem) => item.id === id);
+        
+        // If not found by ID, try to find by name (decode URL parameter)
+        if (!saas && id) {
+          const decodedName = decodeURIComponent(id);
+          saas = saasItems.find((item: SaaSItem) => 
+            item.name.toLowerCase() === decodedName.toLowerCase()
+          );
+        }
         
         if (!saas) {
-          setError('SaaS not found');
+          setError(`SaaS "${id}" introuvable`);
         } else {
           setSaasDetail(saas);
         }
