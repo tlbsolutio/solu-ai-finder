@@ -168,14 +168,20 @@ const Diagnostic = () => {
     };
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < questions.length) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Show results page
-      setShowResults(true);
-      // Start getting AI recommendations in background
-      getAIRecommendations();
+      setIsLoadingResults(true);
+      try {
+        const result = await getAIRecommendations();
+        setAiRecommendations(result.recommendations || []);
+        setShowResults(true);
+      } catch (error) {
+        // Error already handled in getAIRecommendations
+      } finally {
+        setIsLoadingResults(false);
+      }
     }
   };
 

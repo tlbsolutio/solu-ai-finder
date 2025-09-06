@@ -135,12 +135,12 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-5-2025-08-07',
+        model: 'gpt-4-1106-preview',
         messages: [
           { role: 'system', content: 'Tu es un expert consultant en automatisation SaaS chez Solutio. Réponds uniquement en JSON valide avec les noms exacts des SaaS fournis. Garantis minimum 3 recommandations pertinentes.' },
           { role: 'user', content: prompt }
         ],
-        max_completion_tokens: 2000,
+        max_tokens: 2000,
       }),
     });
 
