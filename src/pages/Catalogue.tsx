@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter, Star, TrendingUp, Users, DollarSign } from 'lucide-react';
+import { Search, Filter, Star, TrendingUp, Users, DollarSign, Bug, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { translateWithDeepl } from '@/utils/translate';
@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSaasCache } from '@/hooks/useSaasCache';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
+import { toast } from 'sonner';
 // removed pagination imports
 interface SaaSItem {
   id: string;
@@ -49,9 +50,36 @@ const Catalogue = () => {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
   const LOAD_STEP = 12;
   const INITIAL_COUNT = 12;
+
+  // DEBUG: Clear cache function
+  const clearCache = () => {
+    localStorage.removeItem('saas_catalogue_cache');
+    localStorage.removeItem('deeplCache');
+    toast.success('Cache vidé ! Rechargement...');
+    window.location.reload();
+  };
+
+  // DEBUG: Log all SaaS names
+  const debugLogAllSaaS = () => {
+    console.log('=== DEBUG: Tous les SaaS chargés ===');
+    console.log('Nombre total:', saasData.length);
+    const names = saasData.map(item => item.name).sort();
+    console.log('Noms des SaaS:', names);
+    
+    // Check for HubSpot variations
+    const hubspotVariations = names.filter(name => 
+      name.toLowerCase().includes('hub') || 
+      name.toLowerCase().includes('spot')
+    );
+    console.log('Variations contenant "hub" ou "spot":', hubspotVariations);
+    
+    setShowDebugInfo(!showDebugInfo);
+    toast.success(`${saasData.length} SaaS trouvés - voir console`);
+  };
 
 
   // Reset visible count on filters/language change
@@ -126,6 +154,11 @@ const Catalogue = () => {
         return;
       }
       const items = (data as any)?.items as SaaSItem[];
+      console.log('=== DEBUG: Données chargées depuis Airtable ===');
+      console.log('Nombre d\'items:', items?.length || 0);
+      if (items && items.length > 0) {
+        console.log('Premiers 5 noms:', items.slice(0, 5).map(i => i.name));
+      }
       setSaasData(items || []);
       setDisplayData(items || []);
       setCacheData(items || []); // Cache the data
@@ -201,6 +234,16 @@ const filteredSaaS = displayData.filter(item => {
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.categories.includes(selectedCategory);
     const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
+    
+    // DEBUG: Log search activity
+    if (searchQuery.trim() !== '') {
+      console.log(`=== DEBUG: Recherche "${searchQuery}" ===`);
+      console.log(`Item: ${item.name}`);
+      console.log(`Correspond au nom: ${item.name.toLowerCase().includes(searchQuery.toLowerCase())}`);
+      console.log(`Correspond à la description: ${item.description.toLowerCase().includes(searchQuery.toLowerCase())}`);
+      console.log(`Match global: ${matchesSearch && matchesCategory && matchesTarget}`);
+    }
+    
     return matchesSearch && matchesCategory && matchesTarget;
   });
 
@@ -278,11 +321,69 @@ const totalItems = filteredSaaS.length;
                   ))}
                 </SelectContent>
               </Select>
-
-{/* moved below */}
+            </div>
+            
+            {/* DEBUG Controls */}
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearCache}
+                  className="text-xs"
+                >
+                  <Trash2 className="h-3 w-3 mr-1" />
+                  Vider Cache
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={debugLogAllSaaS}
+                  className="text-xs"
+                >
+                  <Bug className="h-3 w-3 mr-1" />
+                  Debug SaaS ({saasData.length})
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Debug Info Panel */}
+        {showDebugInfo && (
+          <Card className="mb-6 border-yellow-200 bg-yellow-50">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center">
+                <Bug className="h-4 w-4 mr-2" />
+                Informations de Debug
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p><strong>Total SaaS chargés:</strong> {saasData.length}</p>
+                  <p><strong>Données affichées:</strong> {displayData.length}</p>
+                  <p><strong>Résultats filtrés:</strong> {filteredSaaS.length}</p>
+                  <p><strong>Requête de recherche:</strong> "{searchQuery}"</p>
+                </div>
+                <div>
+                  <p><strong>Catégorie sélectionnée:</strong> {selectedCategory || 'Toutes'}</p>
+                  <p><strong>Cible sélectionnée:</strong> {selectedTarget || 'Toutes'}</p>
+                  <p><strong>Langue:</strong> {language}</p>
+                  <p><strong>Cache actif:</strong> {cachedData ? 'Oui' : 'Non'}</p>
+                </div>
+              </div>
+              {saasData.length > 0 && (
+                <details className="mt-3">
+                  <summary className="cursor-pointer font-medium">Tous les noms de SaaS (cliquer pour voir)</summary>
+                  <div className="mt-2 max-h-32 overflow-y-auto bg-white p-2 rounded border">
+                    {saasData.map(item => item.name).sort().join(', ')}
+                  </div>
+                </details>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
 
         {/* Error state */}
