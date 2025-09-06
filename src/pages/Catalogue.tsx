@@ -47,7 +47,7 @@ const Catalogue = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
   const [loading, setLoading] = useState(true);
-const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(12);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
   const LOAD_STEP = 12;
@@ -58,11 +58,18 @@ const [errorMsg, setErrorMsg] = useState<string | null>(null);
     setVisibleCount(INITIAL_COUNT);
   }, [searchQuery, selectedCategory, selectedTarget, language]);
 
-  // Set category filter from URL params on mount
+  // Set filters from URL params on mount
   useEffect(() => {
     const categoryParam = searchParams.get('category');
     if (categoryParam) {
       setSelectedCategory(decodeURIComponent(categoryParam));
+    }
+    
+    // CRITICAL FIX: Handle search parameter from AI recommendations
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(decodeURIComponent(searchParam));
+      console.log('Catalogue initialized with search query:', decodeURIComponent(searchParam));
     }
   }, [searchParams]);
 

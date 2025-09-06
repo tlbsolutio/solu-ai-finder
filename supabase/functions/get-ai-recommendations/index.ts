@@ -91,8 +91,10 @@ INSTRUCTIONS CRITIQUES:
    - Calcul ROI précis selon les tarifs réels Airtable du SaaS
 4. Économies différenciées par SaaS selon secteur et taille d'entreprise
 5. Analyse stratégique de consultant expert (250+ mots) sur les enjeux d'automatisation
-6. CRITIQUE: Utilise uniquement les noms EXACTS des SaaS de la liste fournie avec leur ID Airtable
-7. Évite les prix répétitifs - chaque SaaS doit avoir son propre calcul basé sur ses tarifs réels
+6. CRITIQUE ABSOLU: Tu DOIS utiliser UNIQUEMENT les IDs Airtable EXACTS (recXXXX) et noms EXACTS listés ci-dessus
+7. INTERDIT TOTAL: N'invente JAMAIS de SaaS génériques comme "Zapier", "Monday.com", "HubSpot" s'ils ne sont pas dans la liste
+8. Évite les prix répétitifs - chaque SaaS doit avoir son propre calcul basé sur ses tarifs réels
+9. Vérifie que chaque ID recommandé existe dans la liste fournie
 
 SCORING PERSONNALISÉ:
 - Secteur réglementé (finance, santé): -5 points facilité
