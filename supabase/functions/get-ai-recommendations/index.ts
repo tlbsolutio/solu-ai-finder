@@ -233,6 +233,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 
   } catch (error) {
     console.error('Error in get-ai-recommendations function:', error);
+    console.error('Full error details:', JSON.stringify(error, null, 2));
     return new Response(JSON.stringify({ 
       error: error.message,
       message: 'Service de recommandations temporairement indisponible. Veuillez réessayer dans quelques minutes.'
