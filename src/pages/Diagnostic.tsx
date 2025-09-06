@@ -224,94 +224,30 @@ const Diagnostic = () => {
         score: data.score || 75,
         recommendations: data.recommendations || [],
         economiesHeures: data.economiesHeures || 15,
+        economiesMensuelles: data.economiesMensuelles || 800,
+        economiesAnnuelles: data.economiesAnnuelles || 9600,
         analysis: data.analysis || 'Analyse personnalisée de vos besoins'
       };
     } catch (error) {
       console.error('Error getting AI recommendations:', error);
-      // Fallback to basic recommendations
-      return {
-        score: generateScore(),
-        recommendations: getBasicRecommendations(),
-        economiesHeures: 15,
-        analysis: 'Recommandations basées sur vos réponses'
-      };
+      toast({
+        title: "Service temporairement indisponible",
+        description: "Impossible de générer les recommandations IA. Veuillez réessayer.",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to handle in UI
     } finally {
       setIsLoadingResults(false);
     }
   };
 
-  // Fallback basic recommendations
+  // Generate fallback score when AI is unavailable
   const generateScore = () => {
     let score = 60;
     if (responses.frequency.toLowerCase().includes('jour') || responses.frequency.toLowerCase().includes('quotidien')) score += 20;
     if (responses.task.length > 50) score += 10;
     if (responses.tools.toLowerCase().includes('excel') || responses.tools.toLowerCase().includes('manuel')) score += 15;
     return Math.min(score, 95);
-  };
-
-  const getBasicRecommendations = () => {
-    const task = responses.task.toLowerCase();
-    const sector = responses.sector?.toLowerCase() || '';
-    
-    // Base recommendations with 4-5 tools guaranteed
-    let recommendations = [];
-    
-    if (task.includes('email') || task.includes('mail')) {
-      recommendations = [
-        { tool: 'Mailchimp', reason: 'Automatisation email marketing professionnel', priority: 1 },
-        { tool: 'HubSpot CRM', reason: 'CRM avec email automation intégrée', priority: 2 },
-        { tool: 'ActiveCampaign', reason: 'Email automation avancée', priority: 3 },
-        { tool: 'Zapier', reason: 'Connexion entre tous vos outils email', priority: 4 }
-      ];
-    } else if (task.includes('rapport') || task.includes('données') || task.includes('analyse')) {
-      recommendations = [
-        { tool: 'Monday.com', reason: 'Rapports automatisés et dashboard temps réel', priority: 1 },
-        { tool: 'Power BI', reason: 'Analyse de données avancée Microsoft', priority: 2 },
-        { tool: 'Zapier', reason: 'Automatisation collecte de données', priority: 3 },
-        { tool: 'Tableau', reason: 'Visualisation professionnelle des données', priority: 4 },
-        { tool: 'Google Data Studio', reason: 'Rapports Google gratuits', priority: 5 }
-      ];
-    } else if (task.includes('rendez-vous') || task.includes('planning') || task.includes('calendrier')) {
-      recommendations = [
-        { tool: 'Calendly', reason: 'Prise de rendez-vous automatique', priority: 1 },
-        { tool: 'Acuity Scheduling', reason: 'Planification avancée avec paiements', priority: 2 },
-        { tool: 'HubSpot CRM', reason: 'CRM avec planification intégrée', priority: 3 },
-        { tool: 'SimplyBook.me', reason: 'Réservation en ligne complète', priority: 4 }
-      ];
-    } else if (task.includes('facture') || task.includes('comptab') || task.includes('finance')) {
-      recommendations = [
-        { tool: 'Stripe', reason: 'Facturation et paiements automatisés', priority: 1 },
-        { tool: 'QuickBooks', reason: 'Comptabilité automatisée', priority: 2 },
-        { tool: 'Pennylane', reason: 'Comptabilité française automatisée', priority: 3 },
-        { tool: 'Zapier', reason: 'Intégration systèmes financiers', priority: 4 }
-      ];
-    } else if (task.includes('client') || task.includes('crm') || task.includes('commercial')) {
-      recommendations = [
-        { tool: 'HubSpot CRM', reason: 'CRM gratuit complet', priority: 1 },
-        { tool: 'Pipedrive', reason: 'CRM commercial optimisé', priority: 2 },
-        { tool: 'Monday.com', reason: 'Gestion clients et projets', priority: 3 },
-        { tool: 'Zapier', reason: 'Automatisation du parcours client', priority: 4 }
-      ];
-    } else {
-      // Recommandations génériques avec 4 outils minimum
-      recommendations = [
-        { tool: 'Zapier', reason: 'Automatisation universelle entre outils', priority: 1 },
-        { tool: 'Monday.com', reason: 'Gestion de projet et processus', priority: 2 },
-        { tool: 'HubSpot CRM', reason: 'CRM gratuit polyvalent', priority: 3 },
-        { tool: 'Google Workspace', reason: 'Suite bureautique collaborative', priority: 4 }
-      ];
-    }
-    
-    // S'assurer qu'on a au moins 4 recommandations
-    if (recommendations.length < 4) {
-      const additionalTools = [
-        { tool: 'Zapier', reason: 'Automatisation workflow', priority: 4 },
-        { tool: 'Notion', reason: 'Organisation et documentation', priority: 5 }
-      ];
-      recommendations = [...recommendations, ...additionalTools.slice(0, 4 - recommendations.length)];
-    }
-    
-    return recommendations.slice(0, 5); // Maximum 5 recommandations
   };
 
   const startNewDiagnostic = () => {
@@ -726,33 +662,35 @@ Généré par Solutio - https://solutio.work
                       })}
                     </div>
                   ) : (
-                      // Fallback basic recommendations
-                      getBasicRecommendations().map((rec: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-border/20">
-                          <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <TrendingUp className="h-5 w-5 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold">{rec.tool}</h3>
-                              <p className="text-sm text-muted-foreground">{rec.reason}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={rec.priority === 1 ? 'default' : 'secondary'}>
-                              #{rec.priority}
-                            </Badge>
-                            <a 
-                              href={`/catalogue?search=${encodeURIComponent(rec.tool)}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-primary hover:text-primary/80"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
+                    <div className="text-center py-8">
+                      <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                        <div className="flex items-center justify-center mb-4">
+                          <div className="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-full">
+                            <MessageCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                           </div>
                         </div>
-                      ))
+                        <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+                          Service de recommandations temporairement indisponible
+                        </h3>
+                        <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+                          Notre IA d'analyse est momentanément inaccessible. Veuillez réessayer dans quelques minutes.
+                        </p>
+                        <Button 
+                          onClick={() => getAIRecommendations()} 
+                          disabled={isLoadingResults}
+                          className="mt-2"
+                        >
+                          {isLoadingResults ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Rechargement...
+                            </>
+                          ) : (
+                            'Réessayer'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                     )}
                  </div>
               </CardContent>

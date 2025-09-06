@@ -68,7 +68,7 @@ serve(async (req) => {
       `- ${s.name} (ID: ${s.id}): ${s.tagline || s.description} (Automation: ${s.automation}%, Ease: ${s.ease}%, Price: ${s.priceText})`
     ).join('\n');
 
-    const prompt = `Tu es un consultant expert en automatisation d'entreprise chez Solutio. Analyse ce diagnostic client et recommande OBLIGATOIREMENT au moins 3 solutions SaaS pertinentes, idéalement 4-5 solutions.
+    const prompt = `Tu es un consultant expert en automatisation d'entreprise chez Solutio. Analyse ce diagnostic client en profondeur et recommande UNIQUEMENT des solutions SaaS présentes dans ma base de données Airtable.
 
 DIAGNOSTIC CLIENT:
 - Tâche à automatiser: ${diagnosticData.task}
@@ -79,46 +79,55 @@ DIAGNOSTIC CLIENT:
 - Contraintes spécifiques: ${diagnosticData.constraints}
 - Priorité (1-5): ${diagnosticData.priority}
 
-SOLUTIONS SAAS DISPONIBLES:
+CATALOGUE SAAS DISPONIBLE EXCLUSIVEMENT:
 ${saasListForAI}
 
 INSTRUCTIONS CRITIQUES:
-1. OBLIGATOIRE: Recommande EXACTEMENT 4-5 solutions SaaS pertinentes (jamais moins de 4)
-2. Analyse experte du secteur "${diagnosticData.sector}" avec contraintes "${diagnosticData.constraints}"
-3. Pour chaque SaaS recommandé:
-   - Correspondance détaillée avec le besoin spécifique (120-180 mots d'analyse)
-   - Scoring automatisation personnalisé basé sur la fréquence "${diagnosticData.frequency}" (75-95%)
-   - Calcul ROI précis selon les tarifs réels Airtable du SaaS
-4. Économies différenciées par SaaS selon secteur et taille d'entreprise
-5. Analyse stratégique de consultant expert (250+ mots) sur les enjeux d'automatisation
-6. CRITIQUE ABSOLU: Tu DOIS utiliser UNIQUEMENT les IDs Airtable EXACTS (recXXXX) et noms EXACTS listés ci-dessus
-7. INTERDIT TOTAL: N'invente JAMAIS de SaaS génériques comme "Zapier", "Monday.com", "HubSpot" s'ils ne sont pas dans la liste
-8. Évite les prix répétitifs - chaque SaaS doit avoir son propre calcul basé sur ses tarifs réels
-9. Vérifie que chaque ID recommandé existe dans la liste fournie
+1. RÈGLE ABSOLUE: Recommande UNIQUEMENT parmi les SaaS listés ci-dessus avec leurs IDs exacts (recXXXX)
+2. INTERDIT ABSOLU: Ne recommande JAMAIS Zapier, Monday.com, HubSpot, ou autres SaaS génériques s'ils ne sont pas dans la liste
+3. Nombre de recommandations: EXACTEMENT 3-4 SaaS pertinents (qualité > quantité)
+4. Calcul intelligent du temps économisé:
+   - Analyse la tâche "${diagnosticData.task}" et la fréquence "${diagnosticData.frequency}"
+   - Estime le temps actuel réaliste par tâche (ex: rapport = 8h, saisie données = 2h, emails = 1h)
+   - Calcule le potentiel d'automatisation selon le SaaS (60-90% selon la solution)
+   - Multiplie par la fréquence mensuelle réelle
+5. Calcul ROI personnalisé:
+   - Utilise un taux horaire de 45€/h (coût employé France)
+   - Soustrait le coût réel du SaaS recommandé (utilise les prix Airtable)
+   - Calcule le ROI annuel réaliste
+6. Score d'automatisation intelligent (75-95%):
+   - Secteur réglementé: -10 points
+   - Tâches quotidiennes: +15 points
+   - Outils manuels actuels: +20 points
+   - Contraintes techniques: -5 points
 
-SCORING PERSONNALISÉ:
-- Secteur réglementé (finance, santé): -5 points facilité
-- Tâches quotidiennes: +15 points automatisation  
-- Outils Excel/manuels: +20 points potentiel
-- PME (<50 employés): Privilégier solutions simples
-- Grandes entreprises: Privilégier solutions enterprise
+EXEMPLE DE CALCUL:
+Si tâche = "création rapports mensuels", fréquence = "mensuel", temps actuel = 8h
+- Temps économisé avec un bon SaaS: 6h/mois (75% automatisation)
+- Économies brutes: 6h × 45€ = 270€/mois
+- Coût SaaS: 50€/mois
+- Économies nettes: 220€/mois × 12 = 2640€/an
+- ROI: 428%
 
 FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
   "score": 85,
   "economiesHeures": 20,
+  "economiesMensuelles": 1250,
+  "economiesAnnuelles": 15000,
   "recommendations": [
     {
-      "name": "Nom exact du SaaS",
-      "id": "ID Airtable du SaaS (recXXXXX)",
-      "reason": "Analyse détaillée de 100-150 mots expliquant pourquoi ce SaaS est parfait pour ce besoin spécifique, en tenant compte du secteur, de la fréquence et des contraintes",
+      "name": "Nom EXACT du SaaS depuis Airtable",
+      "id": "ID Airtable EXACT (recXXXXX)",
+      "reason": "Analyse détaillée de 120-150 mots expliquant la correspondance précise avec le besoin, calculs de temps économisé, avantages spécifiques pour ce secteur",
       "priority": 1,
       "automationScore": 85,
       "estimatedMonthlyCost": 45,
-      "estimatedROI": "300%"
+      "estimatedROI": "320%",
+      "timesSavedPerMonth": 15
     }
   ],
-  "analysis": "Analyse stratégique approfondie de 200+ mots sur les enjeux d'automatisation dans ce secteur, les risques, opportunités et recommandations d'implémentation"
+  "analysis": "Analyse stratégique de consultant de 200+ mots sur l'automatisation dans ce contexte, obstacles potentiels, plan d'implémentation recommandé et justification du choix des SaaS"
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -146,168 +155,73 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 
     let aiResponse;
     try {
-      aiResponse = JSON.parse(data.choices[0].message.content);
+      const responseContent = data.choices[0].message.content.trim();
+      
+      // Clean the response if it has markdown formatting
+      const cleanContent = responseContent.replace(/```json\n?|\n?```/g, '').trim();
+      
+      aiResponse = JSON.parse(cleanContent);
+      
+      // Validate that recommendations only use SaaS from our database
+      const validRecommendations = aiResponse.recommendations?.filter(rec => {
+        const foundSaaS = allSaas.find(s => s.id === rec.id);
+        if (!foundSaaS) {
+          console.warn(`Invalid SaaS recommendation with ID ${rec.id} - not found in Airtable`);
+          return false;
+        }
+        return true;
+      }) || [];
+      
+      if (validRecommendations.length === 0) {
+        throw new Error('No valid recommendations found - all recommended SaaS are missing from database');
+      }
+      
+      aiResponse.recommendations = validRecommendations;
+      console.log(`Validated ${validRecommendations.length} recommendations from AI`);
+      
     } catch (e) {
-      console.error('Failed to parse JSON response:', data.choices[0].message.content);
-      // Fallback using real SaaS from Airtable instead of hardcoded ones
-      const fallbackSaaS = allSaas
-        .filter(s => s.automation >= 70) // High automation score
-        .sort((a, b) => b.score - a.score) // Sort by score
-        .slice(0, 3); // Top 3
-        
-       aiResponse = {
-         score: 75,
-         economiesHeures: 15,
-         recommendations: fallbackSaaS.map((saas, index) => ({
-           name: saas.name,
-           id: saas.id,
-           reason: `${saas.description} - Score d'automatisation : ${saas.automation}%`,
-           priority: index + 1,
-           automationScore: saas.automation,
-           estimatedMonthlyCost: 35,
-           estimatedROI: '150%'
-         })),
-         analysis: 'Analyse basée sur vos réponses et les meilleurs SaaS disponibles dans notre catalogue.'
-       };
+      console.error('Failed to parse or validate AI response:', e);
+      console.error('Original response:', data.choices[0].message.content);
+      
+      // If AI fails completely, return error instead of fallback
+      throw new Error('AI recommendation service temporarily unavailable. Please try again.');
     }
 
     // Enrich recommendations with detailed SaaS data from Airtable
     const enrichedRecommendations = aiResponse.recommendations.map((rec: any) => {
-      // First try using the AI provided ID
-      let saasData = null;
-      if (rec.id) {
-        saasData = allSaas.find(s => s.id === rec.id);
-        if (saasData) {
-          console.log(`Found SaaS by ID ${rec.id}:`, saasData.name);
-        }
+      // Find SaaS data using the exact ID provided by AI
+      const saasData = allSaas.find(s => s.id === rec.id);
+      
+      if (!saasData) {
+        console.error(`Critical error: SaaS with ID ${rec.id} not found in database`);
+        throw new Error(`Recommended SaaS ${rec.name} (${rec.id}) not found in database`);
       }
       
-      // If no ID or ID not found, try exact name match
-      if (!saasData) {
-        saasData = allSaas.find(s => 
-          s.name.toLowerCase() === rec.name.toLowerCase()
-        );
-        if (saasData) {
-          console.log(`Found SaaS by exact name match:`, saasData.name);
-        }
-      }
+      console.log(`Successfully matched SaaS ${rec.name} with ID ${rec.id}`);
       
-      // If no exact match, try fuzzy matching
-      if (!saasData) {
-        saasData = allSaas.find(s => 
-          s.name.toLowerCase().includes(rec.name.toLowerCase()) ||
-          rec.name.toLowerCase().includes(s.name.toLowerCase())
-        );
-        if (saasData) {
-          console.log(`Found SaaS by fuzzy match:`, saasData.name);
+      return {
+        ...rec,
+        name: saasData.name, // Use exact name from database
+        id: saasData.id,
+        saasData: {
+          name: saasData.name,
+          tagline: saasData.tagline,
+          description: saasData.description,
+          logoUrl: saasData.logoUrl,
+          categories: saasData.categories,
+          pros: saasData.pros,
+          cons: saasData.cons,
+          features: saasData.features,
+          automation: saasData.automation,
+          ease: saasData.ease,
+          score: saasData.score,
+          website: saasData.website,
+          trialUrl: saasData.trialUrl,
+          affiliate: saasData.affiliate,
+          pricingLinked: saasData.pricingLinked,
+          priceText: saasData.priceText
         }
-      }
-      
-      // If still no match, find a similar SaaS by task type
-      if (!saasData) {
-        const taskLower = diagnosticData.task?.toLowerCase() || '';
-        
-        if (taskLower.includes('rapport') || taskLower.includes('analyse') || taskLower.includes('dashboard')) {
-          saasData = allSaas.find(s => 
-            s.categories.some(cat => cat.toLowerCase().includes('reporting')) ||
-            s.features.some(feat => feat.toLowerCase().includes('tableau'))
-          );
-        } else if (taskLower.includes('automatisation') || taskLower.includes('workflow')) {
-          saasData = allSaas.find(s => 
-            s.categories.some(cat => cat.toLowerCase().includes('automatisation')) ||
-            s.features.some(feat => feat.toLowerCase().includes('automatisation'))
-          );
-        } else if (taskLower.includes('gestion') || taskLower.includes('projet')) {
-          saasData = allSaas.find(s => 
-            s.categories.some(cat => cat.toLowerCase().includes('productivité')) ||
-            s.features.some(feat => feat.toLowerCase().includes('gestion'))
-          );
-        } else if (taskLower.includes('client') || taskLower.includes('crm')) {
-          saasData = allSaas.find(s => 
-            s.categories.some(cat => cat.toLowerCase().includes('crm')) ||
-            s.categories.some(cat => cat.toLowerCase().includes('marketing'))
-          );
-        }
-        
-        if (saasData) {
-          console.log(`Found SaaS by task category match:`, saasData.name);
-        }
-      }
-        
-      // If still no match, pick a high-scoring relevant SaaS based on sector
-      if (!saasData) {
-        const sectorLower = diagnosticData.sector?.toLowerCase() || '';
-        let filteredSaas = allSaas.filter(s => s.automation >= 70 && s.score >= 4.0);
-        
-        // Try to match by sector if possible
-        if (sectorLower.includes('rh')) {
-          const hrSaas = filteredSaas.find(s => 
-            s.categories.some(cat => cat.toLowerCase().includes('rh')) ||
-            s.features.some(feat => feat.toLowerCase().includes('ressources humaines'))
-          );
-          if (hrSaas) saasData = hrSaas;
-        }
-        
-        // Fallback to highest scoring SaaS
-        if (!saasData && filteredSaas.length > 0) {
-          saasData = filteredSaas.sort((a, b) => b.score - a.score)[0];
-          console.log(`Using high-scoring fallback SaaS:`, saasData.name);
-        }
-      }
-      
-      if (saasData) {
-        console.log(`Found SaaS data for ${rec.name}:`, saasData.name);
-        return {
-          ...rec,
-          name: saasData.name, // Use the real SaaS name
-          id: saasData.id,
-          saasData: {
-            name: saasData.name,
-            tagline: saasData.tagline,
-            description: saasData.description,
-            logoUrl: saasData.logoUrl,
-            categories: saasData.categories,
-            pros: saasData.pros,
-            cons: saasData.cons,
-            features: saasData.features,
-            automation: saasData.automation,
-            ease: saasData.ease,
-            score: saasData.score,
-            website: saasData.website,
-            trialUrl: saasData.trialUrl,
-            affiliate: saasData.affiliate,
-            pricingLinked: saasData.pricingLinked,
-            priceText: saasData.priceText
-          }
-        };
-      } else {
-        console.warn(`No SaaS data found for ${rec.name}, using fallback`);
-        // Use a fallback from the available SaaS
-        const fallbackSaaS = allSaas[0]; // First available SaaS
-        return {
-          ...rec,
-          name: fallbackSaaS.name,
-          id: fallbackSaaS.id,
-          saasData: {
-            name: fallbackSaaS.name,
-            tagline: fallbackSaaS.tagline,
-            description: fallbackSaaS.description,
-            logoUrl: fallbackSaaS.logoUrl,
-            categories: fallbackSaaS.categories,
-            pros: fallbackSaaS.pros,
-            cons: fallbackSaaS.cons,
-            features: fallbackSaaS.features,
-            automation: fallbackSaaS.automation,
-            ease: fallbackSaaS.ease,
-            score: fallbackSaaS.score,
-            website: fallbackSaaS.website,
-            trialUrl: fallbackSaaS.trialUrl,
-            affiliate: fallbackSaaS.affiliate,
-            pricingLinked: fallbackSaaS.pricingLinked,
-            priceText: fallbackSaaS.priceText
-          }
-        };
-      }
+      };
     });
 
     const finalResponse = {
@@ -323,15 +237,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
     console.error('Error in get-ai-recommendations function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      // Fallback recommendations - ensure minimum 3
-      score: 70,
-      economiesHeures: 10,
-      recommendations: [
-        { name: 'Zapier', reason: 'Solution d\'automatisation polyvalente recommandée pour votre contexte', priority: 1, automationScore: 75, estimatedMonthlyCost: 29, estimatedROI: '200%' },
-        { name: 'Monday.com', reason: 'Plateforme de gestion avec automatisations adaptée à vos besoins', priority: 2, automationScore: 70, estimatedMonthlyCost: 39, estimatedROI: '150%' },
-        { name: 'HubSpot', reason: 'CRM avec automatisations pour optimiser vos processus', priority: 3, automationScore: 75, estimatedMonthlyCost: 0, estimatedROI: '300%' }
-      ],
-      analysis: 'Analyse de base - erreur lors du traitement IA. Ces recommandations sont basées sur les meilleures pratiques d\'automatisation.'
+      message: 'Service de recommandations temporairement indisponible. Veuillez réessayer dans quelques minutes.'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
