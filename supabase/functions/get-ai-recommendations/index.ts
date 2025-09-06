@@ -146,31 +146,76 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       aiResponse = JSON.parse(data.choices[0].message.content);
     } catch (e) {
       console.error('Failed to parse JSON response:', data.choices[0].message.content);
-      // Fallback to basic recommendations - ensure minimum 3
+      // Fallback using real SaaS from Airtable instead of hardcoded ones
+      const fallbackSaaS = allSaas
+        .filter(s => s.automation >= 70) // High automation score
+        .sort((a, b) => b.score - a.score) // Sort by score
+        .slice(0, 3); // Top 3
+        
       aiResponse = {
         score: 75,
         economiesHeures: 15,
-        recommendations: [
-          { name: 'Zapier', reason: 'Solution d\'automatisation polyvalente qui peut connecter vos outils existants et automatiser vos workflows répétitifs. Parfait pour commencer l\'automatisation sans compétences techniques.', priority: 1, automationScore: 80, estimatedMonthlyCost: 29, estimatedROI: '200%' },
-          { name: 'Monday.com', reason: 'Plateforme de gestion de projet avec automatisations intégrées qui permet de centraliser vos tâches et de créer des workflows automatisés visuellement.', priority: 2, automationScore: 70, estimatedMonthlyCost: 39, estimatedROI: '150%' },
-          { name: 'HubSpot', reason: 'CRM gratuit avec automatisations marketing et commerciales intégrées, idéal pour automatiser la gestion client et les suivis commerciaux.', priority: 3, automationScore: 75, estimatedMonthlyCost: 0, estimatedROI: '300%' }
-        ],
-        analysis: 'Analyse automatique basée sur vos réponses. Ces outils offrent un bon point de départ pour l\'automatisation de vos processus métier avec des interfaces intuitives et des intégrations robustes.'
+        recommendations: fallbackSaaS.map((saas, index) => ({
+          name: saas.name,
+          reason: `${saas.description} - Score d'automatisation : ${saas.automation}%`,
+          priority: index + 1,
+          automationScore: saas.automation,
+          estimatedMonthlyCost: 35,
+          estimatedROI: '150%'
+        })),
+        analysis: 'Analyse basée sur vos réponses et les meilleurs SaaS disponibles dans notre catalogue.'
       };
     }
 
     // Enrich recommendations with detailed SaaS data from Airtable
     const enrichedRecommendations = aiResponse.recommendations.map((rec: any) => {
-      const saasData = allSaas.find(s => 
-        s.name.toLowerCase() === rec.name.toLowerCase() ||
-        s.name.toLowerCase().includes(rec.name.toLowerCase()) ||
-        rec.name.toLowerCase().includes(s.name.toLowerCase())
+      // First try exact match
+      let saasData = allSaas.find(s => 
+        s.name.toLowerCase() === rec.name.toLowerCase()
       );
+      
+      // If no exact match, try fuzzy matching
+      if (!saasData) {
+        saasData = allSaas.find(s => 
+          s.name.toLowerCase().includes(rec.name.toLowerCase()) ||
+          rec.name.toLowerCase().includes(s.name.toLowerCase())
+        );
+      }
+      
+      // If still no match, find a similar SaaS by category or features
+      if (!saasData) {
+        const taskLower = diagnosticData.task?.toLowerCase() || '';
+        
+        if (rec.name.toLowerCase().includes('zapier') || rec.name.toLowerCase().includes('automation')) {
+          saasData = allSaas.find(s => 
+            s.categories.some(cat => cat.toLowerCase().includes('automatisation')) ||
+            s.features.some(feat => feat.toLowerCase().includes('automatisation'))
+          );
+        } else if (rec.name.toLowerCase().includes('monday') || rec.name.toLowerCase().includes('project')) {
+          saasData = allSaas.find(s => 
+            s.categories.some(cat => cat.toLowerCase().includes('productivité')) ||
+            s.features.some(feat => feat.toLowerCase().includes('gestion'))
+          );
+        } else if (rec.name.toLowerCase().includes('hubspot') || rec.name.toLowerCase().includes('crm')) {
+          saasData = allSaas.find(s => 
+            s.categories.some(cat => cat.toLowerCase().includes('crm')) ||
+            s.categories.some(cat => cat.toLowerCase().includes('marketing'))
+          );
+        }
+        
+        // If still no match, pick a high-scoring relevant SaaS
+        if (!saasData) {
+          saasData = allSaas
+            .filter(s => s.automation >= 70 && s.score >= 4.0)
+            .sort((a, b) => b.score - a.score)[0];
+        }
+      }
       
       if (saasData) {
         console.log(`Found SaaS data for ${rec.name}:`, saasData.name);
         return {
           ...rec,
+          name: saasData.name, // Use the real SaaS name
           id: saasData.id,
           saasData: {
             name: saasData.name,
@@ -192,8 +237,32 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
           }
         };
       } else {
-        console.warn(`No SaaS data found for ${rec.name}`);
-        return rec;
+        console.warn(`No SaaS data found for ${rec.name}, using fallback`);
+        // Use a fallback from the available SaaS
+        const fallbackSaaS = allSaas[0]; // First available SaaS
+        return {
+          ...rec,
+          name: fallbackSaaS.name,
+          id: fallbackSaaS.id,
+          saasData: {
+            name: fallbackSaaS.name,
+            tagline: fallbackSaaS.tagline,
+            description: fallbackSaaS.description,
+            logoUrl: fallbackSaaS.logoUrl,
+            categories: fallbackSaaS.categories,
+            pros: fallbackSaaS.pros,
+            cons: fallbackSaaS.cons,
+            features: fallbackSaaS.features,
+            automation: fallbackSaaS.automation,
+            ease: fallbackSaaS.ease,
+            score: fallbackSaaS.score,
+            website: fallbackSaaS.website,
+            trialUrl: fallbackSaaS.trialUrl,
+            affiliate: fallbackSaaS.affiliate,
+            pricingLinked: fallbackSaaS.pricingLinked,
+            priceText: fallbackSaaS.priceText
+          }
+        };
       }
     });
 
