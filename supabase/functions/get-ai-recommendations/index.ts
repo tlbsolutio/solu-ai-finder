@@ -70,7 +70,7 @@ serve(async (req) => {
 
     const prompt = `Tu es un expert en automatisation de processus pour les PME et indépendants.
 
-Ta mission est d'analyser les réponses du diagnostic ci-dessous et de recommander uniquement des outils SaaS **parmi la base fournie**, jamais d'autres.
+Ta mission est d'analyser les réponses du diagnostic ci-dessous et de recommander OBLIGATOIREMENT des outils SaaS **parmi la base fournie uniquement**.
 
 ---
 
@@ -86,25 +86,29 @@ Priorité : ${diagnosticData.priority}/5
 
 ---
 
-Voici les SaaS disponibles (format JSON) :
+IMPORTANT: Voici les SaaS disponibles - TU DOIS ABSOLUMENT CHOISIR PARMI EUX :
 
-${JSON.stringify(allSaas, null, 2)}
+${saasListForAI}
 
 ---
 
-Règles :
-1. Choisis 3 à 5 outils SaaS maximum parmi cette base
-2. Chaque outil doit être **pertinent avec la tâche décrite**
-3. Si aucun outil ne correspond, ne propose rien
-4. Retourne les outils sous le format suivant :
+RÈGLES STRICTES :
+1. OBLIGATOIRE: Choisis AU MINIMUM 2 outils SaaS parmi cette base, même si la correspondance n'est pas parfaite
+2. Maximum 5 outils
+3. Utilise UNIQUEMENT les ID (rec...) fournis ci-dessus
+4. Si la tâche ne correspond pas exactement, choisis les outils les PLUS PROCHES par fonctionnalité
+5. JAMAIS d'outils externes (Power BI, Google Data Studio, etc.)
+6. Privilégie les SaaS avec un % d'automatisation élevé
 
-Inclure un champ score représentant le potentiel d'automatisation (sur 100)
-
-Ne pas inventer d'outils, ne pas inclure Power BI, Google Data Studio, etc.
+EXEMPLES DE CORRESPONDANCES FLEXIBLES :
+- "CRM" → Recherche "contact", "client", "vente" dans les descriptions
+- "Facturation" → Recherche "facture", "comptabilité", "finance"
+- "Gestion projet" → Recherche "projet", "tâche", "équipe"
+- "Rapports" → Recherche outils avec "analyse", "reporting", "data"
 
 Tu réponds uniquement avec un objet JSON contenant :
-- recommendations: tableau des outils comme ci-dessus
-- score: note globale d'automatisation estimée sur 100
+- recommendations: tableau des outils (MINIMUM 2, même si correspondance imparfaite)
+- score: note globale d'automatisation estimée sur 100  
 - economiesHeures: estimation du temps économisé / mois (heures)
 - economiesMensuelles: économies nettes estimées (€ / mois)
 - economiesAnnuelles: économies nettes estimées (€ / an)
@@ -116,12 +120,12 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
   "economiesHeures": 8,
   "economiesMensuelles": 220,
   "economiesAnnuelles": 2640,
-  "analysis": "La tâche décrite est fortement automatisable. Les outils recommandés permettent un gain de productivité rapide.",
+  "analysis": "La tâche décrite est automatisable. Les outils recommandés permettent un gain de productivité.",
   "recommendations": [
     {
       "id": "rec123456",
       "tool": "Nom du SaaS",
-      "reason": "Pourquoi ce SaaS est recommandé",
+      "reason": "Pourquoi ce SaaS est recommandé pour cette tâche",
       "priority": 1,
       "score": 88
     }

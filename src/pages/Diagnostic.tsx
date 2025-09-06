@@ -175,10 +175,20 @@ const Diagnostic = () => {
       setIsLoadingResults(true);
       try {
         const result = await getAIRecommendations();
+        console.log('🔍 DEBUG - AI Response:', {
+          recommendations: result.recommendations?.length || 0,
+          score: result.score,
+          analysis: result.analysis
+        });
+        
+        if (!result.recommendations || result.recommendations.length === 0) {
+          console.warn('⚠️ Aucune recommandation IA reçue - aiRecommendations sera vide');
+        }
+        
         setAiRecommendations(result.recommendations || []);
         setShowResults(true);
       } catch (error) {
-        // Error already handled in getAIRecommendations
+        console.error('❌ Erreur lors de la récupération des recommandations:', error);
       } finally {
         setIsLoadingResults(false);
       }
@@ -218,14 +228,23 @@ const Diagnostic = () => {
   // Get AI-powered recommendations
   const getAIRecommendations = async () => {
     try {
-      setIsLoadingResults(true);
+      console.log('🚀 Appel Supabase Function get-ai-recommendations...');
       const { data, error } = await supabase.functions.invoke('get-ai-recommendations', {
         body: { diagnosticData: responses }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur Supabase Function:', error);
+        throw error;
+      }
       
-      setAiRecommendations(data.recommendations || []);
+      console.log('✅ Réponse Supabase Function reçue:', {
+        hasData: !!data,
+        score: data?.score,
+        recommendationsCount: data?.recommendations?.length || 0,
+        analysis: data?.analysis?.substring(0, 50) + '...'
+      });
+      
       return {
         score: data.score || 75,
         recommendations: data.recommendations || [],
@@ -235,15 +254,13 @@ const Diagnostic = () => {
         analysis: data.analysis || 'Analyse personnalisée de vos besoins'
       };
     } catch (error) {
-      console.error('Error getting AI recommendations:', error);
+      console.error('❌ Erreur complète getAIRecommendations:', error);
       toast({
         title: "Service temporairement indisponible",
         description: "Impossible de générer les recommandations IA. Veuillez réessayer.",
         variant: "destructive",
       });
-      throw error; // Re-throw to handle in UI
-    } finally {
-      setIsLoadingResults(false);
+      throw error;
     }
   };
 
