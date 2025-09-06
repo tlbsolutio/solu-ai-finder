@@ -711,9 +711,13 @@ Généré par Solutio - https://solutio.work
                                 size="sm"
                                 className="flex-1 min-w-[120px] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                               >
-                                <Link to={`/saas/${saas?.id || encodeURIComponent(rec.name || rec.tool)}`}>
+                                <a 
+                                  href={saas?.id ? `/saas/${saas.id}` : `/catalogue?search=${encodeURIComponent(rec.name || rec.tool)}`}
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                >
                                   📋 Voir les détails
-                                </Link>
+                                </a>
                               </Button>
                             </div>
                           </div>
@@ -737,9 +741,14 @@ Généré par Solutio - https://solutio.work
                             <Badge variant={rec.priority === 1 ? 'default' : 'secondary'}>
                               #{rec.priority}
                             </Badge>
-                            <Link to={`/catalogue?search=${encodeURIComponent(rec.tool)}`} className="text-primary hover:text-primary/80">
+                            <a 
+                              href={`/catalogue?search=${encodeURIComponent(rec.tool)}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-primary hover:text-primary/80"
+                            >
                               <ExternalLink className="h-4 w-4" />
-                            </Link>
+                            </a>
                           </div>
                         </div>
                       ))
