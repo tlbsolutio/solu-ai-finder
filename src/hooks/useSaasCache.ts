@@ -36,7 +36,7 @@ interface CacheData {
 }
 
 const CACHE_KEY = 'saas_catalogue_cache';
-const CACHE_DURATION = 0; // DIAGNOSTIC: Disabled cache temporarily
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache
 
 export const useSaasCache = () => {
   const [cachedData, setCachedData] = useState<SaaSItem[] | null>(null);

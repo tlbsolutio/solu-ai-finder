@@ -75,16 +75,17 @@ const Catalogue = () => {
     }
   }, [searchParams]);
 
-  // Dynamic SaaS data from Airtable
-  const [saasData, setSaasData] = useState<SaaSItem[]>([]);
+  // Single state for SaaS data (no more double state)
   const [displayData, setDisplayData] = useState<SaaSItem[]>([]);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [originalData, setOriginalData] = useState<SaaSItem[]>([]);
   const categories = useMemo(
-    () => Array.from(new Set(saasData.flatMap((i) => i.categories))).sort(),
-    [saasData]
+    () => Array.from(new Set(displayData.flatMap((i) => i.categories))).sort(),
+    [displayData]
   );
   const targets = useMemo(
-    () => Array.from(new Set(saasData.flatMap((i) => i.targets))).sort(),
-    [saasData]
+    () => Array.from(new Set(displayData.flatMap((i) => i.targets))).sort(),
+    [displayData]
   );
 
   // Display labels (translated in EN)
@@ -100,7 +101,7 @@ const Catalogue = () => {
     // Check cache first
     const cached = getCachedData();
     if (cached && cached.length > 0) {
-      setSaasData(cached);
+      setOriginalData(cached);
       setDisplayData(cached);
       setLoading(false);
       return;
@@ -121,25 +122,25 @@ const Catalogue = () => {
           ? 'Authentification Airtable échouée. Vérifiez la clé et les autorisations.'
           : (error.message || 'Erreur inconnue');
         setErrorMsg(`${baseMsg} ${details}`);
-        setSaasData([]);
         setDisplayData([]);
         setLoading(false);
         return;
       }
       const items = (data as any)?.items as SaaSItem[];
-      setSaasData(items || []);
+      setOriginalData(items || []);
       setDisplayData(items || []);
       setCacheData(items || []); // Cache the data
       setLoading(false);
     })();
   }, [searchParams, getCachedData, setCacheData]);
 
-  // Translate to EN on the fly (and cache)
+  // Translate to EN on the fly (without clearing displayData)
   useEffect(() => {
     const run = async () => {
-      if (language === 'en') {
+      if (language === 'en' && originalData.length > 0) {
+        setIsTranslating(true);
         const textSet = new Set<string>();
-        saasData.forEach((i) => {
+        originalData.forEach((i) => {
           textSet.add(i.name);
           textSet.add(i.description);
           i.features.forEach((f) => textSet.add(f));
@@ -150,9 +151,7 @@ const Catalogue = () => {
 
         const texts = Array.from(textSet);
         if (texts.length === 0) {
-          setDisplayData([]);
-          setCategoryLabels({});
-          setTargetLabels({});
+          setIsTranslating(false);
           return;
         }
 
@@ -160,7 +159,7 @@ const Catalogue = () => {
           const map = await translateWithDeepl(texts, 'EN');
 
           // Map items
-          const translatedItems = saasData.map((i) => ({
+          const translatedItems = originalData.map((i) => ({
             ...i,
             name: map[i.name] || i.name,
             description: map[i.description] || i.description,
@@ -178,12 +177,14 @@ const Catalogue = () => {
           setTargetLabels(tgtMap);
         } catch (e) {
           console.error('Translation error', e);
-          setDisplayData(saasData);
+          // Keep current displayData on error, don't clear it
           setCategoryLabels({});
           setTargetLabels({});
         }
-      } else {
-        setDisplayData(saasData);
+        setIsTranslating(false);
+      } else if (language === 'fr' && originalData.length > 0) {
+        // Use original French data
+        setDisplayData(originalData);
         // Identity labels in FR
         const catMap: Record<string, string> = {};
         categories.forEach((c) => (catMap[c] = c));
@@ -195,7 +196,7 @@ const Catalogue = () => {
     };
 
     run();
-  }, [language, saasData, categories, targets]);
+  }, [language, originalData, categories, targets]); // Use originalData instead of displayData
 
 const filteredSaaS = displayData.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
