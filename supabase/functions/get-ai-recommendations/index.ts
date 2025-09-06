@@ -137,7 +137,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       body: JSON.stringify({
         model: 'gpt-4-1106-preview',
         messages: [
-          { role: 'system', content: 'Tu es un expert consultant en automatisation SaaS chez Solutio. Réponds uniquement en JSON valide avec les noms exacts des SaaS fournis. Garantis minimum 3 recommandations pertinentes.' },
+          { role: 'system', content: "Tu es un expert consultant en automatisation SaaS chez Solutio. Tu dois absolument choisir uniquement parmi les SaaS présents dans la base. N'invente jamais de SaaS, ne propose aucun SaaS qui n'a pas d'ID dans la base fournie. Réponds exclusivement en JSON valide, sans texte autour." },
           { role: 'user', content: prompt }
         ],
         max_tokens: 2000,
@@ -171,7 +171,17 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       }) || [];
       
       if (validRecommendations.length === 0) {
-        throw new Error('No valid recommendations found - all recommended SaaS are missing from database');
+        console.warn('Fallback: IA a proposé uniquement des SaaS hors base. Aucun ne sera affiché.');
+        return new Response(JSON.stringify({
+          score: 40,
+          economiesHeures: 0,
+          economiesMensuelles: 0,
+          economiesAnnuelles: 0,
+          analysis: "Aucune solution pertinente détectée. Essayez de préciser la tâche ou d'élargir vos contraintes.",
+          recommendations: []
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
       
       aiResponse.recommendations = validRecommendations;
