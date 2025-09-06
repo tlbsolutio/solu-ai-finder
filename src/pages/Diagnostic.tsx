@@ -712,9 +712,10 @@ Généré par Solutio - https://solutio.work
                                 className="flex-1 min-w-[120px] shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                               >
                                 <a 
-                                  href={saas?.id ? `/saas/${saas.id}` : `/catalogue?search=${encodeURIComponent(rec.name || rec.tool)}`}
+                                  href={rec.id ? `/saas/${rec.id}` : `/catalogue?search=${encodeURIComponent(rec.name || rec.tool)}`}
                                   target="_blank" 
                                   rel="noopener noreferrer"
+                                  onClick={() => console.log(`Navigating to SaaS: ${rec.name} (ID: ${rec.id})`)}
                                 >
                                   📋 Voir les détails
                                 </a>
