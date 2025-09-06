@@ -20,7 +20,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         hero: "bg-gradient-primary text-white shadow-medium hover:shadow-strong transform hover:scale-[1.02] transition-all duration-300 font-semibold",
         premium: "bg-gradient-hero text-white shadow-strong hover:opacity-90 transform hover:scale-[1.05] transition-all duration-300 font-semibold",
-        cta: "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 font-bold animate-pulse hover:animate-none",
+        cta: "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300 font-bold hover:animate-none",
         success: "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold",
         info: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold",
       },

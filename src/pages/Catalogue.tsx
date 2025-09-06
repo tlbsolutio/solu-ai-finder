@@ -309,7 +309,7 @@ const totalItems = filteredSaaS.length;
           {loading
             ? Array.from({ length: visibleCount }).map((_, i) => (
                 <Card key={`skeleton-${i}`} className="overflow-hidden">
-                  <Skeleton className="w-full h-48" />
+                  <Skeleton className="w-full h-32" />
                   <CardHeader className="pb-2">
                     <Skeleton className="h-6 w-2/3 mb-2" />
                     <Skeleton className="h-4 w-full" />
@@ -336,27 +336,27 @@ const totalItems = filteredSaaS.length;
                   key={saas.id}
                   className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
                 >
-                  <div className="relative overflow-hidden rounded-t-lg">
-                    {saas.logoUrl ? (
-                      <img
-                        src={saas.logoUrl}
-                        alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
-                        loading="lazy"
-                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const fallback = target.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
-                      />
-                    ) : null}
-                    <div 
-                      className={`w-full h-48 ${saas.logoUrl ? 'hidden' : 'flex'} items-center justify-center bg-gradient-primary text-white text-2xl font-bold`}
-                      style={{ display: saas.logoUrl ? 'none' : 'flex' }}
-                    >
-                      {saas.name.charAt(0).toUpperCase()}
-                    </div>
+                   <div className="relative overflow-hidden rounded-t-lg">
+                     {saas.logoUrl ? (
+                       <img
+                         src={saas.logoUrl}
+                         alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
+                         loading="lazy"
+                         className="w-full h-32 object-contain bg-white group-hover:scale-105 transition-transform duration-300"
+                         onError={(e) => {
+                           const target = e.target as HTMLImageElement;
+                           target.style.display = 'none';
+                           const fallback = target.nextElementSibling as HTMLElement;
+                           if (fallback) fallback.style.display = 'flex';
+                         }}
+                       />
+                     ) : null}
+                     <div 
+                       className={`w-full h-32 ${saas.logoUrl ? 'hidden' : 'flex'} items-center justify-center bg-gradient-primary text-white text-2xl font-bold`}
+                       style={{ display: saas.logoUrl ? 'none' : 'flex' }}
+                     >
+                       {saas.name.charAt(0).toUpperCase()}
+                     </div>
                     <div className="absolute top-4 right-4">
                       <Badge variant="secondary" className="bg-white/90">
                         <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />

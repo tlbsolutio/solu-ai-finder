@@ -443,7 +443,7 @@ Généré par Solutio - https://solutio.work
               </CardHeader>
               <CardContent className="text-center">
                 <div className="relative w-40 h-40 mx-auto mb-6">
-                  <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20 animate-pulse"></div>
+                  <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-20"></div>
                   <div className="w-40 h-40 rounded-full border-8 border-primary/20 flex items-center justify-center bg-background/80 backdrop-blur-sm shadow-glow">
                     <div className="text-center">
                       <div className="text-4xl font-bold text-primary animate-fade-in">
