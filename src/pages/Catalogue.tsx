@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
@@ -39,6 +40,8 @@ interface SaaSItem {
 }
 
 const Catalogue = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchParams = new URLSearchParams(window.location.search);
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -52,6 +55,13 @@ const Catalogue = () => {
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
   const LOAD_STEP = 12;
   const INITIAL_COUNT = 12;
+
+  useEffect(() => {
+  const searchParam = searchParams.get('search');
+  if (searchParam) {
+    setSearchQuery(decodeURIComponent(searchParam));
+  }
+}, []);
 
   // Reset visible count on filters/language change
   useEffect(() => {
@@ -244,11 +254,11 @@ const totalItems = filteredSaaS.length;
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder={t('catalog.search_placeholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher un SaaS..."
                 />
               </div>
 
