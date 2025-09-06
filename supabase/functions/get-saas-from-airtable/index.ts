@@ -289,9 +289,18 @@ serve(async (req) => {
 
     const allPricingRecords = await fetchAllPricingPlans();
     
-    // Group pricing records by SaaS ID
+    // Group pricing records by SaaS ID and deduplicate
     const pricingBySaasId = new Map<string, any[]>();
+    const processedPricingIds = new Set<string>(); // Track processed pricing IDs to avoid duplicates
+    
     allPricingRecords.forEach((pr: any) => {
+      // Skip if already processed this pricing record
+      if (processedPricingIds.has(pr.id)) {
+        console.log(`Skipping duplicate pricing record ${pr.id}`);
+        return;
+      }
+      processedPricingIds.add(pr.id);
+      
       const fields = pr.fields || {};
       
       // Try multiple possible field names for the SaaS link
@@ -363,18 +372,29 @@ serve(async (req) => {
         logoUrl = '';
       }
 
-      // Get pricing plans linked to this SaaS
+      // Get pricing plans linked to this SaaS and deduplicate by plan name + price
       const linkedPricingRecords = pricingBySaasId.get(r.id) || [];
-      const pricingLinked = linkedPricingRecords.map((pr: any) => {
+      const uniquePlansMap = new Map<string, any>();
+      
+      linkedPricingRecords.forEach((pr: any) => {
         const pf = pr.fields || {};
-        return {
-          id: pr.id,
-          plan: pf['Nom du plan'] || '',
-          price: pf['Prix'] || '',
-          included: toArray<string>(pf['Fonctionnalités incluses'] || []),
-          popular: Boolean(pf['Populaire'] || false),
-        };
-      }).sort((a, b) => {
+        const planName = pf['Nom du plan'] || '';
+        const planPrice = pf['Prix'] || '';
+        const uniqueKey = `${planName}-${planPrice}`;
+        
+        // Only keep first occurrence of each plan name + price combination
+        if (!uniquePlansMap.has(uniqueKey)) {
+          uniquePlansMap.set(uniqueKey, {
+            id: pr.id,
+            plan: planName,
+            price: planPrice,
+            included: toArray<string>(pf['Fonctionnalités incluses'] || []),
+            popular: Boolean(pf['Populaire'] || false),
+          });
+        }
+      });
+      
+      const pricingLinked = Array.from(uniquePlansMap.values()).sort((a, b) => {
         // Sort by popular first, then by price (convert price strings to numbers for sorting)
         if (a.popular && !b.popular) return -1;
         if (!a.popular && b.popular) return 1;

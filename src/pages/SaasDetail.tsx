@@ -9,6 +9,7 @@ import { SaasDetailSkeleton } from '@/components/ui/loading-skeleton';
 import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft, Gauge } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useSaasCache } from '@/hooks/useSaasCache';
 
 interface SaaSItem {
   id: string;
@@ -46,6 +47,7 @@ const SaasDetail = () => {
   const [saasDetail, setSaasDetail] = useState<SaaSItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { getCachedData, setCacheData } = useSaasCache();
 
   useEffect(() => {
     const fetchSaasDetail = async () => {
@@ -53,6 +55,18 @@ const SaasDetail = () => {
       
       try {
         setLoading(true);
+        
+        // Check cache first for better performance
+        const cached = getCachedData();
+        if (cached && cached.length > 0) {
+          const saas = cached.find((item: SaaSItem) => item.id === id);
+          if (saas) {
+            setSaasDetail(saas);
+            setLoading(false);
+            return;
+          }
+        }
+        
         const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
           body: {
             uiUrl: "https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide"
@@ -62,6 +76,9 @@ const SaasDetail = () => {
         if (error) throw error;
 
         const saasItems = data?.items || [];
+        
+        // Cache the fresh data
+        setCacheData(saasItems);
         // Try to find by ID first, then by name (for encoded URLs)
         let saas = saasItems.find((item: SaaSItem) => item.id === id);
         
@@ -188,7 +205,10 @@ const SaasDetail = () => {
                 <img 
                   src={saasDetail.logoUrl} 
                   alt={`Logo ${saasDetail.name}`}
-                  className="w-full h-64 object-cover"
+                  className="w-full h-64 object-contain bg-background/50 p-8"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
                 />
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white/95 text-foreground border-0 shadow-soft">
@@ -435,30 +455,35 @@ const SaasDetail = () => {
               <CardContent className="space-y-6">
                 {saasDetail.pricingLinked && saasDetail.pricingLinked.length > 0 ? (
                   <div className="space-y-4">
-                    {saasDetail.pricingLinked
-                      .sort((a, b) => {
-                        // Sort: Popular plans first, then by price, "Sur devis" last
-                        if (a.popular && !b.popular) return -1;
-                        if (!a.popular && b.popular) return 1;
-                        
-                        // Both popular or both not popular - sort by price
-                        const aPrice = a.price.toLowerCase();
-                        const bPrice = b.price.toLowerCase();
-                        
-                        // "Sur devis" always last
-                        if (aPrice.includes('devis') || aPrice.includes('contact')) return 1;
-                        if (bPrice.includes('devis') || bPrice.includes('contact')) return -1;
-                        
-                        // Try to extract numbers for numeric comparison
-                        const aNum = parseFloat(aPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
-                        const bNum = parseFloat(bPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
-                        
-                        if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
-                        
-                        // Fallback to alphabetical
-                        return aPrice.localeCompare(bPrice);
-                      })
-                      .map((plan, idx) => (
+                     {/* Deduplicate pricing plans by plan name and price before sorting */}
+                     {Array.from(
+                       new Map(saasDetail.pricingLinked.map(plan => 
+                         [`${plan.plan}-${plan.price}`, plan]
+                       )).values()
+                     )
+                       .sort((a, b) => {
+                         // Sort: Popular plans first, then by price, "Sur devis" last
+                         if (a.popular && !b.popular) return -1;
+                         if (!a.popular && b.popular) return 1;
+                         
+                         // Both popular or both not popular - sort by price
+                         const aPrice = a.price.toLowerCase();
+                         const bPrice = b.price.toLowerCase();
+                         
+                         // "Sur devis" always last
+                         if (aPrice.includes('devis') || aPrice.includes('contact')) return 1;
+                         if (bPrice.includes('devis') || bPrice.includes('contact')) return -1;
+                         
+                         // Try to extract numbers for numeric comparison
+                         const aNum = parseFloat(aPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                         const bNum = parseFloat(bPrice.replace(/[^\d.,]/g, '').replace(',', '.'));
+                         
+                         if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+                         
+                         // Fallback to alphabetical
+                         return aPrice.localeCompare(bPrice);
+                       })
+                       .map((plan, idx) => (
                       <Card 
                         key={idx} 
                         className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg group ${
