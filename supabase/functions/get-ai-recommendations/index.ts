@@ -68,66 +68,64 @@ serve(async (req) => {
       `- ${s.name} (ID: ${s.id}): ${s.tagline || s.description} (Automation: ${s.automation}%, Ease: ${s.ease}%, Price: ${s.priceText})`
     ).join('\n');
 
-    const prompt = `Tu es un consultant expert en automatisation d'entreprise chez Solutio. Analyse ce diagnostic client en profondeur et recommande UNIQUEMENT des solutions SaaS présentes dans ma base de données Airtable.
+    const prompt = `Tu es un expert en automatisation de processus pour les PME et indépendants.
 
-DIAGNOSTIC CLIENT:
-- Tâche à automatiser: ${diagnosticData.task}
-- Fréquence: ${diagnosticData.frequency}  
-- Secteur et contraintes: ${diagnosticData.sector}
-- Outils actuels: ${diagnosticData.tools}
-- Résultat attendu: ${diagnosticData.expectedResult}
-- Contraintes spécifiques: ${diagnosticData.constraints}
-- Priorité (1-5): ${diagnosticData.priority}
+Ta mission est d'analyser les réponses du diagnostic ci-dessous et de recommander uniquement des outils SaaS **parmi la base fournie**, jamais d'autres.
 
-CATALOGUE SAAS DISPONIBLE EXCLUSIVEMENT:
-${saasListForAI}
+---
 
-INSTRUCTIONS CRITIQUES:
-1. RÈGLE ABSOLUE: Recommande UNIQUEMENT parmi les SaaS listés ci-dessus avec leurs IDs exacts (recXXXX)
-2. INTERDIT ABSOLU: Ne recommande JAMAIS Zapier, Monday.com, HubSpot, ou autres SaaS génériques s'ils ne sont pas dans la liste
-3. Nombre de recommandations: EXACTEMENT 3-4 SaaS pertinents (qualité > quantité)
-4. Calcul intelligent du temps économisé:
-   - Analyse la tâche "${diagnosticData.task}" et la fréquence "${diagnosticData.frequency}"
-   - Estime le temps actuel réaliste par tâche (ex: rapport = 8h, saisie données = 2h, emails = 1h)
-   - Calcule le potentiel d'automatisation selon le SaaS (60-90% selon la solution)
-   - Multiplie par la fréquence mensuelle réelle
-5. Calcul ROI personnalisé:
-   - Utilise un taux horaire de 45€/h (coût employé France)
-   - Soustrait le coût réel du SaaS recommandé (utilise les prix Airtable)
-   - Calcule le ROI annuel réaliste
-6. Score d'automatisation intelligent (75-95%):
-   - Secteur réglementé: -10 points
-   - Tâches quotidiennes: +15 points
-   - Outils manuels actuels: +20 points
-   - Contraintes techniques: -5 points
+Réponses utilisateur :
 
-EXEMPLE DE CALCUL:
-Si tâche = "création rapports mensuels", fréquence = "mensuel", temps actuel = 8h
-- Temps économisé avec un bon SaaS: 6h/mois (75% automatisation)
-- Économies brutes: 6h × 45€ = 270€/mois
-- Coût SaaS: 50€/mois
-- Économies nettes: 220€/mois × 12 = 2640€/an
-- ROI: 428%
+Tâche : ${diagnosticData.task}
+Fréquence : ${diagnosticData.frequency}
+Secteur : ${diagnosticData.sector}
+Outils actuels : ${diagnosticData.tools}
+Résultat attendu : ${diagnosticData.expectedResult}
+Contraintes : ${diagnosticData.constraints}
+Priorité : ${diagnosticData.priority}/5
+
+---
+
+Voici les SaaS disponibles (format JSON) :
+
+${JSON.stringify(allSaas, null, 2)}
+
+---
+
+Règles :
+1. Choisis 3 à 5 outils SaaS maximum parmi cette base
+2. Chaque outil doit être **pertinent avec la tâche décrite**
+3. Si aucun outil ne correspond, ne propose rien
+4. Retourne les outils sous le format suivant :
+
+Inclure un champ score représentant le potentiel d'automatisation (sur 100)
+
+Ne pas inventer d'outils, ne pas inclure Power BI, Google Data Studio, etc.
+
+Tu réponds uniquement avec un objet JSON contenant :
+- recommendations: tableau des outils comme ci-dessus
+- score: note globale d'automatisation estimée sur 100
+- economiesHeures: estimation du temps économisé / mois (heures)
+- economiesMensuelles: économies nettes estimées (€ / mois)
+- economiesAnnuelles: économies nettes estimées (€ / an)
+- analysis: résumé d'analyse stratégique (texte court, 2 phrases max)
 
 FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
-  "score": 85,
-  "economiesHeures": 20,
-  "economiesMensuelles": 1250,
-  "economiesAnnuelles": 15000,
+  "score": 75,
+  "economiesHeures": 8,
+  "economiesMensuelles": 220,
+  "economiesAnnuelles": 2640,
+  "analysis": "La tâche décrite est fortement automatisable. Les outils recommandés permettent un gain de productivité rapide.",
   "recommendations": [
     {
-      "name": "Nom EXACT du SaaS depuis Airtable",
-      "id": "ID Airtable EXACT (recXXXXX)",
-      "reason": "Analyse détaillée de 120-150 mots expliquant la correspondance précise avec le besoin, calculs de temps économisé, avantages spécifiques pour ce secteur",
+      "id": "rec123456",
+      "tool": "Nom du SaaS",
+      "reason": "Pourquoi ce SaaS est recommandé",
       "priority": 1,
-      "automationScore": 85,
-      "estimatedMonthlyCost": 45,
-      "estimatedROI": "320%",
-      "timesSavedPerMonth": 15
+      "score": 88
     }
-  ],
-  "analysis": "Analyse stratégique de consultant de 200+ mots sur l'automatisation dans ce contexte, obstacles potentiels, plan d'implémentation recommandé et justification du choix des SaaS"
+  ]
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -194,10 +192,10 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       
       if (!saasData) {
         console.error(`Critical error: SaaS with ID ${rec.id} not found in database`);
-        throw new Error(`Recommended SaaS ${rec.name} (${rec.id}) not found in database`);
+        throw new Error(`Recommended SaaS ${rec.tool} (${rec.id}) not found in database`);
       }
       
-      console.log(`Successfully matched SaaS ${rec.name} with ID ${rec.id}`);
+      console.log(`Successfully matched SaaS ${rec.tool} with ID ${rec.id}`);
       
       return {
         ...rec,
