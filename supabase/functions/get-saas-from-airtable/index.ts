@@ -99,12 +99,6 @@ serve(async (req) => {
       });
     }
 
-    const params = new URLSearchParams();
-    params.set('pageSize', '50');
-    if (view) params.set('view', view);
-
-    const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
-
     // Resolve API key from secrets (support both conventional and legacy names)
     const apiKey = Deno.env.get('AIRTABLE_API_KEY') || Deno.env.get('Airtable API') || '';
     if (!apiKey) {
@@ -126,33 +120,65 @@ serve(async (req) => {
       keyLen: apiKey.length,
     });
 
-    const airtableResp = await fetch(airtableUrl, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    // Fetch all records with pagination
+    const allRecords = [];
+    let offset = '';
+    let pageCount = 0;
+    const MAX_PAGES = 10; // Safety limit to prevent infinite loops
 
-    if (!airtableResp.ok) {
-      const errText = await airtableResp.text();
-      console.error('Airtable error:', airtableResp.status, errText);
-      if (airtableResp.status === 401) {
-        return new Response(
-          JSON.stringify({
-            error: 'Airtable authentication failed',
-            details: 'Invalid or insufficient token. Ensure AIRTABLE_API_KEY has data.records:read scope and access to the base.',
-          }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      return new Response(JSON.stringify({ error: 'Failed to fetch from Airtable', details: errText }), {
-        status: airtableResp.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    do {
+      const params = new URLSearchParams();
+      params.set('pageSize', '100'); // Maximum allowed by Airtable
+      if (view) params.set('view', view);
+      if (offset) params.set('offset', offset);
+
+      const airtableUrl = `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableSegment)}?${params.toString()}`;
+
+      console.log(`Fetching page ${pageCount + 1} from Airtable...`);
+
+      const airtableResp = await fetch(airtableUrl, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
       });
-    }
 
-    const airtableData = await airtableResp.json();
-    const records = airtableData.records || [];
+      if (!airtableResp.ok) {
+        const errText = await airtableResp.text();
+        console.error('Airtable error:', airtableResp.status, errText);
+        if (airtableResp.status === 401) {
+          return new Response(
+            JSON.stringify({
+              error: 'Airtable authentication failed',
+              details: 'Invalid or insufficient token. Ensure AIRTABLE_API_KEY has data.records:read scope and access to the base.',
+            }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(JSON.stringify({ error: 'Failed to fetch from Airtable', details: errText }), {
+          status: airtableResp.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const airtableData = await airtableResp.json();
+      const pageRecords = airtableData.records || [];
+      
+      allRecords.push(...pageRecords);
+      offset = airtableData.offset || '';
+      pageCount++;
+
+      console.log(`Page ${pageCount}: fetched ${pageRecords.length} records, total so far: ${allRecords.length}`);
+      
+      // Safety check to prevent infinite loops
+      if (pageCount >= MAX_PAGES) {
+        console.warn(`Reached maximum page limit (${MAX_PAGES}), stopping pagination`);
+        break;
+      }
+    } while (offset);
+
+    console.log(`Pagination complete: ${allRecords.length} total SaaS records fetched in ${pageCount} pages`);
+    const records = allRecords;
 
     // Extract all SaaS record IDs for batch pricing fetch
     const saasIds = records.map((r: any) => r.id);
