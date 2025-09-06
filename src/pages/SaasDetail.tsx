@@ -65,12 +65,45 @@ const SaasDetail = () => {
         // Try to find by ID first, then by name (for encoded URLs)
         let saas = saasItems.find((item: SaaSItem) => item.id === id);
         
-        // If not found by ID, try to find by name (decode URL parameter)
+        // If not found by ID, try to find by name with flexible matching
         if (!saas && id) {
           const decodedName = decodeURIComponent(id);
+          
+          // Helper function to normalize strings for comparison
+          const normalize = (str: string) => 
+            str.toLowerCase()
+               .replace(/[àáâãäå]/g, 'a')
+               .replace(/[èéêë]/g, 'e')
+               .replace(/[ìíîï]/g, 'i')
+               .replace(/[òóôõö]/g, 'o')
+               .replace(/[ùúûü]/g, 'u')
+               .replace(/[ç]/g, 'c')
+               .replace(/[ñ]/g, 'n')
+               .replace(/[^\w\s]/g, '')
+               .replace(/\s+/g, ' ')
+               .trim();
+          
+          const normalizedSearchName = normalize(decodedName);
+          
+          // Try exact match first (case insensitive)
           saas = saasItems.find((item: SaaSItem) => 
             item.name.toLowerCase() === decodedName.toLowerCase()
           );
+          
+          // Try normalized match if exact didn't work
+          if (!saas) {
+            saas = saasItems.find((item: SaaSItem) => 
+              normalize(item.name) === normalizedSearchName
+            );
+          }
+          
+          // Try partial match if normalized didn't work
+          if (!saas) {
+            saas = saasItems.find((item: SaaSItem) => 
+              normalize(item.name).includes(normalizedSearchName) ||
+              normalizedSearchName.includes(normalize(item.name))
+            );
+          }
         }
         
         if (!saas) {
