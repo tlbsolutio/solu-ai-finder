@@ -180,6 +180,79 @@ serve(async (req) => {
     console.log(`Pagination complete: ${allRecords.length} total SaaS records fetched in ${pageCount} pages`);
     const records = allRecords;
 
+    // DIAGNOSTIC: Analyze SaaS records structure and categories
+    console.log('DIAGNOSTIC: Starting SaaS analysis...');
+    
+    if (records.length > 0) {
+      // Sample the first few records to see field structure
+      console.log('DIAGNOSTIC: Sample record fields:', Object.keys(records[0].fields || {}));
+      
+      // Count all categories found in raw data
+      const categoryFieldStats: { [fieldName: string]: { [catValue: string]: number } } = {};
+      const possibleCategoryFields = ['Catégorie', 'category', 'Categorie', 'Category', 'Type', 'Secteur', 'secteur', 'Tags', 'tags'];
+      
+      records.forEach((record: any, index: number) => {
+        const fields = record.fields || {};
+        
+        possibleCategoryFields.forEach(fieldName => {
+          if (fields[fieldName]) {
+            if (!categoryFieldStats[fieldName]) {
+              categoryFieldStats[fieldName] = {};
+            }
+            
+            const value = fields[fieldName];
+            const categories = Array.isArray(value) ? value : [value];
+            
+            categories.forEach(cat => {
+              const catStr = String(cat).trim();
+              if (catStr) {
+                categoryFieldStats[fieldName][catStr] = (categoryFieldStats[fieldName][catStr] || 0) + 1;
+              }
+            });
+          }
+        });
+        
+        // Log first 3 records for detailed analysis
+        if (index < 3) {
+          const name = fields.Nom || fields.Name || fields.name || 'Unknown';
+          console.log(`DIAGNOSTIC: Record ${index + 1} (${name}):`, {
+            availableFields: Object.keys(fields),
+            categories: possibleCategoryFields.map(f => ({ field: f, value: fields[f] })).filter(f => f.value)
+          });
+        }
+      });
+      
+      console.log('DIAGNOSTIC: Category field analysis:', categoryFieldStats);
+      
+      // Count CRM-related entries in raw data
+      let crmCount = 0;
+      const crmRecords: any[] = [];
+      
+      records.forEach((record: any) => {
+        const fields = record.fields || {};
+        const name = fields.Nom || fields.Name || fields.name || 'Unknown';
+        
+        const hascrm = possibleCategoryFields.some(fieldName => {
+          if (fields[fieldName]) {
+            const value = String(fields[fieldName]).toLowerCase();
+            return value.includes('crm') || value.includes('customer') || value.includes('relation');
+          }
+          return false;
+        });
+        
+        if (hascrm) {
+          crmCount++;
+          crmRecords.push({
+            id: record.id,
+            name,
+            categories: possibleCategoryFields.map(f => ({ field: f, value: fields[f] })).filter(f => f.value)
+          });
+        }
+      });
+      
+      console.log(`DIAGNOSTIC: Found ${crmCount} records with CRM-related categories in raw data:`, crmRecords);
+    }
+
     // Extract all SaaS record IDs for batch pricing fetch
     const saasIds = records.map((r: any) => r.id);
     console.log(`Found ${records.length} SaaS records:`, saasIds);
@@ -316,7 +389,7 @@ serve(async (req) => {
       const name = pick<string>(f, ['Nom', 'name', 'Name', 'Titre', 'Title']) || '';
       const tagline = pick<string>(f, ['Tagline', 'tagline', 'Slogan']) || '';
       const description = pick<string>(f, ['Description', 'description', 'Desc']) || '';
-      const categories = toArray<string>(pick<string | string[]>(f, ['Catégorie', 'category', 'Categorie', 'Category']) || []);
+      const categories = toArray<string>(pick<string | string[]>(f, ['Catégorie', 'category', 'Categorie', 'Category', 'Type', 'Secteur', 'secteur', 'Tags', 'tags']) || []);
       const targets = toArray<string>(pick<string | string[]>(f, ['Cibles', 'targets', 'Targets']) || []);
       const score = Number(pick<number | string>(f, ['Note', 'score', 'Rating']) || 0);
       const automation = Number(pick<number | string>(f, ['Automatisation (%)', 'automation', 'Automatisation', 'Automation']) || 0);
@@ -389,6 +462,17 @@ serve(async (req) => {
       console.log(`SaaS ${r.id} (${name}) has ${pricingLinked.length} pricing plans:`, 
         pricingLinked.map(p => `${p.plan}: ${p.price} ${p.popular ? '(Popular)' : ''}`));
 
+      // DIAGNOSTIC: Log category info for this SaaS
+      const isCRM = categories.some(cat => 
+        cat.toLowerCase().includes('crm') || 
+        cat.toLowerCase().includes('customer') ||
+        cat.toLowerCase().includes('relation')
+      );
+      
+      if (isCRM || categories.length === 0 || name.toLowerCase().includes('crm')) {
+        console.log(`DIAGNOSTIC: SaaS "${name}" (${r.id}) - Categories: [${categories.join(', ')}], isCRM: ${isCRM}`);
+      }
+
       return {
         id: r.id,
         name,
@@ -411,6 +495,25 @@ serve(async (req) => {
         pricingLinked,
       };
     });
+
+    // DIAGNOSTIC: Final summary
+    const finalCrmCount = mapped.filter(item => 
+      item.categories.some((cat: string) => 
+        cat.toLowerCase().includes('crm') || 
+        cat.toLowerCase().includes('customer') ||
+        cat.toLowerCase().includes('relation')
+      )
+    ).length;
+    
+    const finalCategoryStats: { [key: string]: number } = {};
+    mapped.forEach(item => {
+      item.categories.forEach((cat: string) => {
+        finalCategoryStats[cat] = (finalCategoryStats[cat] || 0) + 1;
+      });
+    });
+    
+    console.log(`DIAGNOSTIC: Final result - ${mapped.length} total SaaS, ${finalCrmCount} CRM-related`);
+    console.log('DIAGNOSTIC: Final categories distribution:', finalCategoryStats);
 
     return new Response(JSON.stringify({ items: mapped }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
