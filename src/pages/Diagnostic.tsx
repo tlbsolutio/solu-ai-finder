@@ -181,19 +181,17 @@ const Diagnostic = () => {
           analysis: result.analysis
         });
         
-        // Vérification critique : ne pas afficher si pas de recommandations
+        // Log des résultats IA pour diagnostic
         if (!result.recommendations || result.recommendations.length === 0) {
-          console.error('❌ CRITIQUE - Aucune recommandation IA valide reçue');
-          toast({
-            title: "Aucune solution trouvée",
-            description: "Nos experts peuvent vous orienter vers des solutions adaptées à votre besoin spécifique.",
-            variant: "destructive",
-          });
-          return; // Ne pas afficher les résultats
+          console.warn('⚠️ ATTENTION - Aucune recommandation IA spécifique reçue');
+          console.log('💡 Affichage des résultats avec message informatif');
+          setAiRecommendations([]);
+        } else {
+          console.log('✅ Recommandations IA valides:', result.recommendations.length);
+          setAiRecommendations(result.recommendations);
         }
         
-        console.log('✅ Recommandations IA valides:', result.recommendations.length);
-        setAiRecommendations(result.recommendations);
+        
         setShowResults(true);
       } catch (error) {
         console.error('❌ Erreur complète lors de la récupération des recommandations:', error);
@@ -426,8 +424,8 @@ Généré par Solutio - https://solutio.work
     );
   }
 
-  // Affichage conditionnel des résultats - UNIQUEMENT si recommendations IA valides
-  if (showResults && aiRecommendations.length > 0) {
+  // Affichage des résultats (avec ou sans recommandations IA)
+  if (showResults) {
     const financialSavings = calculateFinancialSavings();
     const aiScore = aiRecommendations[0]?.score || 75;
 
@@ -735,32 +733,32 @@ Généré par Solutio - https://solutio.work
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                      <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
                         <div className="flex items-center justify-center mb-4">
-                          <div className="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-full">
-                            <MessageCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                          <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+                            <MessageCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                           </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
-                          Service de recommandations temporairement indisponible
+                        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                          Analyse personnalisée nécessaire
                         </h3>
-                        <p className="text-yellow-700 dark:text-yellow-300 mb-4">
-                          Notre IA d'analyse est momentanément inaccessible. Veuillez réessayer dans quelques minutes.
+                        <p className="text-blue-700 dark:text-blue-300 mb-4">
+                          Votre besoin d'automatisation est spécifique. Nos experts peuvent vous orienter vers les meilleures solutions adaptées à votre contexte.
                         </p>
-                        <Button 
-                          onClick={() => getAIRecommendations()} 
-                          disabled={isLoadingResults}
-                          className="mt-2"
-                        >
-                          {isLoadingResults ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Rechargement...
-                            </>
-                          ) : (
-                            'Réessayer'
-                          )}
-                        </Button>
+                        <div className="space-y-3">
+                          <Button 
+                            asChild
+                            variant="default"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <a href="/contact" target="_blank" rel="noopener noreferrer">
+                              💬 Consulter nos experts
+                            </a>
+                          </Button>
+                          <div className="text-sm text-blue-600 dark:text-blue-400">
+                            Consultation gratuite • Réponse sous 24h
+                          </div>
+                        </div>
                       </div>
                     </div>
                     )}

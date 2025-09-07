@@ -93,12 +93,13 @@ ${saasListForAI}
 ---
 
 RÈGLES STRICTES :
-1. OBLIGATOIRE: Choisis AU MINIMUM 2 outils SaaS parmi cette base, même si la correspondance n'est pas parfaite
+1. OBLIGATOIRE: MINIMUM 2 outils SaaS parmi cette base (IMPÉRATIF)
 2. Maximum 5 outils
-3. Utilise UNIQUEMENT les ID (rec...) fournis ci-dessus
-4. Si la tâche ne correspond pas exactement, choisis les outils les PLUS PROCHES par fonctionnalité
-5. JAMAIS d'outils externes (Power BI, Google Data Studio, etc.)
+3. Utilise UNIQUEMENT les ID (rec...) fournis ci-dessus - JAMAIS d'invention
+4. Si correspondance imparfaite, choisis quand même 2 outils les PLUS PROCHES
+5. JAMAIS d'outils externes (Power BI, Google Data Studio, Monday.com, etc.)
 6. Privilégie les SaaS avec un % d'automatisation élevé
+7. GARANTIE: Tu DOIS toujours retourner exactement 2-5 recommandations
 
 EXEMPLES DE CORRESPONDANCES FLEXIBLES :
 - "CRM" → Recherche "contact", "client", "vente" dans les descriptions
@@ -139,7 +140,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { 
             role: 'system', 
@@ -162,7 +163,8 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('🤖 AI raw response:', data);
+    console.log('🔍 AI content preview:', data.choices[0].message.content.substring(0, 200));
 
     let aiResponse;
     try {
@@ -173,6 +175,8 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       
       aiResponse = JSON.parse(cleanContent);
       
+      console.log(`✅ AI Response parsed successfully. Recommendations found: ${aiResponse.recommendations?.length || 0}`);
+      
       // Validate that recommendations only use SaaS from our database
       const validRecommendations = aiResponse.recommendations?.filter(rec => {
         const foundSaaS = allSaas.find(s => s.id === rec.id);
@@ -182,6 +186,8 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
         }
         return true;
       }) || [];
+      
+      console.log(`🔍 Validation Results: ${validRecommendations.length}/${aiResponse.recommendations?.length || 0} recommendations are valid`);
       
       if (validRecommendations.length === 0) {
         console.warn('⚠️ FALLBACK: IA n\'a trouvé aucun SaaS valide. Recherche d\'alternatives...');
@@ -219,6 +225,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
         }));
         
         console.log(`✅ FALLBACK: ${fallbackRecommendations.length} recommandations générées automatiquement`);
+        console.log('📋 Fallback recommendations:', fallbackRecommendations.map(r => `${r.tool} (${r.id})`));
         
         return new Response(JSON.stringify({
           score: 60,
@@ -233,7 +240,7 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
       }
       
       aiResponse.recommendations = validRecommendations;
-      console.log(`Validated ${validRecommendations.length} recommendations from AI`);
+      console.log(`✅ Final AI Response: ${validRecommendations.length} valid recommendations confirmed`);
       
     } catch (e) {
       console.error('Failed to parse or validate AI response:', e);
