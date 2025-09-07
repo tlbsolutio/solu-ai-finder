@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 };
 
-// Static SaaS fallback data with realistic French options
+// Static SaaS fallback data with realistic French options - aligned with Airtable schema
 const FALLBACK_SAAS_DATA = [
   {
     id: "rec001",
@@ -18,8 +18,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Solution CRM complète pour gérer les contacts clients, les ventes et le marketing",
     categories: ["CRM", "Vente", "Marketing"],
     features: ["Gestion contacts", "Suivi commercial", "Automatisation email"],
-    automation: 85,
-    priceText: "Gratuit - 45€/mois"
+    ease: 85,
+    priceText: "Gratuit - 45€/mois",
+    logoUrl: ""
   },
   {
     id: "rec002", 
@@ -28,8 +29,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Plateforme d'email marketing et automation pour PME",
     categories: ["Email Marketing", "Automation"],
     features: ["Campagnes email", "Automation", "Segmentation"],
-    automation: 90,
-    priceText: "Gratuit - 30€/mois"
+    ease: 90,
+    priceText: "Gratuit - 30€/mois",
+    logoUrl: ""
   },
   {
     id: "rec003",
@@ -38,8 +40,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Connectez vos applications et automatisez vos workflows",
     categories: ["Automation", "Productivité"],
     features: ["Intégrations", "Workflows", "Triggers automatiques"],
-    automation: 95,
-    priceText: "20€ - 50€/mois"
+    ease: 95,
+    priceText: "20€ - 50€/mois",
+    logoUrl: ""
   },
   {
     id: "rec004",
@@ -48,8 +51,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Simplifiez la prise de rendez-vous avec vos clients",
     categories: ["Planification", "Productivité"],
     features: ["Calendrier en ligne", "Notifications automatiques", "Intégrations"],
-    automation: 80,
-    priceText: "8€ - 12€/mois"
+    ease: 80,
+    priceText: "8€ - 12€/mois",
+    logoUrl: ""
   },
   {
     id: "rec005",
@@ -58,8 +62,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Base de données, notes et gestion de projets unifiées",
     categories: ["Productivité", "Gestion de projet"],
     features: ["Base de données", "Templates", "Collaboration"],
-    automation: 70,
-    priceText: "8€ - 16€/mois"
+    ease: 70,
+    priceText: "8€ - 16€/mois",
+    logoUrl: ""
   },
   {
     id: "rec006",
@@ -68,8 +73,9 @@ const FALLBACK_SAAS_DATA = [
     description: "Plateforme de gestion de projet et collaboration d'équipe",
     categories: ["Gestion de projet", "Collaboration"],
     features: ["Tableaux Kanban", "Suivi temps", "Automatisation"],
-    automation: 85,
-    priceText: "8€ - 16€/mois"
+    ease: 85,
+    priceText: "8€ - 16€/mois",
+    logoUrl: ""
   }
 ];
 
@@ -125,7 +131,7 @@ function getMonthlyFrequency(frequency: string): number {
 
 function getHourlyRate(sector: string): number {
   const s = sector.toLowerCase();
-  if (s.includes('finance')) return 55;
+  if (s.includes('finance') || s.includes('consulting') || s.includes('conseil')) return 55;
   if (s.includes('marketing') || s.includes('communication')) return 45;
   if (s.includes('artisan') || s.includes('btp') || s.includes('indépendant')) return 35;
   if (s.includes('tech') || s.includes('saas')) return 50;
@@ -272,15 +278,15 @@ ${JSON.stringify(saasData.items, null, 2)}
       
       // Create intelligent fallback recommendations from available SaaS
       const intelligentFallback = saasData.items
-        .filter((saas: any) => saas.automation >= 70) // High automation
-        .sort((a: any, b: any) => (b.automation || 0) - (a.automation || 0)) // Sort by automation desc
+        .filter((saas: any) => (saas.ease || saas.automation) >= 70) // High ease/automation
+        .sort((a: any, b: any) => ((b.ease || b.automation) || 0) - ((a.ease || a.automation) || 0)) // Sort by ease desc
         .slice(0, 3) // Take top 3
         .map((saas: any, index: number) => ({
           id: saas.id,
           tool: saas.name,
-          reason: `${saas.name} automatise efficacement les processus répétitifs avec ${saas.automation}% d'automatisation.`,
+          reason: `${saas.name} automatise efficacement les processus répétitifs avec ${saas.ease || saas.automation}% de facilité d'implémentation.`,
           priority: index + 1,
-          score: Math.max(75, saas.automation || 75),
+          score: Math.max(75, (saas.ease || saas.automation) || 75),
           saasData: saas
         }));
 
@@ -311,15 +317,15 @@ ${JSON.stringify(saasData.items, null, 2)}
       
       // Use intelligent fallback
       const intelligentFallback = saasData.items
-        .filter((saas: any) => saas.automation >= 70)
-        .sort((a: any, b: any) => (b.automation || 0) - (a.automation || 0))
+        .filter((saas: any) => (saas.ease || saas.automation) >= 70)
+        .sort((a: any, b: any) => ((b.ease || b.automation) || 0) - ((a.ease || a.automation) || 0))
         .slice(0, 3)
         .map((saas: any, index: number) => ({
           id: saas.id,
           tool: saas.name,
-          reason: `${saas.name} offre ${saas.automation}% d'automatisation pour optimiser vos processus.`,
+          reason: `${saas.name} offre ${saas.ease || saas.automation}% de facilité d'implémentation pour optimiser vos processus.`,
           priority: index + 1,
-          score: Math.max(75, saas.automation || 75),
+          score: Math.max(75, (saas.ease || saas.automation) || 75),
           saasData: saas
         }));
 
@@ -361,15 +367,15 @@ ${JSON.stringify(saasData.items, null, 2)}
       
       // Create intelligent fallback based on diagnostic data
       const intelligentFallback = saasData.items
-        .filter((saas: any) => saas.automation >= 70)
-        .sort((a: any, b: any) => (b.automation || 0) - (a.automation || 0))
+        .filter((saas: any) => (saas.ease || saas.automation) >= 70)
+        .sort((a: any, b: any) => ((b.ease || b.automation) || 0) - ((a.ease || a.automation) || 0))
         .slice(0, 3)
         .map((saas: any, index: number) => ({
           id: saas.id,
           tool: saas.name,
-          reason: `${saas.name} automatise ${saas.automation}% des processus similaires à votre besoin.`,
+          reason: `${saas.name} automatise ${saas.ease || saas.automation}% des processus similaires à votre besoin.`,
           priority: index + 1,
-          score: Math.max(75, saas.automation || 75),
+          score: Math.max(75, (saas.ease || saas.automation) || 75),
           saasData: saas
         }));
 
