@@ -34,6 +34,12 @@ const Diagnostic = () => {
   const [emailData, setEmailData] = useState({ email: '', acceptMarketing: false });
   const [isLoadingEmail, setIsLoadingEmail] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [aiScore, setAiScore] = useState<number>(0);
+  const [aiEconomies, setAiEconomies] = useState<{
+    heures: number;
+    mensuelles: number;
+    annuelles: number;
+  }>({ heures: 0, mensuelles: 0, annuelles: 0 });
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
 
@@ -174,11 +180,23 @@ const Diagnostic = () => {
     } else {
       setIsLoadingResults(true);
       try {
+        console.log('🚀 Début analyse IA - Données diagnostiques:', responses);
         const result = await getAIRecommendations();
         console.log('🔍 DEBUG - AI Response reçue:', {
           recommendations: result.recommendations?.length || 0,
           score: result.score,
+          economiesHeures: result.economiesHeures,
+          economiesMensuelles: result.economiesMensuelles,
+          economiesAnnuelles: result.economiesAnnuelles,
           analysis: result.analysis
+        });
+        
+        // Stocker TOUS les résultats IA (pas de recalcul local)
+        setAiScore(result.score);
+        setAiEconomies({
+          heures: result.economiesHeures,
+          mensuelles: result.economiesMensuelles,
+          annuelles: result.economiesAnnuelles
         });
         
         // Log des résultats IA pour diagnostic
@@ -190,7 +208,6 @@ const Diagnostic = () => {
           console.log('✅ Recommandations IA valides:', result.recommendations.length);
           setAiRecommendations(result.recommendations);
         }
-        
         
         setShowResults(true);
       } catch (error) {
@@ -298,6 +315,8 @@ const Diagnostic = () => {
     });
     setEmailData({ email: '', acceptMarketing: false });
     setAiRecommendations([]);
+    setAiScore(0);
+    setAiEconomies({ heures: 0, mensuelles: 0, annuelles: 0 });
   };
 
   // Email sending functionality
@@ -307,8 +326,18 @@ const Diagnostic = () => {
     setIsLoadingEmail(true);
     
     try {
-      const aiData = await getAIRecommendations();
-      const financialSavings = calculateFinancialSavings();
+      // Use current AI data (already loaded)
+      const aiData = {
+        score: aiScore,
+        recommendations: aiRecommendations,
+        analysis: 'Analyse personnalisée de vos besoins'
+      };
+      
+      const financialSavings = {
+        monthly: aiEconomies.mensuelles,
+        annual: aiEconomies.annuelles,
+        hours: aiEconomies.heures
+      };
       
       // Send diagnostic data via Resend
       const { data, error } = await supabase.functions.invoke('send-diagnostic-email', {
@@ -426,8 +455,7 @@ Généré par Solutio - https://solutio.work
 
   // Affichage des résultats (avec ou sans recommandations IA)
   if (showResults) {
-    const financialSavings = calculateFinancialSavings();
-    const aiScore = aiRecommendations[0]?.score || 75;
+    // Utiliser les données IA (pas de recalcul local)
 
     return (
       <div className="min-h-screen bg-gradient-subtle">
@@ -473,19 +501,19 @@ Généré par Solutio - https://solutio.work
                   
                   <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
                     <Clock className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <div className="font-semibold text-blue-700 dark:text-blue-400">{financialSavings.hours}h</div>
+                    <div className="font-semibold text-blue-700 dark:text-blue-400">{aiEconomies.heures}h</div>
                     <div className="text-xs text-blue-600 dark:text-blue-500">Temps/mois économisé</div>
                   </Card>
                   
                   <Card className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
                     <Target className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-                    <div className="font-semibold text-purple-700 dark:text-purple-400">{financialSavings.monthly}€</div>
+                    <div className="font-semibold text-purple-700 dark:text-purple-400">{aiEconomies.mensuelles}€</div>
                     <div className="text-xs text-purple-600 dark:text-purple-500">Économies/mois</div>
                   </Card>
                   
                   <Card className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
                     <TrendingUp className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-                    <div className="font-semibold text-orange-700 dark:text-orange-400">{financialSavings.annual}€</div>
+                    <div className="font-semibold text-orange-700 dark:text-orange-400">{aiEconomies.annuelles}€</div>
                     <div className="text-xs text-orange-600 dark:text-orange-500">Économies/an</div>
                   </Card>
                 </div>
@@ -774,54 +802,41 @@ Généré par Solutio - https://solutio.work
               </CardHeader>
               <CardContent>
                 <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Temps estimé par tâche:</span>
-                        <span className="font-medium">{financialSavings.calculation.timePerTask}h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Fréquence mensuelle:</span>
-                        <span className="font-medium">{financialSavings.calculation.frequencyPerMonth}x</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Potentiel d'automatisation:</span>
-                        <span className="font-medium">{financialSavings.calculation.automationPotential}%</span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Taux horaire superbrut:</span>
-                        <span className="font-medium">{financialSavings.calculation.hourlyRate}€/h</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Coût logiciel estimé:</span>
-                        <span className="font-medium">{financialSavings.calculation.softwareCostMonthly}€/mois</span>
+                        <span className="text-muted-foreground">Score IA:</span>
+                        <span className="font-medium">{aiScore}%</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Temps économisé/mois:</span>
-                        <span className="font-medium">{financialSavings.hours}h</span>
+                        <span className="font-medium">{aiEconomies.heures}h</span>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="border-t pt-3 space-y-2">
-                    <div className="flex justify-between font-medium">
-                      <span>Économies brutes/mois:</span>
-                      <span className="text-green-600">{financialSavings.gross}€</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Économies mensuelles:</span>
+                        <span className="font-medium text-green-600">{aiEconomies.mensuelles}€</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Économies annuelles:</span>
+                        <span className="font-medium text-primary">{aiEconomies.annuelles}€</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>- Coût logiciel/mois:</span>
-                      <span className="text-red-600">-{financialSavings.calculation.softwareCostMonthly}€</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg border-t pt-2">
-                      <span>Économies nettes/mois:</span>
-                      <span className="text-primary">{financialSavings.monthly}€</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Recommandations:</span>
+                        <span className="font-medium">{aiRecommendations.length} SaaS</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Statut analyse:</span>
+                        <span className="font-medium text-green-600">✓ Complète</span>
+                      </div>
                     </div>
                   </div>
                   
                   <div className="text-xs text-muted-foreground mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-                    <strong>Note:</strong> Ce calcul utilise le taux horaire superbrut moyen en France (43,5€/h) et déduit un coût moyen de logiciel d'automatisation (35€/mois). Les estimations peuvent varier selon votre situation spécifique.
+                    <strong>Note:</strong> Ces résultats sont générés par notre IA en analysant vos réponses et en sélectionnant les SaaS les plus adaptés à vos besoins spécifiques.
                   </div>
                 </div>
               </CardContent>
