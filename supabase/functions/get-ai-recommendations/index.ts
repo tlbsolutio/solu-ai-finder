@@ -101,6 +101,11 @@ RÈGLES STRICTES :
 6. Privilégie les SaaS avec un % d'automatisation élevé
 7. GARANTIE: Tu DOIS toujours retourner exactement 2-5 recommandations
 
+CALCUL DES ÉCONOMIES :
+- Salaire brut moyen français : 21€/heure
+- Calcul : économiesHeures × 21 = économiesMensuelles
+- Calcul : économiesMensuelles × 12 = économiesAnnuelles
+
 EXEMPLES DE CORRESPONDANCES FLEXIBLES :
 - "CRM" → Recherche "contact", "client", "vente" dans les descriptions
 - "Facturation" → Recherche "facture", "comptabilité", "finance"
@@ -111,16 +116,16 @@ Tu réponds uniquement avec un objet JSON contenant :
 - recommendations: tableau des outils (MINIMUM 2, même si correspondance imparfaite)
 - score: note globale d'automatisation estimée sur 100  
 - economiesHeures: estimation du temps économisé / mois (heures)
-- economiesMensuelles: économies nettes estimées (€ / mois)
-- economiesAnnuelles: économies nettes estimées (€ / an)
+- economiesMensuelles: économies nettes estimées (€ / mois) = economiesHeures × 21
+- economiesAnnuelles: économies nettes estimées (€ / an) = economiesMensuelles × 12
 - analysis: résumé d'analyse stratégique (texte court, 2 phrases max)
 
 FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
   "score": 75,
   "economiesHeures": 8,
-  "economiesMensuelles": 220,
-  "economiesAnnuelles": 2640,
+  "economiesMensuelles": 168,
+  "economiesAnnuelles": 2016,
   "analysis": "La tâche décrite est automatisable. Les outils recommandés permettent un gain de productivité.",
   "recommendations": [
     {
@@ -230,8 +235,8 @@ FORMAT DE RÉPONSE JSON OBLIGATOIRE:
         return new Response(JSON.stringify({
           score: 60,
           economiesHeures: 8,
-          economiesMensuelles: 180,
-          economiesAnnuelles: 2160,
+          economiesMensuelles: 168, // 8h × 21€
+          economiesAnnuelles: 2016, // 168€ × 12 mois
           analysis: "Solutions génériques identifiées. Un entretien avec nos experts permettrait d'affiner ces recommandations.",
           recommendations: fallbackRecommendations
         }), {

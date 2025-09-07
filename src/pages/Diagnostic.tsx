@@ -589,7 +589,7 @@ Généré par Solutio - https://solutio.work
                         </div>
                       ))}
                     </div>
-                  ) : aiRecommendations.length > 0 ? (
+                  ) : aiRecommendations && aiRecommendations.length > 0 ? (
                     <div className="grid gap-6">
                       {aiRecommendations.map((rec: any, index: number) => {
                         const saas = rec.saasData;
@@ -758,7 +758,7 @@ Généré par Solutio - https://solutio.work
                           </div>
                         );
                       })}
-                    </div>
+                     </div>
                   ) : (
                     <div className="text-center py-8">
                       <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
@@ -789,7 +789,7 @@ Généré par Solutio - https://solutio.work
                         </div>
                       </div>
                     </div>
-                    )}
+                  )}
                  </div>
               </CardContent>
             </Card>
