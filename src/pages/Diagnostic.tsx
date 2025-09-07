@@ -175,20 +175,33 @@ const Diagnostic = () => {
       setIsLoadingResults(true);
       try {
         const result = await getAIRecommendations();
-        console.log('🔍 DEBUG - AI Response:', {
+        console.log('🔍 DEBUG - AI Response reçue:', {
           recommendations: result.recommendations?.length || 0,
           score: result.score,
           analysis: result.analysis
         });
         
+        // Vérification critique : ne pas afficher si pas de recommandations
         if (!result.recommendations || result.recommendations.length === 0) {
-          console.warn('⚠️ Aucune recommandation IA reçue - aiRecommendations sera vide');
+          console.error('❌ CRITIQUE - Aucune recommandation IA valide reçue');
+          toast({
+            title: "Aucune solution trouvée",
+            description: "Nos experts peuvent vous orienter vers des solutions adaptées à votre besoin spécifique.",
+            variant: "destructive",
+          });
+          return; // Ne pas afficher les résultats
         }
         
-        setAiRecommendations(result.recommendations || []);
+        console.log('✅ Recommandations IA valides:', result.recommendations.length);
+        setAiRecommendations(result.recommendations);
         setShowResults(true);
       } catch (error) {
-        console.error('❌ Erreur lors de la récupération des recommandations:', error);
+        console.error('❌ Erreur complète lors de la récupération des recommandations:', error);
+        toast({
+          title: "Service temporairement indisponible",
+          description: "Impossible de générer les recommandations IA. Nos experts peuvent vous aider directement.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoadingResults(false);
       }
@@ -376,12 +389,50 @@ Généré par Solutio - https://solutio.work
     }
   };
 
-  if (showResults) {
-    const financialSavings = calculateFinancialSavings();
+  // Affichage du loader pendant l'analyse IA
+  if (isLoadingResults) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-2xl mx-auto">
+            <Card className="shadow-elegant bg-gradient-to-br from-background to-secondary/50">
+              <CardContent className="text-center py-16">
+                <div className="flex flex-col items-center space-y-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-spin border-t-primary"></div>
+                    <div className="absolute inset-0 w-16 h-16 border-2 border-primary/10 rounded-full animate-pulse"></div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h2 className="text-xl font-semibold text-foreground">Analyse en cours...</h2>
+                    <p className="text-muted-foreground">
+                      Notre IA analyse vos réponses et recherche les meilleures solutions d'automatisation
+                    </p>
+                    
+                    <div className="flex items-center justify-center space-x-2 mt-4">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  return (
-    <div className="min-h-screen bg-gradient-subtle">
-        
+  // Affichage conditionnel des résultats - UNIQUEMENT si recommendations IA valides
+  if (showResults && aiRecommendations.length > 0) {
+    const financialSavings = calculateFinancialSavings();
+    const aiScore = aiRecommendations[0]?.score || 75;
+
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             {/* Results Header */}
@@ -406,8 +457,7 @@ Généré par Solutio - https://solutio.work
                   <div className="w-40 h-40 rounded-full border-8 border-primary/20 flex items-center justify-center bg-background/80 backdrop-blur-sm shadow-glow">
                     <div className="text-center">
                       <div className="text-4xl font-bold text-primary animate-fade-in">
-                        {aiRecommendations.length > 0 ? 
-                          Math.round(aiRecommendations[0]?.score || 75) : 75}%
+                        {Math.round(aiScore)}%
                       </div>
                       <div className="text-sm text-muted-foreground">{t('diagnostic.potential_label')}</div>
                     </div>
@@ -418,8 +468,7 @@ Généré par Solutio - https://solutio.work
                   <Card className="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
                     <TrendingUp className="h-6 w-6 text-green-600 mx-auto mb-2" />
                     <div className="font-semibold text-green-700 dark:text-green-400">
-                      {Math.round((aiRecommendations.length > 0 ? 
-                        Math.round(aiRecommendations[0]?.score || 75) : 75) * 0.6)}%
+                      {Math.round(aiScore * 0.6)}%
                     </div>
                     <div className="text-xs text-green-600 dark:text-green-500">{t('diagnostic.time_saved_label')}</div>
                   </Card>
