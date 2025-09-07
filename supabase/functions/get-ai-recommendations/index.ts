@@ -288,9 +288,9 @@ ${JSON.stringify(saasData.items, null, 2)}
 
       return new Response(JSON.stringify({
         score: 75,
-        economiesHeures: 10,
-        economiesMensuelles: 210, // 10h × 21€
-        economiesAnnuelles: 2520, // 210€ × 12 mois
+        economiesHeures: Math.round(monthlyHours),
+        economiesMensuelles: Math.round(monthlySavings),
+        economiesAnnuelles: Math.round(annualSavings),
         analysis: "Solutions d'automatisation identifiées basées sur votre profil. Ces outils offrent un potentiel d'automatisation élevé.",
         recommendations: intelligentFallback
       }), {
@@ -325,9 +325,9 @@ ${JSON.stringify(saasData.items, null, 2)}
 
       return new Response(JSON.stringify({
         score: 75,
-        economiesHeures: 10,
-        economiesMensuelles: 210,
-        economiesAnnuelles: 2520,
+        economiesHeures: Math.round(monthlyHours),
+        economiesMensuelles: Math.round(monthlySavings),
+        economiesAnnuelles: Math.round(annualSavings),
         analysis: "Recommendations générées automatiquement basées sur l'automatisation disponible.",
         recommendations: intelligentFallback
       }), {
