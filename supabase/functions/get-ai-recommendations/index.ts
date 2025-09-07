@@ -105,6 +105,41 @@ async function fetchSaasFromAirtable() {
   }
 }
 
+// Economic calculation helper functions
+function getTimePerTask(task: string): number {
+  const lower = task.toLowerCase();
+  if (lower.includes('email') || lower.includes('saisie') || lower.includes('données')) return 2.5;
+  if (lower.includes('planification') || lower.includes('gestion') || lower.includes('organisation')) return 4;
+  if (lower.includes('comptabilité') || lower.includes('facture') || lower.includes('finance')) return 5.5;
+  if (lower.includes('rapport') || lower.includes('analyse') || lower.includes('dashboard')) return 6;
+  return 3;
+}
+
+function getMonthlyFrequency(frequency: string): number {
+  const freq = frequency.toLowerCase();
+  if (freq.includes('jour')) return 20;
+  if (freq.includes('semaine')) return 4;
+  if (freq.includes('mois')) return 1;
+  return 2;
+}
+
+function getHourlyRate(sector: string): number {
+  const s = sector.toLowerCase();
+  if (s.includes('finance')) return 55;
+  if (s.includes('marketing') || s.includes('communication')) return 45;
+  if (s.includes('artisan') || s.includes('btp') || s.includes('indépendant')) return 35;
+  if (s.includes('tech') || s.includes('saas')) return 50;
+  return 43.5;
+}
+
+function getAutomationPotential(tools: string): number {
+  const t = tools.toLowerCase();
+  if (t.includes('excel') || t.includes('manuel')) return 85;
+  if (t.includes('crm') || t.includes('erp')) return 65;
+  if (t.includes('automatisation') || t.includes('zapier') || t.includes('make')) return 30;
+  return 60;
+}
+
 interface DiagnosticData {
   task: string;
   frequency: string;
@@ -144,13 +179,23 @@ serve(async (req) => {
     const availableIds = saasData.items.map((item: any) => item.id);
     console.log(`🆔 Available SaaS IDs: ${availableIds.join(', ')}`);
 
-    const prompt = `Tu es un expert en automatisation de processus pour les PME et indépendants.
+    // Calculate economic metrics
+    const timePerTask = getTimePerTask(diagnosticData.task);
+    const monthlyFreq = getMonthlyFrequency(diagnosticData.frequency);
+    const hourlyRate = getHourlyRate(diagnosticData.sector);
+    const automationPot = getAutomationPotential(diagnosticData.tools);
+    
+    const monthlyHours = timePerTask * monthlyFreq * (automationPot / 100);
+    const monthlySavings = Math.max(0, monthlyHours * hourlyRate - 35); // -35€ average SaaS cost
+    const annualSavings = monthlySavings * 12;
 
-Ta mission est d'analyser les réponses du diagnostic ci-dessous et de recommander OBLIGATOIREMENT des outils SaaS **parmi la base fournie uniquement**.
+    const prompt = `Tu es un consultant expert en automatisation pour les PME et indépendants.
+
+Ta mission est d'analyser les réponses du diagnostic utilisateur et de recommander des outils SaaS UNIQUEMENT parmi ceux listés dans la base Airtable fournie.
 
 ---
 
-Réponses utilisateur :
+🎯 Réponses utilisateur :
 
 Tâche : ${diagnosticData.task}
 Fréquence : ${diagnosticData.frequency}
@@ -162,53 +207,38 @@ Priorité : ${diagnosticData.priority}/5
 
 ---
 
-IMPORTANT - UTILISE UNIQUEMENT CES IDs de SaaS disponibles dans tes recommandations:
-${saasData.items.map((saas: any) => `- ID: ${saas.id} | Nom: ${saas.name} | Catégories: ${saas.categories?.join(', ') || 'N/A'} | Automatisation: ${saas.automation || 'N/A'}% | Prix: ${saas.priceText || 'N/A'}`).join('\n')}
+🧩 Voici les SaaS disponibles (format JSON) :
 
-RÈGLES STRICTES:
-1. Tu ne peux recommander QUE les SaaS dont les IDs figurent dans la liste ci-dessus
-2. JAMAIS d'IDs inventés comme "recA1B2C3D4" ou similaires 
-3. Si aucun SaaS ne correspond parfaitement, choisis les plus proches de la liste
-4. Privilégie les correspondances par catégorie, puis par description, puis par automatisation
-5. TOUJOURS respecter le budget indiqué (contraintes)
-6. Privilégie les SaaS avec un % d'automatisation élevé
-7. GARANTIE: Tu DOIS toujours retourner exactement 2-3 recommandations VALIDES
+${JSON.stringify(saasData.items, null, 2)}
 
-⚠️ VALIDATION CRITIQUE: Avant de répondre, vérifie que TOUS tes IDs recommandés existent dans la liste ci-dessus!
+---
 
-CALCUL DES ÉCONOMIES :
-- Salaire brut moyen français : 21€/heure
-- Calcul : économiesHeures × 21 = économiesMensuelles
-- Calcul : économiesMensuelles × 12 = économiesAnnuelles
+🎯 Règles strictes :
 
-EXEMPLES DE CORRESPONDANCES FLEXIBLES :
-- "CRM" → Recherche "contact", "client", "vente" dans les descriptions
-- "Facturation" → Recherche "facture", "comptabilité", "finance"
-- "Marketing" → Recherche "email", "campagne", "marketing"
+1. Ne recommander QUE des SaaS présents dans la base ci-dessus (par leur ID exact).
+2. Ne PAS recommander un outil déjà cité dans "Outils actuels", sauf si c'est pour l'étendre ou le connecter via un autre outil.
+3. Privilégier des outils complémentaires et éviter les redondances (pas deux CRM, ou deux outils no-code similaires).
+4. Respecter les contraintes métier et techniques dans la sélection (ex. intégration ERP, hébergement, budget).
+5. Diversifier les types de solutions proposées (structuration, automatisation, visualisation, communication...).
+6. Chaque outil doit avoir une **raison précise et contextualisée**.
+7. Si aucune solution pertinente n'est trouvée, dire "Aucun SaaS adapté trouvé".
+8. Le résultat doit être au FORMAT JSON STRICT :
 
-FORMAT JSON OBLIGATOIRE (aucun autre format accepté):
-- recommendations: tableau des outils (MINIMUM 2, même si correspondance imparfaite)
-- score: note globale d'automatisation estimée sur 100  
-- economiesHeures: estimation du temps économisé / mois (heures)
-- economiesMensuelles: économies nettes estimées (€ / mois) = economiesHeures × 21
-- economiesAnnuelles: économies nettes estimées (€ / an) = economiesMensuelles × 12
-- analysis: résumé d'analyse stratégique (texte court, 2 phrases max)
-
-FORMAT DE RÉPONSE JSON OBLIGATOIRE:
 {
-  "score": 75,
-  "economiesHeures": 8,
-  "economiesMensuelles": 168,
-  "economiesAnnuelles": 2016,
-  "analysis": "La tâche décrite est automatisable. Les outils recommandés permettent un gain de productivité.",
+  "score": 78,
+  "economiesHeures": ${Math.round(monthlyHours)},
+  "economiesMensuelles": ${Math.round(monthlySavings)},
+  "economiesAnnuelles": ${Math.round(annualSavings)},
+  "analysis": "Analyse stratégique ici",
   "recommendations": [
     {
-      "id": "rec001",
-      "tool": "HubSpot CRM",
-      "reason": "Solution CRM complète adaptée au secteur, avec 85% d'automatisation des processus clients.",
+      "id": "recXXXXXX",
+      "tool": "Nom du SaaS",
+      "reason": "Justification du choix",
       "priority": 1,
-      "score": 85
-    }
+      "score": 87
+    },
+    ...
   ]
 }`;
 
