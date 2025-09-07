@@ -114,7 +114,7 @@ const Diagnostic = () => {
 
   // Calculate financial savings
   const calculateFinancialSavings = () => {
-    const hourlyRate = 43.5; // €/hour superbrut moyen France
+    const hourlyRate = 21; // €/hour brut moyen France 2024
     const softwareCostMonthly = 35; // Coût moyen logiciel d'automatisation/mois
     let timePerTask = 4; // Default 4 heures (au lieu de 1h)
     let frequencyPerMonth = 1;
