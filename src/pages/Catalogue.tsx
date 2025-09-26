@@ -305,10 +305,10 @@ const totalItems = filteredSaaS.length;
         )}
 
         {/* SaaS Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grid-equal-rows">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {loading
             ? Array.from({ length: visibleCount }).map((_, i) => (
-                <Card key={`skeleton-${i}`} className="overflow-hidden">
+                <Card key={`skeleton-${i}`} className="overflow-hidden h-full flex flex-col">
                   <Skeleton className="w-full h-32" />
                   <CardHeader className="pb-2">
                     <Skeleton className="h-6 w-2/3 mb-2" />
@@ -334,7 +334,7 @@ const totalItems = filteredSaaS.length;
             : visibleItems.map((saas) => (
                 <Card
                   key={saas.id}
-                  className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
+                  className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full self-stretch flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
                 >
                    <div className="relative overflow-hidden rounded-t-lg">
                      {saas.logoUrl ? (
@@ -372,7 +372,7 @@ const totalItems = filteredSaaS.length;
                   </CardHeader>
 
                   <CardContent className="p-4 pt-0 flex-1 flex flex-col">
-                    <div className="space-y-3 flex-1">
+                    <div className="flex flex-col gap-3 flex-1 min-h-0">
                       {/* Categories */}
                       <div className="flex flex-wrap gap-1">
                         {saas.categories.map((cat, idx) => {
