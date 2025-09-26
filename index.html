@@ -52,7 +52,7 @@
     <!-- ========== Solutio Cookie Banner (FR/EN, Consent Mode v2) ========== -->
     <div id="solu-consent" style="all:initial;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
       <style>
-        #solu-consent .wrap{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#0f172a;color:#fff;box-shadow:0 -10px 30px rgba(0,0,0,.25);padding:16px}
+        #solu-consent .wrap{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#0f172a;color:#fff;box-shadow:0 -10px 30px rgba(0,0,0,.25);padding:16px;display:none}
         #solu-consent .inner{max-width:1100px;margin:0 auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
         #solu-consent p{margin:0;line-height:1.4}
         #solu-consent a{color:#93c5fd;text-decoration:underline}
@@ -122,192 +122,177 @@
       </div>
 
       <script>
-        // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-          // ------- i18n (auto FR/EN) -------
-          const isFR = (navigator.language||'en').toLowerCase().startsWith('fr');
-          const T = isFR ? {
-            banner: `Nous utilisons des cookies pour faire fonctionner le site, mesurer l'audience (GA4) et suivre les liens d'affiliation (p.ex. CJ). Vous pouvez accepter, refuser ou personnaliser. Voir notre <a href="/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>.`,
-            accept:'Accepter',
-            reject:'Refuser',
-            customize:'Personnaliser',
-            modalTitle:'Préférences de cookies',
-            modalTag:'Choisissez ce que vous autorisez. Les cookies essentiels sont toujours actifs.',
-            essential:'Essentiels',
-            essentialDesc:'Fonctionnement de base et sécurité du site',
-            analytics:'Analytics (GA4)',
-            analyticsDesc:'Mesure d'audience. Aucune donnée personnelle sans consentement.',
-            marketing:'Marketing / Publicité',
-            marketingDesc:'Mesure et personnalisation publicitaires.',
-            affiliate:'Suivi d'affiliation (CJ, etc.)',
-            affiliateDesc:'Mesure les ventes issues de nos liens pour recevoir une commission.',
-            cancel:'Annuler',
-            save:'Enregistrer'
-          } : {
-            banner: `We use cookies to run the site, measure usage (GA4), and track affiliate links (e.g., CJ). You can accept, reject, or customize. See our <a href="/privacy-en" target="_blank" rel="noopener">Privacy Policy</a>.`,
-            accept:'Accept',
-            reject:'Reject',
-            customize:'Customize',
-            modalTitle:'Cookie preferences',
-            modalTag:'Choose what to allow. Essential cookies are always on.',
-            essential:'Essential',
-            essentialDesc:'Required for basic site function & security',
-            analytics:'Analytics (GA4)',
-            analyticsDesc:'Helps us understand usage. No personal data until consent.',
-            marketing:'Marketing / Ads',
-            marketingDesc:'Advertising measurement & personalization.',
-            affiliate:'Affiliate tracking (CJ, etc.)',
-            affiliateDesc:'Tracks referrals so we can earn commissions when you buy.',
-            cancel:'Cancel',
-            save:'Save preferences'
-          };
-          
-          const $ = s => document.querySelector(s);
-          
-          // Initialize text content
-          const soluText = $('#solu-text');
-          const soluAccept = $('#solu-accept');
-          const soluReject = $('#solu-reject');
-          const soluCustomize = $('#solu-customize');
-          
-          if (soluText) soluText.innerHTML = T.banner;
-          if (soluAccept) soluAccept.textContent = T.accept;
-          if (soluReject) soluReject.textContent = T.reject;
-          if (soluCustomize) soluCustomize.textContent = T.customize;
-          
-          // Initialize modal text
-          const modalTitle = $('#solu-modal-title');
-          const modalTag = $('#solu-modal-tag');
-          if (modalTitle) modalTitle.textContent = T.modalTitle;
-          if (modalTag) modalTag.textContent = T.modalTag;
-          
-          // Initialize labels
-          const elements = [
-            {id: '#lab-essential', text: T.essential},
-            {id: '#desc-essential', text: T.essentialDesc},
-            {id: '#lab-analytics', text: T.analytics},
-            {id: '#desc-analytics', text: T.analyticsDesc},
-            {id: '#lab-marketing', text: T.marketing},
-            {id: '#desc-marketing', text: T.marketingDesc},
-            {id: '#lab-affiliate', text: T.affiliate},
-            {id: '#desc-affiliate', text: T.affiliateDesc},
-            {id: '#solu-cancel', text: T.cancel},
-            {id: '#solu-save', text: T.save}
-          ];
-          
-          elements.forEach(el => {
-            const element = $(el.id);
-            if (element) element.textContent = el.text;
-          });
-
-          // ------- Consent persistence -------
-          const KEY = 'solutio_consent_v2';
-          const defaults = {analytics:false, marketing:false, affiliate:false};
-          function readC(){ try { return JSON.parse(localStorage.getItem(KEY))||null; } catch(e){ return null; } }
-          function writeC(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
-
-          // Ensure Consent Mode defaults function exists
-          if(!window.dataLayer){ window.dataLayer=[]; }
-          function gtag(){ dataLayer.push(arguments); }
-          function applyConsent(s){
-            gtag('consent','update',{
-              'analytics_storage': s.analytics?'granted':'denied',
-              'ad_storage':       s.affiliate?'granted':'denied',
-              'ad_user_data':     s.marketing?'granted':'denied',
-              'ad_personalization': s.marketing?'granted':'denied',
-              'personalization_storage': s.marketing?'granted':'denied'
-            });
-          }
-
-          // ------- UI controls -------
-          const banner = $('#solu-consent .wrap');
-          const modal  = $('#solu-modal');
-          function hideBanner(){ if(banner) banner.style.display='none'; }
-          function showBanner(){ if(banner) banner.style.display='block'; }
-          function openModal(){ if(modal) modal.style.display='flex'; }
-          function closeModal(){ if(modal) modal.style.display='none'; }
-
-          // Event listeners
-          if (soluAccept) {
-            soluAccept.addEventListener('click', ()=>{
-              const all = {analytics:true, marketing:true, affiliate:true};
-              writeC(all); applyConsent(all); hideBanner();
-            });
-          }
-          
-          if (soluReject) {
-            soluReject.addEventListener('click', ()=>{
-              const none = {analytics:false, marketing:false, affiliate:false};
-              writeC(none); applyConsent(none); hideBanner();
-            });
-          }
-          
-          if (soluCustomize) {
-            soluCustomize.addEventListener('click', ()=>{
-              const s = readC() || defaults;
-              const chkAnalytics = $('#chk-analytics');
-              const chkMarketing = $('#chk-marketing');
-              const chkAffiliate = $('#chk-affiliate');
-              
-              if (chkAnalytics) chkAnalytics.checked = !!s.analytics;
-              if (chkMarketing) chkMarketing.checked = !!s.marketing;
-              if (chkAffiliate) chkAffiliate.checked = !!s.affiliate;
-              
-              openModal();
-            });
-          }
-          
-          const soluCancel = $('#solu-cancel');
-          const soluSave = $('#solu-save');
-          
-          if (soluCancel) {
-            soluCancel.addEventListener('click', closeModal);
-          }
-          
-          if (soluSave) {
-            soluSave.addEventListener('click', ()=>{
-              const chkAnalytics = $('#chk-analytics');
-              const chkMarketing = $('#chk-marketing');
-              const chkAffiliate = $('#chk-affiliate');
-              
-              const s = {
-                analytics: chkAnalytics ? chkAnalytics.checked : false,
-                marketing: chkMarketing ? chkMarketing.checked : false,
-                affiliate: chkAffiliate ? chkAffiliate.checked : false
-              };
-              
-              writeC(s); applyConsent(s); closeModal(); hideBanner();
-            });
-          }
-
-          // Initialize banner visibility
-          function init(){
-            const s = readC();
-            if(s){ 
-              applyConsent(s); 
-              hideBanner(); 
-            } else { 
-              showBanner(); 
-            }
-            
-            // Global function to reopen settings
-            window.openCookieSettings = function(){
-              const cur = readC() || defaults;
-              const chkAnalytics = $('#chk-analytics');
-              const chkMarketing = $('#chk-marketing');
-              const chkAffiliate = $('#chk-affiliate');
-              
-              if (chkAnalytics) chkAnalytics.checked = !!cur.analytics;
-              if (chkMarketing) chkMarketing.checked = !!cur.marketing;
-              if (chkAffiliate) chkAffiliate.checked = !!cur.affiliate;
-              
-              openModal();
+        (function(){
+          function start(){
+            // ------- i18n (auto FR/EN) -------
+            const isFR = (navigator.language||'en').toLowerCase().startsWith('fr');
+            const T = isFR ? {
+              banner: `Nous utilisons des cookies pour faire fonctionner le site, mesurer l’audience (GA4) et suivre les liens d’affiliation (p.ex. CJ). Vous pouvez accepter, refuser ou personnaliser. Voir notre <a href="/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>.`,
+              accept:'Accepter',
+              reject:'Refuser',
+              customize:'Personnaliser',
+              modalTitle:'Préférences de cookies',
+              modalTag:'Choisissez ce que vous autorisez. Les cookies essentiels sont toujours actifs.',
+              essential:'Essentiels',
+              essentialDesc:'Fonctionnement de base et sécurité du site',
+              analytics:'Analytics (GA4)',
+              analyticsDesc:'Mesure d’audience. Aucune donnée personnelle sans consentement.',
+              marketing:'Marketing / Publicité',
+              marketingDesc:'Mesure et personnalisation publicitaires.',
+              affiliate:'Suivi d’affiliation (CJ, etc.)',
+              affiliateDesc:'Mesure les ventes issues de nos liens pour recevoir une commission.',
+              cancel:'Annuler',
+              save:'Enregistrer'
+            } : {
+              banner: `We use cookies to run the site, measure usage (GA4), and track affiliate links (e.g., CJ). You can accept, reject, or customize. See our <a href="/privacy-en" target="_blank" rel="noopener">Privacy Policy</a>.`,
+              accept:'Accept',
+              reject:'Reject',
+              customize:'Customize',
+              modalTitle:'Cookie preferences',
+              modalTag:'Choose what to allow. Essential cookies are always on.',
+              essential:'Essential',
+              essentialDesc:'Required for basic site function & security',
+              analytics:'Analytics (GA4)',
+              analyticsDesc:'Helps us understand usage. No personal data until consent.',
+              marketing:'Marketing / Ads',
+              marketingDesc:'Advertising measurement & personalization.',
+              affiliate:'Affiliate tracking (CJ, etc.)',
+              affiliateDesc:'Tracks referrals so we can earn commissions when you buy.',
+              cancel:'Cancel',
+              save:'Save preferences'
             };
+
+            const root = document.getElementById('solu-consent');
+            const $ = (sel) => (root ? root.querySelector(sel) : document.querySelector(sel));
+
+            // Initialize text content
+            const soluText = $('#solu-text');
+            const soluAccept = $('#solu-accept');
+            const soluReject = $('#solu-reject');
+            const soluCustomize = $('#solu-customize');
+            if (soluText) soluText.innerHTML = T.banner;
+            if (soluAccept) soluAccept.textContent = T.accept;
+            if (soluReject) soluReject.textContent = T.reject;
+            if (soluCustomize) soluCustomize.textContent = T.customize;
+
+            // Initialize modal text
+            const modalTitle = $('#solu-modal-title');
+            const modalTag = $('#solu-modal-tag');
+            if (modalTitle) modalTitle.textContent = T.modalTitle;
+            if (modalTag) modalTag.textContent = T.modalTag;
+
+            // Initialize labels
+            const map = [
+              ['#lab-essential', T.essential],
+              ['#desc-essential', T.essentialDesc],
+              ['#lab-analytics', T.analytics],
+              ['#desc-analytics', T.analyticsDesc],
+              ['#lab-marketing', T.marketing],
+              ['#desc-marketing', T.marketingDesc],
+              ['#lab-affiliate', T.affiliate],
+              ['#desc-affiliate', T.affiliateDesc],
+              ['#solu-cancel', T.cancel],
+              ['#solu-save', T.save]
+            ];
+            map.forEach(([id, text]) => { const el = $(id); if (el) el.textContent = text; });
+
+            // ------- Consent persistence -------
+            const KEY = 'solutio_consent_v2';
+            const defaults = {analytics:false, marketing:false, affiliate:false};
+            function readC(){ try { return JSON.parse(localStorage.getItem(KEY))||null; } catch(e){ return null; } }
+            function writeC(v){ localStorage.setItem(KEY, JSON.stringify(v)); }
+
+            // Ensure Consent Mode defaults function exists
+            if(!window.dataLayer){ window.dataLayer=[]; }
+            function gtag(){ dataLayer.push(arguments); }
+            function applyConsent(s){
+              gtag('consent','update',{
+                'analytics_storage': s.analytics?'granted':'denied',
+                'ad_storage':       s.affiliate?'granted':'denied',
+                'ad_user_data':     s.marketing?'granted':'denied',
+                'ad_personalization': s.marketing?'granted':'denied',
+                'personalization_storage': s.marketing?'granted':'denied'
+              });
+            }
+
+            // ------- UI controls -------
+            const banner = $('#solu-consent .wrap');
+            const modal  = $('#solu-modal');
+            function hideBanner(){ if(banner) banner.style.display='none'; }
+            function showBanner(){ if(banner) banner.style.display='block'; }
+            function openModal(){ if(modal) modal.style.display='flex'; }
+            function closeModal(){ if(modal) modal.style.display='none'; }
+
+            if (soluAccept) {
+              soluAccept.addEventListener('click', ()=>{
+                const all = {analytics:true, marketing:true, affiliate:true};
+                writeC(all); applyConsent(all); hideBanner();
+              });
+            }
+            if (soluReject) {
+              soluReject.addEventListener('click', ()=>{
+                const none = {analytics:false, marketing:false, affiliate:false};
+                writeC(none); applyConsent(none); hideBanner();
+              });
+            }
+            if (soluCustomize) {
+              soluCustomize.addEventListener('click', ()=>{
+                const s = readC() || defaults;
+                const chkAnalytics = $('#chk-analytics');
+                const chkMarketing = $('#chk-marketing');
+                const chkAffiliate = $('#chk-affiliate');
+                if (chkAnalytics) chkAnalytics.checked = !!s.analytics;
+                if (chkMarketing) chkMarketing.checked = !!s.marketing;
+                if (chkAffiliate) chkAffiliate.checked = !!s.affiliate;
+                openModal();
+              });
+            }
+            const soluCancel = $('#solu-cancel');
+            const soluSave = $('#solu-save');
+            if (soluCancel) soluCancel.addEventListener('click', closeModal);
+            if (soluSave) {
+              soluSave.addEventListener('click', ()=>{
+                const chkAnalytics = $('#chk-analytics');
+                const chkMarketing = $('#chk-marketing');
+                const chkAffiliate = $('#chk-affiliate');
+                const s = {
+                  analytics: chkAnalytics ? chkAnalytics.checked : false,
+                  marketing: chkMarketing ? chkMarketing.checked : false,
+                  affiliate: chkAffiliate ? chkAffiliate.checked : false
+                };
+                writeC(s); applyConsent(s); closeModal(); hideBanner();
+              });
+            }
+
+            // Initialize banner visibility
+            function init(){
+              const url = new URL(window.location.href);
+              const reset = url.searchParams.get('consent_reset')==='1' || url.hash.includes('consent-reset');
+              if (reset) { try { localStorage.removeItem(KEY); } catch(e){} }
+              const s = readC();
+              if(s){ applyConsent(s); hideBanner(); } else { showBanner(); }
+              // Global reopen
+              window.openCookieSettings = function(){
+                const cur = readC() || defaults;
+                const chkAnalytics = $('#chk-analytics');
+                const chkMarketing = $('#chk-marketing');
+                const chkAffiliate = $('#chk-affiliate');
+                if (chkAnalytics) chkAnalytics.checked = !!cur.analytics;
+                if (chkMarketing) chkMarketing.checked = !!cur.marketing;
+                if (chkAffiliate) chkAffiliate.checked = !!cur.affiliate;
+                openModal();
+              };
+              // Debug helper
+              window.resetConsent = function(){ try { localStorage.removeItem(KEY);} catch(e){} showBanner(); };
+            }
+            init();
           }
-          
-          // Initialize everything
-          init();
-        });
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', start);
+          } else {
+            start();
+          }
+        })();
       </script>
     </div>
     <!-- ========== End Solutio Cookie Banner ========== -->
