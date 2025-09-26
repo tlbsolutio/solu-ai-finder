@@ -12,6 +12,12 @@ import Diagnostic from "./pages/Diagnostic";
 import Catalogue from "./pages/Catalogue";
 import SaasDetail from "./pages/SaasDetail";
 import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import PrivacyEn from "./pages/PrivacyEn";
+import Cookies from "./pages/Cookies";
+import CookiesEn from "./pages/CookiesEn";
+import Legal from "./pages/Legal";
+import LegalEn from "./pages/LegalEn";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +37,12 @@ const App = () => (
                 <Route path="/catalogue" element={<MainLayout><Catalogue /></MainLayout>} />
                 <Route path="/saas/:id" element={<MainLayout><SaasDetail /></MainLayout>} />
                 <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+                <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
+                <Route path="/privacy-en" element={<MainLayout><PrivacyEn /></MainLayout>} />
+                <Route path="/cookies" element={<MainLayout><Cookies /></MainLayout>} />
+                <Route path="/cookies-en" element={<MainLayout><CookiesEn /></MainLayout>} />
+                <Route path="/legal" element={<MainLayout><Legal /></MainLayout>} />
+                <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
               </Routes>
