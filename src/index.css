@@ -150,6 +150,11 @@ All colors MUST be HSL.
     z-index: 1000;
   }
 
+  /* Equal height grid rows for catalogue cards */
+  .grid-equal-rows {
+    grid-auto-rows: 1fr;
+  }
+
   .skip-link:focus {
     top: 6px;
   }
