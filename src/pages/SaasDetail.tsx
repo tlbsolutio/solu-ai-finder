@@ -217,7 +217,7 @@ const SaasDetail = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-subtle opacity-20"></div>
                 <img 
-                  src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain`} 
+                  src={saasDetail.logoUrl} 
                   alt={`Logo ${saasDetail.name}`}
                   className="w-full h-64 object-contain bg-background/50 p-8"
                   onError={(e) => {
