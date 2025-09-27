@@ -18,6 +18,7 @@ import Cookies from "./pages/Cookies";
 import CookiesEn from "./pages/CookiesEn";
 import Legal from "./pages/Legal";
 import LegalEn from "./pages/LegalEn";
+import TestConnections from "./pages/TestConnections";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/cookies-en" element={<MainLayout><CookiesEn /></MainLayout>} />
                 <Route path="/legal" element={<MainLayout><Legal /></MainLayout>} />
                 <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
+                <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
               </Routes>
