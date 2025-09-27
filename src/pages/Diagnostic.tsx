@@ -761,8 +761,6 @@ Généré par Solutio - https://solutio.work
                               >
                                 <a 
                                   href={rec.id ? `/saas/${rec.id}` : `/catalogue?search=${encodeURIComponent(rec.name || rec.tool)}`}
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
                                 >
                                   📋 Voir les détails
                                 </a>
