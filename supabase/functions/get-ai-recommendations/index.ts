@@ -97,7 +97,6 @@ async function fetchSaasFromAirtable() {
     
     if (!response.ok) {
       console.log(`Failed to fetch SaaS data: ${response.status}`);
-      console.log('🔄 Using fallback SaaS data instead');
       return { items: FALLBACK_SAAS_DATA };
     }
     
@@ -106,7 +105,6 @@ async function fetchSaasFromAirtable() {
     return data;
   } catch (error) {
     console.log('Error fetching SaaS data:', error);
-    console.log('🔄 Using fallback SaaS data instead');
     return { items: FALLBACK_SAAS_DATA };
   }
 }
@@ -165,13 +163,13 @@ serve(async (req) => {
   try {
     const { diagnosticData }: { diagnosticData: DiagnosticData } = await req.json();
     
-    console.log('Analyzing diagnostic data:', diagnosticData);
+    console.log('Analyzing diagnostic data for user request');
 
     // Fetch SaaS data (with automatic fallback)
     const saasData = await fetchSaasFromAirtable();
     
     if (!saasData || !saasData.items || saasData.items.length === 0) {
-      console.log('❌ No SaaS data available even with fallback');
+      console.log('❌ No SaaS data available');
       return new Response(JSON.stringify({
         error: 'No SaaS data available',
         message: 'Unable to fetch SaaS recommendations at this time'
@@ -271,7 +269,7 @@ ${JSON.stringify(saasData.items, null, 2)}
       }),
     });
 
-    console.log('🤖 AI raw response:', await openAIResponse.clone().json());
+    // Remove debug logging for production
 
     if (!openAIResponse.ok) {
       console.error('OpenAI API error:', openAIResponse.status, await openAIResponse.text());
@@ -290,7 +288,7 @@ ${JSON.stringify(saasData.items, null, 2)}
           saasData: saas
         }));
 
-      console.log(`🔄 Created ${intelligentFallback.length} intelligent fallback recommendations`);
+      // Fallback recommendations created
 
       return new Response(JSON.stringify({
         score: 75,
@@ -307,7 +305,7 @@ ${JSON.stringify(saasData.items, null, 2)}
     const aiResult = await openAIResponse.json();
     const content = aiResult.choices[0].message.content;
     
-    console.log('🔍 AI content preview:', content.substring(0, 200));
+    // Parse AI response content
 
     let aiRecommendations;
     try {
@@ -363,7 +361,7 @@ ${JSON.stringify(saasData.items, null, 2)}
     console.log(`🔍 Validation Results: ${validRecommendations.length}/${aiRecommendations.recommendations?.length || 0} recommendations are valid`);
 
     if (validRecommendations.length === 0) {
-      console.log('⚠️ FALLBACK: IA n\'a trouvé aucun SaaS valide. Recherche d\'alternatives...');
+      console.log('⚠️ No valid AI recommendations found, using fallback');
       
       // Create intelligent fallback based on diagnostic data
       const intelligentFallback = saasData.items
@@ -379,7 +377,7 @@ ${JSON.stringify(saasData.items, null, 2)}
           saasData: saas
         }));
 
-      console.log(`✅ FALLBACK: ${intelligentFallback.length} recommandations générées automatiquement`);
+      console.log(`✅ Generated ${intelligentFallback.length} fallback recommendations`);
       
       return new Response(JSON.stringify({
         ...aiRecommendations,

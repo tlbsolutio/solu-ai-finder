@@ -215,16 +215,7 @@ const Diagnostic = () => {
     } else {
       setIsLoadingResults(true);
       try {
-        console.log('🚀 Début analyse IA - Données diagnostiques:', responses);
         const result = await getAIRecommendations();
-        console.log('🔍 DEBUG - AI Response reçue:', {
-          recommendations: result.recommendations?.length || 0,
-          score: result.score,
-          economiesHeures: result.economiesHeures,
-          economiesMensuelles: result.economiesMensuelles,
-          economiesAnnuelles: result.economiesAnnuelles,
-          analysis: result.analysis
-        });
         
         // Stocker TOUS les résultats IA (pas de recalcul local)
         setAiScore(result.score);
@@ -234,13 +225,9 @@ const Diagnostic = () => {
           annuelles: result.economiesAnnuelles
         });
         
-        // Log des résultats IA pour diagnostic
         if (!result.recommendations || result.recommendations.length === 0) {
-          console.warn('⚠️ ATTENTION - Aucune recommandation IA spécifique reçue');
-          console.log('💡 Affichage des résultats avec message informatif');
           setAiRecommendations([]);
         } else {
-          console.log('✅ Recommandations IA valides:', result.recommendations.length);
           setAiRecommendations(result.recommendations);
         }
         
@@ -291,7 +278,6 @@ const Diagnostic = () => {
   // Get AI-powered recommendations
   const getAIRecommendations = async () => {
     try {
-      console.log('🚀 Appel Supabase Function get-ai-recommendations...');
       const { data, error } = await supabase.functions.invoke('get-ai-recommendations', {
         body: { diagnosticData: responses }
       });
@@ -300,13 +286,6 @@ const Diagnostic = () => {
         console.error('❌ Erreur Supabase Function:', error);
         throw error;
       }
-      
-      console.log('✅ Réponse Supabase Function reçue:', {
-        hasData: !!data,
-        score: data?.score,
-        recommendationsCount: data?.recommendations?.length || 0,
-        analysis: data?.analysis?.substring(0, 50) + '...'
-      });
       
       return {
         score: data.score || 75,
@@ -317,7 +296,7 @@ const Diagnostic = () => {
         analysis: data.analysis || 'Analyse personnalisée de vos besoins'
       };
     } catch (error) {
-      console.error('❌ Erreur complète getAIRecommendations:', error);
+      console.error('Erreur lors de la récupération des recommandations IA:', error);
       toast({
         title: "Service temporairement indisponible",
         description: "Impossible de générer les recommandations IA. Veuillez réessayer.",
@@ -784,7 +763,6 @@ Généré par Solutio - https://solutio.work
                                   href={rec.id ? `/saas/${rec.id}` : `/catalogue?search=${encodeURIComponent(rec.name || rec.tool)}`}
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  onClick={() => console.log(`Navigating to SaaS: ${rec.name} (ID: ${rec.id})`)}
                                 >
                                   📋 Voir les détails
                                 </a>

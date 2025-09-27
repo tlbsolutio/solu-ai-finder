@@ -67,11 +67,10 @@ const Catalogue = () => {
       setSelectedCategory(decodeURIComponent(categoryParam));
     }
     
-    // CRITICAL FIX: Handle search parameter from AI recommendations
+    // Handle search parameter from AI recommendations
     const searchParam = searchParams.get('search');
     if (searchParam) {
       setSearchQuery(decodeURIComponent(searchParam));
-      console.log('Catalogue initialized with search query:', decodeURIComponent(searchParam));
     }
   }, [searchParams]);
 

@@ -221,7 +221,7 @@ serve(async (req) => {
         const possibleLinkFields = ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas'];
         
         for (const linkField of possibleLinkFields) {
-          console.log(`Trying to fetch pricing with link field: "${linkField}"`);
+          console.log(`Fetching pricing plans with link field: ${linkField}`);
           
           // Build filterByFormula to match ANY SaaS in the link field
           const filterFormula = `OR(${saasIds.map(id => `SEARCH("${id}", ARRAYJOIN({${linkField}}))`).join(',')})`;
@@ -258,7 +258,7 @@ serve(async (req) => {
         }
         
         // If no filtered results, try getting ALL records as fallback
-        console.log('No filtered results found, trying to fetch ALL pricing records as fallback');
+        console.log('No filtered results found, trying fallback approach');
         const fallbackParams = new URLSearchParams();
         fallbackParams.set('view', 'viwxJnfTzP1MqTcXu');
         fallbackParams.set('pageSize', '100');
@@ -278,7 +278,7 @@ serve(async (req) => {
         }
         
         const fallbackData = await fallbackResp.json();
-        console.log(`Fallback: Fetched ${fallbackData.records?.length || 0} total pricing records`);
+        console.log(`Fallback: Fetched ${fallbackData.records?.length || 0} pricing records`);
         
         return fallbackData.records || [];
       } catch (error) {
@@ -296,7 +296,7 @@ serve(async (req) => {
     allPricingRecords.forEach((pr: any) => {
       // Skip if already processed this pricing record
       if (processedPricingIds.has(pr.id)) {
-        console.log(`Skipping duplicate pricing record ${pr.id}`);
+        // Skip duplicate pricing record
         return;
       }
       processedPricingIds.add(pr.id);
@@ -308,7 +308,7 @@ serve(async (req) => {
         pick<string | string[]>(fields, ['SaaS lié', 'Saas lié', 'SaaS liés', 'Saas liés', 'SaaS', 'Saas']) || []
       );
       
-      console.log(`Processing pricing record ${pr.id} with linked SaaS IDs:`, linkedSaasIds);
+      // Process pricing record for linked SaaS
       
       linkedSaasIds.forEach(saasId => {
         if (!pricingBySaasId.has(saasId)) {
