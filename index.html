@@ -62,11 +62,11 @@
     <!-- ========== Solutio Cookie Banner (FR/EN, Consent Mode v2) ========== -->
     <div id="solu-consent" style="all:initial;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif">
       <style>
-        #solu-consent .wrap{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(255,255,255,0.96);color:#374151;box-shadow:0 -2px 10px -2px rgba(0,0,0,0.05);padding:12px 16px;display:none;backdrop-filter:blur(8px);border-top:1px solid rgba(0,0,0,0.08);transform:translateY(100%);transition:transform 0.3s ease-out}
-         #solu-consent .inner{max-width:1100px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-         #solu-consent p{margin:0;line-height:1.4;font-size:14px}
+        #solu-consent .wrap{position:fixed;left:0;right:0;bottom:0;z-index:99999;background:rgba(255,255,255,0.96);color:#374151;box-shadow:0 -2px 10px -2px rgba(0,0,0,0.05);padding:8px 12px;display:none;backdrop-filter:blur(8px);border-top:1px solid rgba(0,0,0,0.08);transform:translateY(100%);transition:transform 0.3s ease-out}
+         #solu-consent .inner{max-width:1100px;margin:0 auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+         #solu-consent p{margin:0;line-height:1.3;font-size:12px}
          #solu-consent a{color:#2563eb;text-decoration:underline}
-         #solu-consent .btn{appearance:none;border:0;border-radius:6px;padding:8px 12px;font-weight:500;cursor:pointer;font-size:14px;transition:all 0.2s ease}
+         #solu-consent .btn{appearance:none;border:0;border-radius:4px;padding:6px 10px;font-weight:500;cursor:pointer;font-size:12px;transition:all 0.2s ease}
          #solu-consent .primary{background:#10b981;color:#fff}
          #solu-consent .primary:hover{background:#059669}
          #solu-consent .ghost{background:transparent;color:#6b7280;border:1px solid #d1d5db}
@@ -89,7 +89,6 @@
         <div class="inner">
           <p id="solu-text"></p>
           <div class="sp"></div>
-          <button class="btn ghost" id="solu-reject"></button>
           <button class="btn neutral" id="solu-customize"></button>
           <button class="btn primary" id="solu-accept"></button>
         </div>
@@ -140,27 +139,27 @@
             // ------- i18n (auto FR/EN) -------
             const isFR = (navigator.language||'en').toLowerCase().startsWith('fr');
             const T = isFR ? {
-              banner: `Nous utilisons des cookies pour faire fonctionner le site, mesurer l’audience (GA4) et suivre les liens d’affiliation (p.ex. CJ). Vous pouvez accepter, refuser ou personnaliser. Voir notre <a href="/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>.`,
+              banner: `Cookies pour le fonctionnement, l'audience et l'affiliation. <a href="/privacy" target="_blank" rel="noopener">Politique</a>.`,
               accept:'Accepter',
               reject:'Refuser',
-              customize:'Personnaliser',
+              customize:'Paramètres',
               modalTitle:'Préférences de cookies',
               modalTag:'Choisissez ce que vous autorisez. Les cookies essentiels sont toujours actifs.',
               essential:'Essentiels',
               essentialDesc:'Fonctionnement de base et sécurité du site',
               analytics:'Analytics (GA4)',
-              analyticsDesc:'Mesure d’audience. Aucune donnée personnelle sans consentement.',
+              analyticsDesc:'Mesure d'audience. Aucune donnée personnelle sans consentement.',
               marketing:'Marketing / Publicité',
               marketingDesc:'Mesure et personnalisation publicitaires.',
-              affiliate:'Suivi d’affiliation (CJ, etc.)',
+              affiliate:'Suivi d'affiliation (CJ, etc.)',
               affiliateDesc:'Mesure les ventes issues de nos liens pour recevoir une commission.',
               cancel:'Annuler',
               save:'Enregistrer'
             } : {
-              banner: `We use cookies to run the site, measure usage (GA4), and track affiliate links (e.g., CJ). You can accept, reject, or customize. See our <a href="/privacy-en" target="_blank" rel="noopener">Privacy Policy</a>.`,
+              banner: `Cookies for functionality, analytics & affiliates. <a href="/privacy-en" target="_blank" rel="noopener">Privacy Policy</a>.`,
               accept:'Accept',
               reject:'Reject',
-              customize:'Customize',
+              customize:'Settings',
               modalTitle:'Cookie preferences',
               modalTag:'Choose what to allow. Essential cookies are always on.',
               essential:'Essential',
@@ -181,11 +180,9 @@
             // Initialize text content
             const soluText = $('#solu-text');
             const soluAccept = $('#solu-accept');
-            const soluReject = $('#solu-reject');
             const soluCustomize = $('#solu-customize');
             if (soluText) soluText.innerHTML = T.banner;
             if (soluAccept) soluAccept.textContent = T.accept;
-            if (soluReject) soluReject.textContent = T.reject;
             if (soluCustomize) soluCustomize.textContent = T.customize;
 
             // Initialize modal text
@@ -250,12 +247,6 @@
               soluAccept.addEventListener('click', ()=>{
                 const all = {analytics:true, marketing:true, affiliate:true};
                 writeC(all); applyConsent(all); hideBanner();
-              });
-            }
-            if (soluReject) {
-              soluReject.addEventListener('click', ()=>{
-                const none = {analytics:false, marketing:false, affiliate:false};
-                writeC(none); applyConsent(none); hideBanner();
               });
             }
             if (soluCustomize) {
