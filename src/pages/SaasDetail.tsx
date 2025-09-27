@@ -49,6 +49,7 @@ const SaasDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [showLogoFallback, setShowLogoFallback] = useState(false);
   const refreshAttempted = useRef(false);
+  const [imageKey, setImageKey] = useState(0);
   const { getCachedData, setCacheData } = useSaasCache();
 
   useEffect(() => {
@@ -145,6 +146,7 @@ const SaasDetail = () => {
           setSaasDetail(saas);
           setShowLogoFallback(false);
           refreshAttempted.current = false;
+          setImageKey(prev => prev + 1); // Force image reload
         }
       } catch (err) {
         console.error('Error fetching SaaS detail:', err);
@@ -220,7 +222,15 @@ const SaasDetail = () => {
             <Card className="shadow-medium overflow-hidden">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-subtle opacity-20"></div>
-                {showLogoFallback ? (
+                {!saasDetail.logoUrl ? (
+                  <div className="w-full h-64 bg-background/50 p-8 flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-primary">
+                        {saasDetail.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ) : showLogoFallback ? (
                   <div className="w-full h-64 bg-background/50 p-8 flex items-center justify-center">
                     <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="text-2xl font-bold text-primary">
@@ -230,13 +240,15 @@ const SaasDetail = () => {
                   </div>
                 ) : (
                   <img 
-                    src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain`} 
+                    key={`${saasDetail.id}-${imageKey}`}
+                    src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain&t=${Date.now()}`} 
                     alt={`Logo ${saasDetail.name}`}
                     className="w-full h-64 object-contain bg-background/50 p-8"
                     onError={async (e) => {
+                      console.info('🔄 Image failed to load, trying recovery for', saasDetail.name);
                       setShowLogoFallback(true);
                       
-                      if (!refreshAttempted.current) {
+                      if (!refreshAttempted.current && saasDetail.logoUrl) {
                         refreshAttempted.current = true;
                         console.info('🔄 Auto-recovery: fetching fresh logo URL for', saasDetail.name);
                         
@@ -248,18 +260,24 @@ const SaasDetail = () => {
                           });
                           
                           const freshItems = data?.items || [];
-                          setCacheData(freshItems);
-                          
-                          const freshSaas = freshItems.find((item: SaaSItem) => item.id === saasDetail.id);
-                          if (freshSaas && freshSaas.logoUrl !== saasDetail.logoUrl) {
-                            setSaasDetail(freshSaas);
-                            setShowLogoFallback(false);
-                            console.info('✅ Logo URL refreshed successfully');
+                          if (freshItems.length > 0) {
+                            setCacheData(freshItems);
+                            
+                            const freshSaas = freshItems.find((item: SaaSItem) => item.id === saasDetail.id);
+                            if (freshSaas?.logoUrl && freshSaas.logoUrl !== saasDetail.logoUrl) {
+                              console.info('✅ Logo URL refreshed successfully');
+                              setSaasDetail(freshSaas);
+                              setShowLogoFallback(false);
+                              setImageKey(prev => prev + 1);
+                            }
                           }
                         } catch (error) {
                           console.warn('Auto-recovery failed:', error);
                         }
                       }
+                    }}
+                    onLoad={() => {
+                      setShowLogoFallback(false);
                     }}
                   />
                 )}
