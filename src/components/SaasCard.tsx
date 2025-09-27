@@ -53,7 +53,7 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardCli
       <div className="relative overflow-hidden rounded-t-lg">
         {saas.logoUrl ? (
           <img
-            src={`${saas.logoUrl}?w=400&h=200&fit=contain`}
+            src={saas.logoUrl}
             alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
             loading="lazy"
             className="w-full h-32 object-contain bg-white group-hover:scale-105 transition-transform duration-300"
