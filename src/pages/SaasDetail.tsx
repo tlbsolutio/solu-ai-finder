@@ -473,31 +473,34 @@ const SaasDetail = () => {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Priority: Use affiliate link if it exists, otherwise trial link */}
-                {saasDetail.affiliate ? (
+                {/* 1. Priority: Dedicated affiliate button if affiliate link exists */}
+                {saasDetail.affiliate && (
                   <div className="relative">
                     <Button 
-                      className="w-full shadow-md hover:shadow-lg transition-shadow" 
-                      variant="cta"
+                      className="w-full shadow-strong hover:shadow-glow transition-all duration-300" 
+                      variant="premium"
                       size="lg"
                       asChild
                     >
                       <a href={saasDetail.affiliate} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Essayer gratuitement
+                        <Star className="h-4 w-4 mr-2 text-yellow-300" />
+                        Obtenir via notre partenaire
                       </a>
                     </Button>
                     <Badge 
                       variant="secondary" 
-                      className="absolute -top-2 -right-2 text-xs bg-primary/10 text-primary border-primary/20 px-2 py-0.5"
+                      className="absolute -top-2 -right-2 text-xs bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30 px-2 py-0.5 font-semibold"
                     >
-                      Partenaire
+                      ⭐ Recommandé
                     </Badge>
                   </div>
-                ) : saasDetail.trialUrl ? (
+                )}
+
+                {/* 2. Secondary: Trial button (only if no affiliate or as additional option) */}
+                {saasDetail.trialUrl && (
                   <Button 
-                    className="w-full shadow-md hover:shadow-lg transition-shadow" 
-                    variant="cta"
+                    className={`w-full shadow-md hover:shadow-lg transition-shadow ${saasDetail.affiliate ? 'mt-3' : ''}`}
+                    variant={saasDetail.affiliate ? "success" : "cta"}
                     size="lg"
                     asChild
                   >
@@ -506,8 +509,9 @@ const SaasDetail = () => {
                       Essayer gratuitement
                     </a>
                   </Button>
-                ) : null}
+                )}
                 
+                {/* 3. Tertiary: Website button */}
                 {saasDetail.website && (
                   <Button 
                     className="w-full shadow-sm hover:shadow-md transition-shadow" 
