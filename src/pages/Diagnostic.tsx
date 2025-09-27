@@ -51,7 +51,12 @@ const Diagnostic = () => {
       type: "textarea",
       field: "task",
       placeholder: t('diagnostic.question_task_placeholder'),
-      examples: ["Saisie de données clients", "Création de rapports", "Gestion des emails", "Planification de rendez-vous"]
+      examples: [
+        t('diagnostic.examples_task_1'),
+        t('diagnostic.examples_task_2'),
+        t('diagnostic.examples_task_3'),
+        t('diagnostic.examples_task_4')
+      ]
     },
     {
       id: 2,
@@ -60,7 +65,12 @@ const Diagnostic = () => {
       type: "input",
       field: "frequency",
       placeholder: t('diagnostic.question_frequency_placeholder'),
-      examples: ["Quotidien", "Hebdomadaire", "Mensuel", "Ponctuel"]
+      examples: [
+        t('diagnostic.examples_frequency_1'),
+        t('diagnostic.examples_frequency_2'),
+        t('diagnostic.examples_frequency_3'),
+        t('diagnostic.examples_frequency_4')
+      ]
     },
     {
       id: 3,
@@ -69,7 +79,14 @@ const Diagnostic = () => {
       type: "textarea", 
       field: "sector",
       placeholder: t('diagnostic.question_sector_placeholder'),
-      examples: ["E-commerce", "Consulting", "SaaS", "Finance", "Marketing", "RH"]
+      examples: [
+        t('diagnostic.examples_sector_1'),
+        t('diagnostic.examples_sector_2'),
+        t('diagnostic.examples_sector_3'),
+        t('diagnostic.examples_sector_4'),
+        t('diagnostic.examples_sector_5'),
+        t('diagnostic.examples_sector_6')
+      ]
     },
     {
       id: 4,
@@ -78,7 +95,14 @@ const Diagnostic = () => {
       type: "input",
       field: "tools",
       placeholder: t('diagnostic.question_tools_placeholder'),
-      examples: ["Excel", "Google Sheets", "CRM", "ERP", "Email", "Aucun outil"]
+      examples: [
+        t('diagnostic.examples_tools_1'),
+        t('diagnostic.examples_tools_2'),
+        t('diagnostic.examples_tools_3'),
+        t('diagnostic.examples_tools_4'),
+        t('diagnostic.examples_tools_5'),
+        t('diagnostic.examples_tools_6')
+      ]
     },
     {
       id: 5,
@@ -87,7 +111,12 @@ const Diagnostic = () => {
       type: "textarea",
       field: "expectedResult",
       placeholder: t('diagnostic.question_deliverable_placeholder'),
-      examples: ["Gagner du temps", "Réduire les erreurs", "Améliorer la productivité", "Simplifier les processus"]
+      examples: [
+        t('diagnostic.examples_deliverable_1'),
+        t('diagnostic.examples_deliverable_2'),
+        t('diagnostic.examples_deliverable_3'),
+        t('diagnostic.examples_deliverable_4')
+      ]
     },
     {
       id: 6,
@@ -96,7 +125,13 @@ const Diagnostic = () => {
       type: "textarea",
       field: "constraints",
       placeholder: t('diagnostic.question_constraints_placeholder'),
-      examples: ["Budget < 100€/mois", "Intégration ERP obligatoire", "Conformité RGPD", "Hébergement France", "Aucune contrainte"]
+      examples: [
+        t('diagnostic.examples_constraints_1'),
+        t('diagnostic.examples_constraints_2'),
+        t('diagnostic.examples_constraints_3'),
+        t('diagnostic.examples_constraints_4'),
+        t('diagnostic.examples_constraints_5')
+      ]
     },
     {
       id: 7,
