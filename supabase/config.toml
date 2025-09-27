@@ -1,5 +1,8 @@
 project_id = "excqwhuvfyoqvcpxtxsa"
 
+[functions.generate-seo-content]
+verify_jwt = false
+
 [functions.get-saas-from-airtable]
 verify_jwt = false
 
