@@ -62,6 +62,12 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardCli
               target.style.display = 'none';
               const fallback = target.nextElementSibling as HTMLElement;
               if (fallback) fallback.style.display = 'flex';
+              
+              // Dispatch error event for auto-recovery (only once per session)
+              if (!(window as any).__saasImageErrorDispatched) {
+                (window as any).__saasImageErrorDispatched = true;
+                window.dispatchEvent(new CustomEvent('saas-image-error'));
+              }
             }}
           />
         ) : null}

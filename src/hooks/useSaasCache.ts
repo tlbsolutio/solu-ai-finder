@@ -35,8 +35,8 @@ interface CacheData {
   timestamp: number;
 }
 
-const CACHE_KEY = 'saas_catalogue_cache';
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hour cache
+const CACHE_KEY = 'saas_catalogue_cache_v2';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache
 
 export const useSaasCache = () => {
   const [cachedData, setCachedData] = useState<SaaSItem[] | null>(null);

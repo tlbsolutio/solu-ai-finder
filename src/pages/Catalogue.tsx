@@ -83,6 +83,7 @@ const Catalogue = () => {
   const [displayData, setDisplayData] = useState<SaaSItem[]>([]);
   const [isTranslating, setIsTranslating] = useState(false);
   const [originalData, setOriginalData] = useState<SaaSItem[]>([]);
+  const autoRecoveryRef = React.useRef(false);
   const categories = useMemo(
     () => Array.from(new Set(displayData.flatMap((i) => i.categories))).sort(),
     [displayData]
@@ -137,6 +138,32 @@ const Catalogue = () => {
       setLoading(false);
     })();
   }, [searchParams, getCachedData, setCacheData]);
+
+  // Auto-recovery mechanism for expired image URLs
+  useEffect(() => {
+    const handleImageError = async () => {
+      if (autoRecoveryRef.current) return; // Only once per session
+      autoRecoveryRef.current = true;
+      
+      const uiUrl = searchParams.get('uiUrl') || 'https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide';
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('get-saas-from-airtable', {
+          body: { uiUrl },
+        });
+        if (!error && data?.items) {
+          setOriginalData(data.items);
+          setDisplayData(data.items);
+          setCacheData(data.items);
+        }
+      } catch (e) {
+        console.warn('Auto-recovery failed:', e);
+      }
+    };
+
+    window.addEventListener('saas-image-error', handleImageError);
+    return () => window.removeEventListener('saas-image-error', handleImageError);
+  }, [searchParams, setCacheData]);
 
   // Translate to EN on the fly (without clearing displayData)
   useEffect(() => {
