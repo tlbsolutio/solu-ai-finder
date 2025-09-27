@@ -397,11 +397,11 @@ ${JSON.stringify(saasData.items, null, 2)}
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in get-ai-recommendations function:', error);
     return new Response(JSON.stringify({ 
       error: 'Failed to generate recommendations', 
-      details: error.message 
+      details: error instanceof Error ? error.message : String(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
