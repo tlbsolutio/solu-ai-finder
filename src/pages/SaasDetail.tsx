@@ -86,6 +86,18 @@ const SaasDetail = () => {
         if (!saas && id) {
           const decodedName = decodeURIComponent(id);
           
+          // Special mapping for known fallback IDs
+          const idMapping: { [key: string]: string } = {
+            'rec001': 'HubSpot CRM',
+            'rec002': 'Mailchimp', 
+            'rec003': 'Zapier',
+            'rec004': 'Calendly',
+            'rec005': 'Trello',
+            'rec006': 'Slack'
+          };
+          
+          const searchName = idMapping[id] || decodedName;
+          
           // Helper function to normalize strings for comparison
           const normalize = (str: string) => 
             str.toLowerCase()
@@ -100,11 +112,11 @@ const SaasDetail = () => {
                .replace(/\s+/g, ' ')
                .trim();
           
-          const normalizedSearchName = normalize(decodedName);
+          const normalizedSearchName = normalize(searchName);
           
           // Try exact match first (case insensitive)
           saas = saasItems.find((item: SaaSItem) => 
-            item.name.toLowerCase() === decodedName.toLowerCase()
+            item.name.toLowerCase() === searchName.toLowerCase()
           );
           
           // Try normalized match if exact didn't work
@@ -121,6 +133,8 @@ const SaasDetail = () => {
               normalizedSearchName.includes(normalize(item.name))
             );
           }
+          
+          console.log(`🔍 Searching for SaaS with ID "${id}" -> mapped to "${searchName}" -> ${saas ? 'found' : 'not found'}`);
         }
         
         if (!saas) {

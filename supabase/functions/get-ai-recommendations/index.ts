@@ -12,7 +12,7 @@ const corsHeaders = {
 // Static SaaS fallback data with realistic French options - aligned with Airtable schema
 const FALLBACK_SAAS_DATA = [
   {
-    id: "rec001",
+    id: "hubspot-crm",
     name: "HubSpot CRM",
     tagline: "CRM gratuit pour gérer vos contacts",
     description: "Solution CRM complète pour gérer les contacts clients, les ventes et le marketing",
@@ -23,7 +23,7 @@ const FALLBACK_SAAS_DATA = [
     logoUrl: ""
   },
   {
-    id: "rec002", 
+    id: "mailchimp", 
     name: "Mailchimp",
     tagline: "Email marketing automatisé",
     description: "Plateforme d'email marketing et automation pour PME",
@@ -34,7 +34,7 @@ const FALLBACK_SAAS_DATA = [
     logoUrl: ""
   },
   {
-    id: "rec003",
+    id: "zapier",
     name: "Zapier",
     tagline: "Automatisez vos tâches répétitives",
     description: "Connectez vos applications et automatisez vos workflows",
@@ -45,7 +45,7 @@ const FALLBACK_SAAS_DATA = [
     logoUrl: ""
   },
   {
-    id: "rec004",
+    id: "calendly",
     name: "Calendly",
     tagline: "Prise de rendez-vous automatisée",
     description: "Simplifiez la prise de rendez-vous avec vos clients",
