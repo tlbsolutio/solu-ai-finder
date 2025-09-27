@@ -347,17 +347,13 @@ const { totalItems, showingFrom, showingTo, visibleItems } = useMemo(() => {
                 </Card>
               ))
             : visibleItems.map((saas) => (
-                <Link 
-                  key={saas.id} 
-                  to={`/saas/${saas.id}`} 
-                  className="block"
-                >
-                  <SaasCard 
-                    saas={saas} 
-                    selectedCategory={selectedCategory}
-                    categoryLabels={categoryLabels}
-                  />
-                </Link>
+                <SaasCard
+                  key={saas.id}
+                  saas={saas}
+                  selectedCategory={selectedCategory}
+                  categoryLabels={categoryLabels}
+                  onCardClick={() => navigate(`/saas/${encodeURIComponent(saas.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''))}`)}
+                />
               ))}
         </div>
 

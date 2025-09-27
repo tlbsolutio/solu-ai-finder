@@ -1,8 +1,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, TrendingUp, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Star, TrendingUp, Check, ExternalLink, Eye } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 
 interface SaaSItem {
   id: string;
@@ -29,13 +31,25 @@ interface SaasCardProps {
   saas: SaaSItem;
   selectedCategory: string;
   categoryLabels: Record<string, string>;
+  onCardClick?: () => void;
 }
 
-const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels }: SaasCardProps) => {
+const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardClick }: SaasCardProps) => {
   const { t } = useLanguage();
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent navigation when clicking on action buttons
+    if ((e.target as HTMLElement).closest('button, a')) {
+      return;
+    }
+    onCardClick?.();
+  };
+
   return (
-    <Card className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full self-stretch flex flex-col bg-gradient-card border-border/50 hover:border-primary/20">
+    <Card 
+      className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full self-stretch flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
+      onClick={handleCardClick}
+    >
       <div className="relative overflow-hidden rounded-t-lg">
         {saas.logoUrl ? (
           <img
@@ -146,6 +160,66 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels }: SaasCar
               {saas.priceText}
             </div>
           )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
+          {/* Primary Action Button */}
+          {(saas.affiliate || saas.trialUrl) && (
+            <Button
+              className="w-full text-sm"
+              variant="cta"
+              size="sm"
+              asChild
+            >
+              <a 
+                href={saas.affiliate || saas.trialUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLink className="h-3 w-3 mr-2" />
+                Essayer gratuitement
+              </a>
+            </Button>
+          )}
+
+          {/* Secondary Actions */}
+          <div className="flex gap-2">
+            <Link 
+              to={`/saas/${encodeURIComponent(saas.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''))}`}
+              className="flex-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                className="w-full text-xs"
+                variant="outline"
+                size="sm"
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                Voir détails
+              </Button>
+            </Link>
+
+            {saas.website && (
+              <Button
+                className="flex-1 text-xs"
+                variant="outline"
+                size="sm"
+                asChild
+              >
+                <a 
+                  href={saas.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Site web
+                </a>
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
