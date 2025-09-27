@@ -475,17 +475,25 @@ const SaasDetail = () => {
               <CardContent className="space-y-4">
                 {/* Priority: Use affiliate link if it exists, otherwise trial link */}
                 {saasDetail.affiliate ? (
-                  <Button 
-                    className="w-full shadow-md hover:shadow-lg transition-shadow" 
-                    variant="cta"
-                    size="lg"
-                    asChild
-                  >
-                    <a href={saasDetail.affiliate} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Essayer gratuitement
-                    </a>
-                  </Button>
+                  <div className="relative">
+                    <Button 
+                      className="w-full shadow-md hover:shadow-lg transition-shadow" 
+                      variant="cta"
+                      size="lg"
+                      asChild
+                    >
+                      <a href={saasDetail.affiliate} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Essayer gratuitement
+                      </a>
+                    </Button>
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute -top-2 -right-2 text-xs bg-primary/10 text-primary border-primary/20 px-2 py-0.5"
+                    >
+                      Partenaire
+                    </Badge>
+                  </div>
                 ) : saasDetail.trialUrl ? (
                   <Button 
                     className="w-full shadow-md hover:shadow-lg transition-shadow" 
