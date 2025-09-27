@@ -65,6 +65,9 @@ const SaasDetail = () => {
           const saas = cached.find((item: SaaSItem) => item.id === id);
           if (saas) {
             setSaasDetail(saas);
+            setShowLogoFallback(false);
+            refreshAttempted.current = false;
+            setImageKey((prev) => prev + 1);
             setLoading(false);
             return;
           }
@@ -231,10 +234,11 @@ const SaasDetail = () => {
                     </div>
                   </div>
                 ) : (
-                  <img 
+                  <img
                     key={`${saasDetail.id}-${imageKey}`}
-                    src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain&t=${Date.now()}`} 
+                    src={`${saasDetail.logoUrl}${saasDetail.logoUrl.includes('?') ? '&' : '?'}t=${Date.now()}`}
                     alt={`Logo ${saasDetail.name}`}
+                    referrerPolicy="no-referrer"
                     className="w-full h-64 object-contain bg-background/50 p-8"
                     onError={async (e) => {
                       console.info('🔄 Image failed to load, trying recovery for', saasDetail.name);
