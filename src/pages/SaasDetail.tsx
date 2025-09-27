@@ -474,26 +474,29 @@ const SaasDetail = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Primary: Commencer maintenant button */}
-                {(saasDetail.trialUrl || saasDetail.affiliate || saasDetail.website) && (
-                  <Button 
-                    className="w-full shadow-strong hover:shadow-glow transition-all duration-300" 
-                    variant="default"
-                    size="lg"
-                    asChild
+                <Button 
+                  className="w-full shadow-strong hover:shadow-glow transition-all duration-300" 
+                  variant="default"
+                  size="lg"
+                  asChild
+                >
+                  <a 
+                    href={
+                      saasDetail.trialUrl || 
+                      saasDetail.affiliate || 
+                      saasDetail.website || 
+                      `https://www.${saasDetail.name.toLowerCase().replace(/\s+/g, '')}.com`
+                    } 
+                    target="_blank" 
+                    rel="noopener noreferrer"
                   >
-                    <a 
-                      href={saasDetail.trialUrl || saasDetail.affiliate || saasDetail.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
-                      <Zap className="h-4 w-4 mr-2" />
-                      Commencer maintenant
-                    </a>
-                  </Button>
-                )}
+                    <Zap className="h-4 w-4 mr-2" />
+                    Commencer maintenant
+                  </a>
+                </Button>
 
                 {/* Secondary: Website button */}
-                {saasDetail.website && (
+                {(saasDetail.website || !saasDetail.trialUrl && !saasDetail.affiliate) && (
                   <Button 
                     className="w-full shadow-sm hover:shadow-md transition-shadow" 
                     variant="outline"
