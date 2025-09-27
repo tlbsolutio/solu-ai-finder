@@ -159,13 +159,6 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardCli
               ))}
             </div>
           )}
-
-          {/* Price */}
-          {saas.priceText && (
-            <div className="text-sm font-medium text-primary text-center">
-              {saas.priceText}
-            </div>
-          )}
         </div>
 
         {/* Action Buttons */}
