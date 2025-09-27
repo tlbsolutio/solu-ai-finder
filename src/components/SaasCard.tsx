@@ -162,7 +162,7 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardCli
 
           {/* Price */}
           {saas.priceText && (
-            <div className="text-sm font-medium text-primary">
+            <div className="text-sm font-medium text-primary text-center">
               {saas.priceText}
             </div>
           )}
@@ -198,8 +198,8 @@ const SaasCard = React.memo(({ saas, selectedCategory, categoryLabels, onCardCli
               onClick={(e) => e.stopPropagation()}
             >
               <Button
-                className="w-full text-xs"
-                variant="outline"
+                className="w-full text-sm"
+                variant="info"
                 size="sm"
               >
                 <Eye className="h-3 w-3 mr-1" />
