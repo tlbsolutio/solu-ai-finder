@@ -222,15 +222,7 @@ const SaasDetail = () => {
             <Card className="shadow-medium overflow-hidden">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-subtle opacity-20"></div>
-                {!saasDetail.logoUrl ? (
-                  <div className="w-full h-64 bg-background/50 p-8 flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-2xl font-bold text-primary">
-                        {saasDetail.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-                ) : showLogoFallback ? (
+                {showLogoFallback || !saasDetail.logoUrl ? (
                   <div className="w-full h-64 bg-background/50 p-8 flex items-center justify-center">
                     <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="text-2xl font-bold text-primary">
