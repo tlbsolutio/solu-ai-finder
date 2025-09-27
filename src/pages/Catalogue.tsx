@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CatalogueCardSkeleton } from '@/components/ui/loading-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useSaasCache } from '@/hooks/useSaasCache';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Link } from 'react-router-dom';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
+import SaasCard from '@/components/SaasCard';
 // removed pagination imports
 interface SaaSItem {
   id: string;
@@ -45,6 +47,7 @@ const Catalogue = () => {
   const [searchParams] = useSearchParams();
   const { cachedData, getCachedData, setCacheData } = useSaasCache();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedTarget, setSelectedTarget] = useState('');
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ const Catalogue = () => {
   // Reset visible count on filters/language change
   useEffect(() => {
     setVisibleCount(INITIAL_COUNT);
-  }, [searchQuery, selectedCategory, selectedTarget, language]);
+  }, [debouncedSearchQuery, selectedCategory, selectedTarget, language]);
 
   // Set filters from URL params on mount
   useEffect(() => {
@@ -197,19 +200,21 @@ const Catalogue = () => {
     run();
   }, [language, originalData, categories, targets]); // Use originalData instead of displayData
 
-const filteredSaaS = displayData.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.categories.includes(selectedCategory);
-    const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
-    
-    return matchesSearch && matchesCategory && matchesTarget;
-  });
+const filteredSaaS = useMemo(() => {
+    return displayData.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+                           item.description.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      const matchesCategory = !selectedCategory || selectedCategory === 'all' || item.categories.includes(selectedCategory);
+      const matchesTarget = !selectedTarget || selectedTarget === 'all' || item.targets.includes(selectedTarget);
+      
+      return matchesSearch && matchesCategory && matchesTarget;
+    });
+  }, [displayData, debouncedSearchQuery, selectedCategory, selectedTarget]);
 
 const totalItems = filteredSaaS.length;
   const showingFrom = totalItems === 0 ? 0 : 1;
   const showingTo = Math.min(visibleCount, totalItems);
-  const visibleItems = filteredSaaS.slice(0, visibleCount);
+  const visibleItems = useMemo(() => filteredSaaS.slice(0, visibleCount), [filteredSaaS, visibleCount]);
 
   // Infinite scroll observer
   useEffect(() => {
@@ -331,141 +336,18 @@ const totalItems = filteredSaaS.length;
                 </Card>
               ))
             : visibleItems.map((saas) => (
-                <Card
+                <div
                   key={saas.id}
-                  className="group hover:shadow-card-hover transition-all duration-300 cursor-pointer h-full self-stretch flex flex-col bg-gradient-card border-border/50 hover:border-primary/20"
+                  onClick={() => navigate(`/catalogue/${saas.id}`)}
                 >
-                   <div className="relative overflow-hidden rounded-t-lg">
-                     {saas.logoUrl ? (
-                       <img
-                         src={saas.logoUrl}
-                         alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
-                         loading="lazy"
-                         className="w-full h-32 object-contain bg-white group-hover:scale-105 transition-transform duration-300"
-                         onError={(e) => {
-                           const target = e.target as HTMLImageElement;
-                           target.style.display = 'none';
-                           const fallback = target.nextElementSibling as HTMLElement;
-                           if (fallback) fallback.style.display = 'flex';
-                         }}
-                       />
-                     ) : null}
-                     <div 
-                       className={`w-full h-32 ${saas.logoUrl ? 'hidden' : 'flex'} items-center justify-center bg-gradient-primary text-white text-2xl font-bold`}
-                       style={{ display: saas.logoUrl ? 'none' : 'flex' }}
-                     >
-                       {saas.name.charAt(0).toUpperCase()}
-                     </div>
-                    <div className="absolute top-4 right-4">
-                      <Badge variant="secondary" className="bg-white/90">
-                        <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
-                        {saas.score % 1 === 0 ? saas.score.toFixed(0) : 
-                         saas.score % 1 === 0.5 ? saas.score.toFixed(1) : 
-                         Math.round(saas.score * 2) / 2}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl line-clamp-1">{saas.name}</CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="p-4 pt-0 flex-1 flex flex-col">
-                    <div className="flex flex-col gap-3 flex-1 min-h-0">
-                      {/* Categories */}
-                      <div className="flex flex-wrap gap-1">
-                        {saas.categories.map((cat, idx) => {
-                          const isActiveFilter = selectedCategory === cat;
-                          return (
-                            <Badge 
-                              key={idx} 
-                              variant={isActiveFilter ? "default" : "secondary"} 
-                              className={`text-xs ${isActiveFilter ? 'ring-2 ring-primary/50 bg-primary text-primary-foreground' : ''}`}
-                            >
-                              {categoryLabels[cat] || cat}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-
-                      {/* Tagline */}
-                      {saas.tagline && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {saas.tagline}
-                        </p>
-                      )}
-
-                      {/* Key Features (max 3) */}
-                      {saas.features && saas.features.length > 0 && (
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            {t('catalogue.key_features')}
-                          </h4>
-                          <div className="space-y-1">
-                            {saas.features.slice(0, 3).map((feature, idx) => (
-                              <div key={idx} className="flex items-center text-xs">
-                                <Check className="h-3 w-3 text-green-500 mr-1.5 flex-shrink-0" />
-                                <span className="line-clamp-1">{feature}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Rating and automation */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                           <span className="text-sm font-medium">
-                             {saas.score % 1 === 0 ? saas.score.toFixed(0) : 
-                              saas.score % 1 === 0.5 ? saas.score.toFixed(1) : 
-                              saas.score.toFixed(1)}
-                           </span>
-                        </div>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          <span>{saas.automation || 0}% auto.</span>
-                        </div>
-                      </div>
-
-                      {/* Targets */}
-                      <div className="flex flex-wrap gap-1">
-                        {(() => {
-                          if (!saas.targets) return null;
-                          
-                          // Prioritize selected target first, then show others (max 4 total)
-                          const targetsToShow = [...saas.targets];
-                          if (selectedTarget && targetsToShow.includes(selectedTarget)) {
-                            // Move selected target to front
-                            const filtered = targetsToShow.filter(t => t !== selectedTarget);
-                            targetsToShow.splice(0, targetsToShow.length, selectedTarget, ...filtered);
-                          }
-                          
-                          return targetsToShow.slice(0, 4).map((target, idx) => {
-                            const isActiveFilter = selectedTarget === target;
-                            return (
-                              <Badge 
-                                key={idx} 
-                                variant={isActiveFilter ? "default" : "outline"} 
-                                className={`text-xs ${isActiveFilter ? 'ring-2 ring-primary/50 bg-primary text-primary-foreground' : ''}`}
-                              >
-                                {targetLabels[target] || target}
-                              </Badge>
-                            );
-                          });
-                        })()}
-                      </div>
-
-                      <div className="mt-auto pt-4">
-                        <Link to={`/saas/${saas.id}`}>
-                          <Button variant="cta" size="sm" className="w-full">
-                            Voir le détail
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <SaasCard
+                    saas={saas}
+                    categoryLabels={categoryLabels}
+                    selectedCategory={selectedCategory}
+                    selectedTarget={selectedTarget}
+                    onKeyFeaturesLabel={t('catalogue.key_features')}
+                  />
+                </div>
               ))}
         </div>
 

@@ -6,6 +6,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory cache for server-side performance
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes server-side cache
+
+function getCachedData(key: string) {
+  const cached = cache.get(key);
+  if (!cached) return null;
+  
+  const isExpired = Date.now() - cached.timestamp > CACHE_DURATION;
+  if (isExpired) {
+    cache.delete(key);
+    return null;
+  }
+  
+  return cached.data;
+}
+
+function setCachedData(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
 function toArray<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];
   if (val === null || val === undefined) return [] as T[];
@@ -45,6 +66,16 @@ serve(async (req) => {
     let view = url.searchParams.get('view') || '';
     let path = url.searchParams.get('path') || '';
     let uiUrl = url.searchParams.get('uiUrl') || '';
+
+    // Check server-side cache first
+    const cacheKey = `airtable-${baseId}-${table}-${view}-${uiUrl}`;
+    const cachedResult = getCachedData(cacheKey);
+    if (cachedResult) {
+      console.log('Returning cached data');
+      return new Response(JSON.stringify(cachedResult), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (!isGet) {
       const body = await req.json().catch(() => ({}));
@@ -443,7 +474,12 @@ serve(async (req) => {
       };
     });
 
-    return new Response(JSON.stringify({ items: mapped }), {
+    const result = { items: mapped };
+    
+    // Cache the result for future requests
+    setCachedData(cacheKey, result);
+
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
