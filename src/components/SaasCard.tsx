@@ -50,7 +50,7 @@ const SaasCard = React.memo(({ saas, categoryLabels, selectedCategory, selectedT
         {/* Image overlay when available */}
         {saas.logoUrl && (
           <img
-            src={`${saas.logoUrl}?w=400&h=200&fit=contain`}
+            src={saas.logoUrl}
             alt={`Logo ${saas.name} - ${saas.categories.join(', ')}`}
             loading="lazy"
             className="absolute inset-0 w-full h-32 object-contain bg-white group-hover:scale-105 transition-transform duration-300"
