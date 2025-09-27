@@ -6,6 +6,45 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// In-memory cache to reduce Airtable API calls
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const cache = new Map<string, CacheEntry>();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+function getCachedData(key: string): any | null {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  
+  const isExpired = Date.now() - entry.timestamp > CACHE_DURATION;
+  if (isExpired) {
+    cache.delete(key);
+    return null;
+  }
+  
+  return entry.data;
+}
+
+function setCachedData(key: string, data: any): void {
+  cache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+  
+  // Clean up old entries periodically
+  if (cache.size > 10) {
+    const now = Date.now();
+    for (const [cacheKey, entry] of cache.entries()) {
+      if (now - entry.timestamp > CACHE_DURATION) {
+        cache.delete(cacheKey);
+      }
+    }
+  }
+}
+
 function toArray<T>(val: unknown): T[] {
   if (Array.isArray(val)) return val as T[];
   if (val === null || val === undefined) return [] as T[];
@@ -119,6 +158,16 @@ serve(async (req) => {
       hasKey: true,
       keyLen: apiKey.length,
     });
+
+    // Check cache first
+    const cacheKey = `${baseId}-${tableSegment}-${view}`;
+    const cachedResult = getCachedData(cacheKey);
+    if (cachedResult) {
+      console.log('Returning cached data for:', cacheKey);
+      return new Response(JSON.stringify(cachedResult), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Fetch all records with pagination
     const allRecords = [];
@@ -443,7 +492,12 @@ serve(async (req) => {
       };
     });
 
-    return new Response(JSON.stringify({ items: mapped }), {
+    const result = { items: mapped };
+    
+    // Cache the result
+    setCachedData(cacheKey, result);
+    
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
