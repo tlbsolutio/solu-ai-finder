@@ -46,65 +46,65 @@ const Diagnostic = () => {
   const questions = [
     {
       id: 1,
-      title: "Tâche chronophage",
-      subtitle: "Quelle tâche vous fait le plus perdre de temps au quotidien et que vous aimeriez automatiser ?",
+      title: t('diagnostic.question_task_title'),
+      subtitle: t('diagnostic.question_task_subtitle'),
       type: "textarea",
       field: "task",
-      placeholder: "Par exemple, la saisie de données clients, la gestion de factures, etc.",
+      placeholder: t('diagnostic.question_task_placeholder'),
       examples: ["Saisie de données clients", "Création de rapports", "Gestion des emails", "Planification de rendez-vous"]
     },
     {
       id: 2,
-      title: "Fréquence",
-      subtitle: "À quelle fréquence effectuez-vous cette tâche ?",
+      title: t('diagnostic.question_frequency_title'),
+      subtitle: t('diagnostic.question_frequency_subtitle'),
       type: "input",
       field: "frequency",
-      placeholder: "Tous les jours, quelques fois par semaine, une fois par mois",
+      placeholder: t('diagnostic.question_frequency_placeholder'),
       examples: ["Quotidien", "Hebdomadaire", "Mensuel", "Ponctuel"]
     },
     {
       id: 3,
-      title: "Secteur d'activité et contraintes",
-      subtitle: "Dans quel secteur d'activité travaillez-vous et quelles sont vos contraintes spécifiques ?",
+      title: t('diagnostic.question_sector_title'),
+      subtitle: t('diagnostic.question_sector_subtitle'),
       type: "textarea", 
       field: "sector",
-      placeholder: "Secteur comptabilité avec contraintes de conformité, secteur commercial avec besoin de rapidité, etc.",
+      placeholder: t('diagnostic.question_sector_placeholder'),
       examples: ["E-commerce", "Consulting", "SaaS", "Finance", "Marketing", "RH"]
     },
     {
       id: 4,
-      title: "Outils actuels",
-      subtitle: "Quels outils ou logiciels utilisez-vous actuellement pour cette tâche, s'il y en a ?",
+      title: t('diagnostic.question_tools_title'),
+      subtitle: t('diagnostic.question_tools_subtitle'),
       type: "input",
       field: "tools",
-      placeholder: "Tableur Excel, logiciel de CRM, aucun outil spécifique",
+      placeholder: t('diagnostic.question_tools_placeholder'),
       examples: ["Excel", "Google Sheets", "CRM", "ERP", "Email", "Aucun outil"]
     },
     {
       id: 5,
-      title: "Résultat attendu",
-      subtitle: "Quel résultat final attendez-vous de l'automatisation ?",
+      title: t('diagnostic.question_deliverable_title'),
+      subtitle: t('diagnostic.question_deliverable_subtitle'),
       type: "textarea",
       field: "expectedResult",
-      placeholder: "Gagner 2 heures par semaine, réduire les erreurs de saisie, etc.",
+      placeholder: t('diagnostic.question_deliverable_placeholder'),
       examples: ["Gagner du temps", "Réduire les erreurs", "Améliorer la productivité", "Simplifier les processus"]
     },
     {
       id: 6,
-      title: "Contraintes techniques ou budgétaires",
-      subtitle: "Avez-vous des contraintes techniques (intégrations, sécurité) ou budgétaires spécifiques ?",
+      title: t('diagnostic.question_constraints_title'),
+      subtitle: t('diagnostic.question_constraints_subtitle'),
       type: "textarea",
       field: "constraints",
-      placeholder: "Budget limité, besoin d'intégration avec ERP existant, contraintes RGPD...",
+      placeholder: t('diagnostic.question_constraints_placeholder'),
       examples: ["Budget < 100€/mois", "Intégration ERP obligatoire", "Conformité RGPD", "Hébergement France", "Aucune contrainte"]
     },
     {
       id: 7,
-      title: "Priorité",
-      subtitle: "Sur une échelle de 1 à 5, quelle est la priorité pour vous d'automatiser cette tâche ?",
+      title: t('diagnostic.question_priority_title'),
+      subtitle: t('diagnostic.question_priority_subtitle'),
       type: "input",
       field: "priority",
-      placeholder: "1 = Pas prioritaire, 5 = Très prioritaire",
+      placeholder: t('diagnostic.question_priority_placeholder'),
       examples: ["1", "2", "3", "4", "5"]
     }
   ];
