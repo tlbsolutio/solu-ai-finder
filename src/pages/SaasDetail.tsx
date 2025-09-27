@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +47,8 @@ const SaasDetail = () => {
   const [saasDetail, setSaasDetail] = useState<SaaSItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showLogoFallback, setShowLogoFallback] = useState(false);
+  const refreshAttempted = useRef(false);
   const { getCachedData, setCacheData } = useSaasCache();
 
   useEffect(() => {
@@ -141,6 +143,8 @@ const SaasDetail = () => {
           setError(`SaaS "${id}" introuvable`);
         } else {
           setSaasDetail(saas);
+          setShowLogoFallback(false);
+          refreshAttempted.current = false;
         }
       } catch (err) {
         console.error('Error fetching SaaS detail:', err);
@@ -216,14 +220,49 @@ const SaasDetail = () => {
             <Card className="shadow-medium overflow-hidden">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-subtle opacity-20"></div>
-                <img 
-                  src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain`} 
-                  alt={`Logo ${saasDetail.name}`}
-                  className="w-full h-64 object-contain bg-background/50 p-8"
-                  onError={(e) => {
-                    e.currentTarget.src = '/placeholder.svg';
-                  }}
-                />
+                {showLogoFallback ? (
+                  <div className="w-full h-64 bg-background/50 p-8 flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-2xl font-bold text-primary">
+                        {saasDetail.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <img 
+                    src={`${saasDetail.logoUrl}?w=800&h=400&fit=contain`} 
+                    alt={`Logo ${saasDetail.name}`}
+                    className="w-full h-64 object-contain bg-background/50 p-8"
+                    onError={async (e) => {
+                      setShowLogoFallback(true);
+                      
+                      if (!refreshAttempted.current) {
+                        refreshAttempted.current = true;
+                        console.info('🔄 Auto-recovery: fetching fresh logo URL for', saasDetail.name);
+                        
+                        try {
+                          const { data } = await supabase.functions.invoke('get-saas-from-airtable', {
+                            body: {
+                              uiUrl: "https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide"
+                            }
+                          });
+                          
+                          const freshItems = data?.items || [];
+                          setCacheData(freshItems);
+                          
+                          const freshSaas = freshItems.find((item: SaaSItem) => item.id === saasDetail.id);
+                          if (freshSaas && freshSaas.logoUrl !== saasDetail.logoUrl) {
+                            setSaasDetail(freshSaas);
+                            setShowLogoFallback(false);
+                            console.info('✅ Logo URL refreshed successfully');
+                          }
+                        } catch (error) {
+                          console.warn('Auto-recovery failed:', error);
+                        }
+                      }
+                    }}
+                  />
+                )}
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white/95 text-foreground border-0 shadow-soft">
                     <Star className="h-3 w-3 mr-1 text-yellow-500 fill-current" />
