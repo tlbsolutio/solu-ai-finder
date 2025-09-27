@@ -10,6 +10,7 @@ import { Star, TrendingUp, Users, DollarSign, Check, ExternalLink, ArrowLeft, Ga
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useSaasCache } from '@/hooks/useSaasCache';
+import { SaasHeader, SaasStats, SaasFeatures } from '@/components/SaasDetailOptimized';
 
 interface SaaSItem {
   id: string;
@@ -50,7 +51,8 @@ const SaasDetail = () => {
   const [showLogoFallback, setShowLogoFallback] = useState(false);
   const refreshAttempted = useRef(false);
   const [imageKey, setImageKey] = useState(0);
-  const { getCachedData, setCacheData } = useSaasCache();
+  const [hasLoadedImage, setHasLoadedImage] = useState(false);
+  const { getCachedData, setCacheData, backgroundRefresh, isRefreshing } = useSaasCache();
 
   useEffect(() => {
     const fetchSaasDetail = async () => {
@@ -69,6 +71,17 @@ const SaasDetail = () => {
             refreshAttempted.current = false;
             setImageKey((prev) => prev + 1);
             setLoading(false);
+            
+            // Start background refresh for fresh data
+            backgroundRefresh(async () => {
+              const { data } = await supabase.functions.invoke('get-saas-from-airtable', {
+                body: {
+                  uiUrl: "https://airtable.com/appayjYdBAGkJak1e/tblzQQ7ivUGHqTBTF/viwjGA16J4vctsYXf?blocks=hide"
+                }
+              });
+              return data?.items || [];
+            });
+            
             return;
           }
         }
@@ -236,7 +249,7 @@ const SaasDetail = () => {
                 ) : (
                   <img
                     key={`${saasDetail.id}-${imageKey}`}
-                    src={`${saasDetail.logoUrl}${saasDetail.logoUrl.includes('?') ? '&' : '?'}t=${Date.now()}`}
+                    src={hasLoadedImage ? saasDetail.logoUrl : `${saasDetail.logoUrl}${saasDetail.logoUrl.includes('?') ? '&' : '?'}t=${Date.now()}`}
                     alt={`Logo ${saasDetail.name}`}
                     referrerPolicy="no-referrer"
                     className="w-full h-64 object-contain bg-background/50 p-8"
@@ -274,6 +287,7 @@ const SaasDetail = () => {
                     }}
                     onLoad={() => {
                       setShowLogoFallback(false);
+                      setHasLoadedImage(true);
                     }}
                   />
                 )}

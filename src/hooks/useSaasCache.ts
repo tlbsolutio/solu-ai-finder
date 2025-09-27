@@ -35,11 +35,12 @@ interface CacheData {
   timestamp: number;
 }
 
-const CACHE_KEY = 'saas_catalogue_cache_v2';
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour cache
+const CACHE_KEY = 'saas_catalogue_cache_v3';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hour cache
 
 export const useSaasCache = () => {
   const [cachedData, setCachedData] = useState<SaaSItem[] | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const getCachedData = (): SaaSItem[] | null => {
     try {
@@ -81,9 +82,25 @@ export const useSaasCache = () => {
     }
   }, []);
 
+  const backgroundRefresh = async (refreshFn: () => Promise<SaaSItem[]>) => {
+    if (isRefreshing) return; // Prevent duplicate requests
+    
+    setIsRefreshing(true);
+    try {
+      const newData = await refreshFn();
+      setCacheData(newData);
+    } catch (error) {
+      console.warn('Background refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return {
     cachedData,
     getCachedData,
     setCacheData,
+    backgroundRefresh,
+    isRefreshing,
   };
 };
