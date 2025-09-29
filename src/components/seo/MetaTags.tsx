@@ -21,9 +21,9 @@ const MetaTags: React.FC<MetaTagsProps> = ({
 }) => {
   const { language } = useLanguage();
   
-  const siteTitle = 'Solutio - Solutions SaaS pour Entreprises';
-  const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-  const defaultDescription = 'Trouvez les meilleures solutions SaaS pour votre entreprise. Diagnostic intelligent, catalogue personnalisé et recommandations sur mesure.';
+  const siteTitle = 'Solutio | Diagnostic & comparateur SaaS pour PME';
+  const fullTitle = title || siteTitle;
+  const defaultDescription = 'Bénéficiez d\'un diagnostic gratuit pour trouver et automatiser vos SaaS. Solutio compare et recommande les meilleurs outils pour PME et freelances.';
   const metaDescription = description || defaultDescription;
   const currentUrl = url || window.location.href;
 
