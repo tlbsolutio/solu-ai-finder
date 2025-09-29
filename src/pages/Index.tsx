@@ -202,7 +202,7 @@ const Index = () => {
             
             {/* Main heading */}
             <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
-              {t('hero.title')}
+              {t('hero.h1_title')}
             </h1>
             
             {/* Subtitle */}

@@ -22,6 +22,7 @@ const translations = {
     // Hero section
     'hero.badge': 'Transformation Digitale',
     'hero.title': 'Solutio | Diagnostic & comparateur SaaS pour PME',
+    'hero.h1_title': 'Diagnostic & comparateur SaaS pour PME',
     'hero.subtitle': 'Diagnostic gratuit + recommandations personnalisées',
     'hero.description': 'Bénéficiez d\'un diagnostic gratuit pour trouver et automatiser vos SaaS. Solutio compare et recommande les meilleurs outils pour PME et freelances.',
     'hero.cta_diagnostic': 'Commencer le diagnostic gratuit',
