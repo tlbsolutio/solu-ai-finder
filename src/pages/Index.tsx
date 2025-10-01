@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
+import StructuredData from '@/components/seo/StructuredData';
 const Index = () => {
   const { t } = useLanguage();
   
@@ -136,40 +137,36 @@ const Index = () => {
         title={t('hero.title')}
         description={t('hero.description')}
         type="website"
+        keywords="SaaS, diagnostic, comparateur, PME, automatisation, solutions logicielles, outils entreprise, no-code, productivité"
       />
       
-          <script type="application/ld+json">
-            {JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Solutio",
-              "url": "https://solutio.work",
-              "logo": "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
-              "description": "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
-              "contactPoint": {
-                "@type": "ContactPoint",
-                "email": "tlb@solutio.work",
-                "contactType": "customer service",
-                "availableLanguage": ["French", "English"]
-              },
-              "sameAs": [
-                "https://www.linkedin.com/company/solutio-work/",
-                "https://www.linkedin.com/in/theo-le-breton/"
-              ],
-              "service": [
-                {
-                  "@type": "Service",
-                  "name": "Diagnostic SaaS",
-                  "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
-                },
-                {
-                  "@type": "Service", 
-                  "name": "Catalogue SaaS",
-                  "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
-                }
-              ]
-            })}
-          </script>
+      <StructuredData 
+        type="Organization"
+        data={{
+          name: "Solutio",
+          description: "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
+          service: [
+            {
+              "@type": "Service",
+              "name": "Diagnostic SaaS",
+              "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
+            },
+            {
+              "@type": "Service", 
+              "name": "Catalogue SaaS",
+              "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
+            }
+          ]
+        }}
+      />
+      
+      <StructuredData 
+        type="WebSite"
+        data={{
+          name: "Solutio",
+          url: "https://solutio.work"
+        }}
+      />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-32 lg:py-48">

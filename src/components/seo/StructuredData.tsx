@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 interface StructuredDataProps {
-  type: 'Organization' | 'Product' | 'Article' | 'FAQPage' | 'Service';
+  type: 'Organization' | 'Product' | 'Article' | 'FAQPage' | 'Service' | 'WebSite';
   data: any;
 }
 
@@ -69,6 +69,20 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
               text: q.answer
             }
           })) || []
+        };
+      
+      case 'WebSite':
+        return {
+          ...baseData,
+          url: data.url || "https://solutio.work",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${data.url || "https://solutio.work"}/catalogue?search={search_term_string}`
+            },
+            "query-input": "required name=search_term_string"
+          }
         };
       
       default:

@@ -9,6 +9,7 @@ interface MetaTagsProps {
   url?: string;
   type?: 'website' | 'article';
   noIndex?: boolean;
+  keywords?: string;
 }
 
 const MetaTags: React.FC<MetaTagsProps> = ({
@@ -18,6 +19,7 @@ const MetaTags: React.FC<MetaTagsProps> = ({
   url,
   type = 'website',
   noIndex = false,
+  keywords,
 }) => {
   const { language } = useLanguage();
   
@@ -32,6 +34,7 @@ const MetaTags: React.FC<MetaTagsProps> = ({
       {/* Basic Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="description" content={metaDescription} />
+      {keywords && <meta name="keywords" content={keywords} />}
       <meta name="language" content={language} />
       <link rel="canonical" href={currentUrl} />
       
