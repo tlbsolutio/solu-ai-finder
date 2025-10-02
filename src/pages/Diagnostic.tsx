@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { DiagnosticFormSkeleton } from '@/components/ui/loading-skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail, ExternalLink, Loader2 } from 'lucide-react';
+import { MessageCircle, ArrowRight, ArrowLeft, CheckCircle, TrendingUp, Clock, Target, Mail, ExternalLink, Loader2, Calculator } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +40,7 @@ const Diagnostic = () => {
     mensuelles: number;
     annuelles: number;
   }>({ heures: 0, mensuelles: 0, annuelles: 0 });
+  const [detailsCalcul, setDetailsCalcul] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [isLoadingResults, setIsLoadingResults] = useState(false);
 
@@ -224,6 +225,7 @@ const Diagnostic = () => {
           mensuelles: result.economiesMensuelles,
           annuelles: result.economiesAnnuelles
         });
+        setDetailsCalcul(result.detailsCalcul || null);
         
         if (!result.recommendations || result.recommendations.length === 0) {
           setAiRecommendations([]);
@@ -293,7 +295,8 @@ const Diagnostic = () => {
         economiesHeures: data.economiesHeures || 15,
         economiesMensuelles: data.economiesMensuelles || 800,
         economiesAnnuelles: data.economiesAnnuelles || 9600,
-        analysis: data.analysis || 'Analyse personnalisée de vos besoins'
+        analysis: data.analysis || 'Analyse personnalisée de vos besoins',
+        detailsCalcul: data.detailsCalcul || null
       };
     } catch (error) {
       console.error('Erreur lors de la récupération des recommandations IA:', error);
@@ -331,6 +334,7 @@ const Diagnostic = () => {
     setAiRecommendations([]);
     setAiScore(0);
     setAiEconomies({ heures: 0, mensuelles: 0, annuelles: 0 });
+    setDetailsCalcul(null);
   };
 
   // Email sending functionality
@@ -807,51 +811,196 @@ Généré par Solutio - https://solutio.work
               </CardContent>
             </Card>
 
-            {/* Calculation Details */}
-            <Card className="mb-6 shadow-medium">
+            {/* Calculation Details - Transparent & Detailed */}
+            <Card className="mb-6 shadow-elegant bg-gradient-to-br from-background to-primary/5">
               <CardHeader>
-                <CardTitle>💰 Détail du calcul financier</CardTitle>
-                <p className="text-muted-foreground">Comment nous calculons vos économies potentielles</p>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5 text-primary" />
+                  💡 Comment sont calculées vos économies ?
+                </CardTitle>
+                <p className="text-muted-foreground">Transparence totale sur notre méthodologie de calcul</p>
               </CardHeader>
-              <CardContent>
-                <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Score IA:</span>
-                        <span className="font-medium">{aiScore}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Temps économisé/mois:</span>
-                        <span className="font-medium">{aiEconomies.heures}h</span>
+              <CardContent className="space-y-6">
+                {/* Hourly Rate Explanation */}
+                {detailsCalcul && (
+                  <>
+                    <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                          <TrendingUp className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                            Taux horaire en superbrut
+                          </h4>
+                          <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                            Le taux horaire <strong>superbrut</strong> représente le coût réel pour l'entreprise, incluant le salaire brut + les charges patronales (~45%).
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700">
+                              {detailsCalcul.tauxHoraire}€/h
+                            </Badge>
+                            <span className="text-xs text-blue-600 dark:text-blue-400">
+                              ({detailsCalcul.tauxHoraireType})
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Économies mensuelles:</span>
-                        <span className="font-medium text-green-600">{aiEconomies.mensuelles}€</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Économies annuelles:</span>
-                        <span className="font-medium text-primary">{aiEconomies.annuelles}€</span>
+
+                    {/* Calculation Formula */}
+                    <div className="bg-muted/30 rounded-lg p-4 space-y-4">
+                      <h4 className="font-semibold text-foreground flex items-center gap-2">
+                        <span className="text-lg">📊</span>
+                        Formule de calcul détaillée
+                      </h4>
+                      
+                      <div className="space-y-3 text-sm">
+                        {/* Step 1: Time saved */}
+                        <div className="flex items-start gap-3 p-3 bg-background rounded-lg border border-border/50">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                            1
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-foreground mb-1">Temps économisé par mois</div>
+                            <div className="text-muted-foreground">
+                              {detailsCalcul.tempsParTache}h (par tâche) × {detailsCalcul.frequenceMensuelle} (fréquence/mois) × {detailsCalcul.potentielAutomatisation}% (automatisation)
+                            </div>
+                            <div className="mt-2 font-semibold text-primary">
+                              = {detailsCalcul.heuresMensuelles}h économisées/mois
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Step 2: Gross value */}
+                        <div className="flex items-start gap-3 p-3 bg-background rounded-lg border border-border/50">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500/10 flex items-center justify-center text-xs font-bold text-green-600">
+                            2
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-foreground mb-1">Valeur du temps économisé (brut)</div>
+                            <div className="text-muted-foreground">
+                              {detailsCalcul.heuresMensuelles}h × {detailsCalcul.tauxHoraire}€/h (superbrut)
+                            </div>
+                            <div className="mt-2 font-semibold text-green-600">
+                              = {detailsCalcul.economiesBrutes}€/mois (gains bruts)
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Step 3: SaaS costs */}
+                        <div className="flex items-start gap-3 p-3 bg-background rounded-lg border border-border/50">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/10 flex items-center justify-center text-xs font-bold text-orange-600">
+                            3
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-foreground mb-1">Coût des outils recommandés</div>
+                            {aiRecommendations && aiRecommendations.length > 0 ? (
+                              <div className="space-y-2 mt-2">
+                                {aiRecommendations.map((rec: any, idx: number) => {
+                                  const price = rec.saasData?.priceText || 'Prix sur demande';
+                                  return (
+                                    <div key={idx} className="flex justify-between items-center text-xs">
+                                      <span className="text-muted-foreground">
+                                        • {rec.saasData?.name || rec.tool}
+                                      </span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {price}
+                                      </Badge>
+                                    </div>
+                                  );
+                                })}
+                                <div className="pt-2 mt-2 border-t border-border/30">
+                                  <div className="font-semibold text-orange-600 flex justify-between">
+                                    <span>Coût total estimé:</span>
+                                    <span>~{detailsCalcul.coutSaasTotal}€/mois</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-muted-foreground mt-2">
+                                Coût estimé: ~{detailsCalcul.coutSaasTotal}€/mois
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Step 4: Net savings */}
+                        <div className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-primary/5 dark:from-blue-950/20 dark:to-primary/5 rounded-lg border-2 border-primary/30">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-white">
+                            ✓
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold text-foreground mb-1">Économies nettes</div>
+                            <div className="text-muted-foreground text-sm">
+                              {detailsCalcul.economiesBrutes}€ (gains bruts) - {detailsCalcul.coutSaasTotal}€ (coût outils)
+                            </div>
+                            <div className="mt-3 space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="font-bold text-primary text-lg">Économies nettes mensuelles:</span>
+                                <span className="font-bold text-primary text-xl">{aiEconomies.mensuelles}€</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="font-bold text-foreground">Économies nettes annuelles:</span>
+                                <span className="font-bold text-foreground text-lg">{aiEconomies.annuelles}€</span>
+                              </div>
+                              <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                <span>ROI mensuel:</span>
+                                <span className="font-semibold text-green-600">
+                                  {Math.round((aiEconomies.mensuelles / Math.max(detailsCalcul.coutSaasTotal, 1)) * 100)}%
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Recommandations:</span>
-                        <span className="font-medium">{aiRecommendations.length} SaaS</span>
+
+                    {/* Info note */}
+                    <div className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg border border-border/30">
+                      <strong>💡 Note importante:</strong> Ces calculs sont basés sur votre diagnostic et les tarifs moyens des outils recommandés. 
+                      Les économies réelles peuvent varier selon votre contexte spécifique. Les prix des SaaS sont indicatifs et peuvent évoluer.
+                    </div>
+                  </>
+                )}
+                
+                {/* Fallback if no calculation details */}
+                {!detailsCalcul && (
+                  <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Score IA:</span>
+                          <span className="font-medium">{aiScore}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Temps économisé/mois:</span>
+                          <span className="font-medium">{aiEconomies.heures}h</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Statut analyse:</span>
-                        <span className="font-medium text-green-600">✓ Complète</span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Économies mensuelles:</span>
+                          <span className="font-medium text-green-600">{aiEconomies.mensuelles}€</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Économies annuelles:</span>
+                          <span className="font-medium text-primary">{aiEconomies.annuelles}€</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Recommandations:</span>
+                          <span className="font-medium">{aiRecommendations.length} SaaS</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Statut analyse:</span>
+                          <span className="font-medium text-green-600">✓ Complète</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="text-xs text-muted-foreground mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-                    <strong>Note:</strong> Ces résultats sont générés par notre IA en analysant vos réponses et en sélectionnant les SaaS les plus adaptés à vos besoins spécifiques.
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 

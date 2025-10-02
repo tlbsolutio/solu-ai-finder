@@ -127,13 +127,41 @@ function getMonthlyFrequency(frequency: string): number {
   return 2;
 }
 
-function getHourlyRate(sector: string): number {
+// Parse minimum price from SaaS priceText
+function parseSaasPrice(priceText: string): number {
+  if (!priceText) return 25; // default fallback
+  
+  const lower = priceText.toLowerCase();
+  
+  // Check for free plans
+  if (lower.startsWith('gratuit') || lower.startsWith('free')) return 0;
+  
+  // Extract numbers from price text
+  const numbers = priceText.match(/\d+/g);
+  if (!numbers || numbers.length === 0) return 25; // default if no numbers found
+  
+  // Return the minimum price found
+  return parseInt(numbers[0], 10);
+}
+
+function getHourlyRate(sector: string): { rate: number; type: string } {
   const s = sector.toLowerCase();
-  if (s.includes('finance') || s.includes('consulting') || s.includes('conseil')) return 55;
-  if (s.includes('marketing') || s.includes('communication')) return 45;
-  if (s.includes('artisan') || s.includes('btp') || s.includes('indépendant')) return 35;
-  if (s.includes('tech') || s.includes('saas')) return 50;
-  return 43.5;
+  
+  // Superbrut rates (salaire brut + charges patronales ~45%)
+  if (s.includes('finance') || s.includes('consulting') || s.includes('conseil')) {
+    return { rate: 55, type: 'Finance/Conseil (superbrut)' };
+  }
+  if (s.includes('marketing') || s.includes('communication')) {
+    return { rate: 45, type: 'Marketing/Communication (superbrut)' };
+  }
+  if (s.includes('artisan') || s.includes('btp') || s.includes('indépendant')) {
+    return { rate: 35, type: 'Artisan/BTP (superbrut)' };
+  }
+  if (s.includes('tech') || s.includes('saas')) {
+    return { rate: 50, type: 'Tech/SaaS (superbrut)' };
+  }
+  
+  return { rate: 43.5, type: 'Secteur moyen (superbrut)' };
 }
 
 function getAutomationPotential(tools: string): number {
@@ -186,12 +214,22 @@ serve(async (req) => {
     // Calculate economic metrics
     const timePerTask = getTimePerTask(diagnosticData.task);
     const monthlyFreq = getMonthlyFrequency(diagnosticData.frequency);
-    const hourlyRate = getHourlyRate(diagnosticData.sector);
+    const hourlyRateData = getHourlyRate(diagnosticData.sector);
     const automationPot = getAutomationPotential(diagnosticData.tools);
     
     const monthlyHours = timePerTask * monthlyFreq * (automationPot / 100);
-    const monthlySavings = Math.max(0, monthlyHours * hourlyRate - 35); // -35€ average SaaS cost
-    const annualSavings = monthlySavings * 12;
+    const grossMonthlySavings = monthlyHours * hourlyRateData.rate;
+    
+    // Calculate calculation details to return
+    const calculationDetails = {
+      tempsParTache: timePerTask,
+      frequenceMensuelle: monthlyFreq,
+      tauxHoraire: hourlyRateData.rate,
+      tauxHoraireType: hourlyRateData.type,
+      potentielAutomatisation: automationPot,
+      heuresMensuelles: Math.round(monthlyHours * 10) / 10,
+      economiesBrutes: Math.round(grossMonthlySavings)
+    };
 
     const prompt = `Tu es un consultant expert en automatisation pour les PME et indépendants.
 
@@ -226,13 +264,10 @@ ${JSON.stringify(saasData.items, null, 2)}
 5. Diversifier les types de solutions proposées (structuration, automatisation, visualisation, communication...).
 6. Chaque outil doit avoir une **raison précise et contextualisée**.
 7. Si aucune solution pertinente n'est trouvée, dire "Aucun SaaS adapté trouvé".
-8. Le résultat doit être au FORMAT JSON STRICT :
+8. Le résultat doit être au FORMAT JSON STRICT (les économies seront recalculées avec les vrais coûts SaaS) :
 
 {
   "score": 78,
-  "economiesHeures": ${Math.round(monthlyHours)},
-  "economiesMensuelles": ${Math.round(monthlySavings)},
-  "economiesAnnuelles": ${Math.round(annualSavings)},
   "analysis": "Analyse stratégique ici",
   "recommendations": [
     {
@@ -276,9 +311,9 @@ ${JSON.stringify(saasData.items, null, 2)}
       
       // Create intelligent fallback recommendations from available SaaS
       const intelligentFallback = saasData.items
-        .filter((saas: any) => (saas.ease || saas.automation) >= 70) // High ease/automation
-        .sort((a: any, b: any) => ((b.ease || b.automation) || 0) - ((a.ease || a.automation) || 0)) // Sort by ease desc
-        .slice(0, 3) // Take top 3
+        .filter((saas: any) => (saas.ease || saas.automation) >= 70)
+        .sort((a: any, b: any) => ((b.ease || b.automation) || 0) - ((a.ease || a.automation) || 0))
+        .slice(0, 3)
         .map((saas: any, index: number) => ({
           id: saas.id,
           tool: saas.name,
@@ -288,15 +323,26 @@ ${JSON.stringify(saasData.items, null, 2)}
           saasData: saas
         }));
 
-      // Fallback recommendations created
+      // Calculate SaaS costs
+      const coutSaasTotal = intelligentFallback.reduce((sum, rec) => {
+        return sum + parseSaasPrice(rec.saasData.priceText || '');
+      }, 0);
+
+      const netMonthlySavings = Math.max(0, grossMonthlySavings - coutSaasTotal);
+      const netAnnualSavings = netMonthlySavings * 12;
 
       return new Response(JSON.stringify({
         score: 75,
-        economiesHeures: Math.round(monthlyHours),
-        economiesMensuelles: Math.round(monthlySavings),
-        economiesAnnuelles: Math.round(annualSavings),
+        economiesHeures: calculationDetails.heuresMensuelles,
+        economiesMensuelles: Math.round(netMonthlySavings),
+        economiesAnnuelles: Math.round(netAnnualSavings),
         analysis: "Solutions d'automatisation identifiées basées sur votre profil. Ces outils offrent un potentiel d'automatisation élevé.",
-        recommendations: intelligentFallback
+        recommendations: intelligentFallback,
+        detailsCalcul: {
+          ...calculationDetails,
+          coutSaasTotal,
+          economiesNettes: Math.round(netMonthlySavings)
+        }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -327,13 +373,26 @@ ${JSON.stringify(saasData.items, null, 2)}
           saasData: saas
         }));
 
+      // Calculate SaaS costs
+      const coutSaasTotal = intelligentFallback.reduce((sum, rec) => {
+        return sum + parseSaasPrice(rec.saasData.priceText || '');
+      }, 0);
+
+      const netMonthlySavings = Math.max(0, grossMonthlySavings - coutSaasTotal);
+      const netAnnualSavings = netMonthlySavings * 12;
+
       return new Response(JSON.stringify({
         score: 75,
-        economiesHeures: Math.round(monthlyHours),
-        economiesMensuelles: Math.round(monthlySavings),
-        economiesAnnuelles: Math.round(annualSavings),
+        economiesHeures: calculationDetails.heuresMensuelles,
+        economiesMensuelles: Math.round(netMonthlySavings),
+        economiesAnnuelles: Math.round(netAnnualSavings),
         analysis: "Recommendations générées automatiquement basées sur l'automatisation disponible.",
-        recommendations: intelligentFallback
+        recommendations: intelligentFallback,
+        detailsCalcul: {
+          ...calculationDetails,
+          coutSaasTotal,
+          economiesNettes: Math.round(netMonthlySavings)
+        }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -379,18 +438,50 @@ ${JSON.stringify(saasData.items, null, 2)}
 
       console.log(`✅ Generated ${intelligentFallback.length} fallback recommendations`);
       
+      // Calculate SaaS costs
+      const coutSaasTotal = intelligentFallback.reduce((sum, rec) => {
+        return sum + parseSaasPrice(rec.saasData.priceText || '');
+      }, 0);
+
+      const netMonthlySavings = Math.max(0, grossMonthlySavings - coutSaasTotal);
+      const netAnnualSavings = netMonthlySavings * 12;
+      
       return new Response(JSON.stringify({
         ...aiRecommendations,
-        recommendations: intelligentFallback
+        economiesHeures: calculationDetails.heuresMensuelles,
+        economiesMensuelles: Math.round(netMonthlySavings),
+        economiesAnnuelles: Math.round(netAnnualSavings),
+        recommendations: intelligentFallback,
+        detailsCalcul: {
+          ...calculationDetails,
+          coutSaasTotal,
+          economiesNettes: Math.round(netMonthlySavings)
+        }
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Return the enhanced recommendations
+    // Calculate SaaS costs from valid recommendations
+    const coutSaasTotal = validRecommendations.reduce((sum, rec) => {
+      return sum + parseSaasPrice(rec.saasData?.priceText || '');
+    }, 0);
+
+    const netMonthlySavings = Math.max(0, grossMonthlySavings - coutSaasTotal);
+    const netAnnualSavings = netMonthlySavings * 12;
+
+    // Return the enhanced recommendations with real costs
     return new Response(JSON.stringify({
       ...aiRecommendations,
-      recommendations: validRecommendations
+      economiesHeures: calculationDetails.heuresMensuelles,
+      economiesMensuelles: Math.round(netMonthlySavings),
+      economiesAnnuelles: Math.round(netAnnualSavings),
+      recommendations: validRecommendations,
+      detailsCalcul: {
+        ...calculationDetails,
+        coutSaasTotal,
+        economiesNettes: Math.round(netMonthlySavings)
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
