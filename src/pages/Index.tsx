@@ -4,41 +4,46 @@ import { Button } from '@/components/ui/button';
 import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale } from 'lucide-react';
+import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale, X, AlertCircle, Sparkles, TrendingDown, BarChart3, UserPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
 const Index = () => {
   const { t } = useLanguage();
   
-  const features = [{
+  const methodSteps = [{
     icon: Brain,
-    title: t('features.intelligent_diagnostic.title'),
-    description: t('features.intelligent_diagnostic.description'),
+    title: t('method.step1.title'),
+    description: t('method.step1.description'),
     color: "text-blue-500"
   }, {
     icon: Search,
-    title: t('features.personalized_catalog.title'),
-    description: t('features.personalized_catalog.description'),
+    title: t('method.step2.title'),
+    description: t('method.step2.description'),
     color: "text-green-500"
   }, {
     icon: Zap,
-    title: t('features.custom_recommendations.title'),
-    description: t('features.custom_recommendations.description'),
+    title: t('method.step3.title'),
+    description: t('method.step3.description'),
     color: "text-yellow-500"
   }];
+  
   const benefits = [{
     icon: Clock,
-    title: t('benefits.save_time.title'),
-    description: t('benefits.save_time.description')
+    title: t('benefits.time.title'),
+    description: t('benefits.time.description')
   }, {
     icon: DollarSign,
-    title: t('benefits.reduce_costs.title'),
-    description: t('benefits.reduce_costs.description')
+    title: t('benefits.costs.title'),
+    description: t('benefits.costs.description')
   }, {
     icon: Target,
-    title: t('benefits.targeted_solutions.title'),
-    description: t('benefits.targeted_solutions.description')
+    title: t('benefits.clarity.title'),
+    description: t('benefits.clarity.description')
+  }, {
+    icon: UserPlus,
+    title: t('benefits.expert.title'),
+    description: t('benefits.expert.description')
   }];
   const testimonials = [{
     quote: "Grâce à Solutio, j'ai automatisé ma gestion des leads et gagné 15h par semaine !",
@@ -224,13 +229,14 @@ const Index = () => {
                   {t('hero.cta_diagnostic')}
                 </Button>
               </Link>
-              <Link to="/catalogue" className="w-full sm:w-auto">
+              <Link to="/contact" className="w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   size="xl" 
                   className="w-full px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
                 >
-                  {t('hero.cta_catalog')}
+                  <Users className="h-6 w-6 mr-3" />
+                  {t('hero.cta_expert')}
                 </Button>
               </Link>
             </div>
@@ -254,44 +260,203 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Problem Section */}
       <section className="py-24 bg-background shadow-lg relative z-10 -mt-8 rounded-t-3xl">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+              {t('problem.title')}
+            </h2>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
+                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
+                <p className="text-foreground font-medium">{t('problem.pain1')}</p>
+              </div>
+              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
+                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
+                <p className="text-foreground font-medium">{t('problem.pain2')}</p>
+              </div>
+              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
+                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
+                <p className="text-foreground font-medium">{t('problem.pain3')}</p>
+              </div>
+              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
+                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
+                <p className="text-foreground font-medium">{t('problem.pain4')}</p>
+              </div>
+            </div>
+
+            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 shadow-xl">
+              <CardContent className="p-8 text-center">
+                <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                <p className="text-2xl font-bold text-foreground mb-2">{t('problem.stat')}</p>
+                <p className="text-muted-foreground italic mb-6">{t('problem.stat_source')}</p>
+                <p className="text-lg text-primary font-semibold">{t('problem.transition')}</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Transformation Section */}
+      <section className="py-24 bg-gradient-subtle shadow-inner relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+              {t('transformation.title')}
+            </h2>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <Sparkles className="h-8 w-8 text-green-500" />
+                  </div>
+                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Matin</h3>
+                  <p className="text-lg font-semibold text-foreground">{t('transformation.morning')}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <TrendingUp className="h-8 w-8 text-blue-500" />
+                  </div>
+                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Après-midi</h3>
+                  <p className="text-lg font-semibold text-foreground">{t('transformation.afternoon')}</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <Heart className="h-8 w-8 text-purple-500" />
+                  </div>
+                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Soir</h3>
+                  <p className="text-lg font-semibold text-foreground">{t('transformation.evening')}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-primary/5 border-primary/20 shadow-xl">
+              <CardContent className="p-8 text-center">
+                <p className="text-xl md:text-2xl font-bold text-foreground mb-6">
+                  {t('transformation.message')}
+                </p>
+                <Link to="/diagnostic">
+                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    {t('transformation.cta')}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Method Section */}
+      <section className="py-24 bg-background shadow-lg relative z-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              {t('home.how_title')}
+              {t('method.title')}
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t('home.how_subtitle')}
+              {t('method.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, idx) => <Card key={idx} className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md">
-                <CardHeader className="text-center">
+            {methodSteps.map((step, idx) => <Card key={idx} className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md relative">
+                <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                  {idx + 1}
+                </div>
+                <CardHeader className="text-center pt-8">
                   <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
-                    <feature.icon className={`h-8 w-8 ${feature.color} group-hover:scale-110 transition-transform`} />
+                    <step.icon className={`h-8 w-8 ${step.color} group-hover:scale-110 transition-transform`} />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl">{step.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground text-center">{feature.description}</p>
+                  <p className="text-muted-foreground text-center">{step.description}</p>
                 </CardContent>
               </Card>)}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Proof Section */}
       <section className="py-24 bg-gradient-subtle shadow-inner relative">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+              {t('proof.title')}
+            </h2>
+          </div>
+
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+                <CardContent className="p-8">
+                  <TrendingDown className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat1')}</div>
+                  <p className="text-muted-foreground mb-2">{t('proof.stat1_detail')}</p>
+                  <p className="text-sm text-muted-foreground italic">{t('proof.stat1_source')}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+                <CardContent className="p-8">
+                  <Clock className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                  <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat2')}</div>
+                  <p className="text-muted-foreground mb-2">{t('proof.stat2_detail')}</p>
+                  <p className="text-sm text-muted-foreground italic">{t('proof.stat2_source')}</p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+                <CardContent className="p-8">
+                  <BarChart3 className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                  <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat3')}</div>
+                  <p className="text-muted-foreground mb-2">{t('proof.stat3_detail')}</p>
+                  <p className="text-sm font-semibold text-primary">{t('proof.stat3_message')}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-gradient-to-br from-destructive/10 to-orange-500/10 border-orange-500/20 shadow-xl">
+              <CardContent className="p-8 text-center">
+                <p className="text-xl font-bold text-foreground mb-6">
+                  {t('proof.urgency')}
+                </p>
+                <Link to="/diagnostic">
+                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <Brain className="h-5 w-5 mr-2" />
+                    {t('proof.cta')}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-24 bg-background shadow-lg relative z-10">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
-                {t('home.why_title')}
+                {t('benefits.title')}
               </h2>
               <p className="text-muted-foreground text-lg mb-8">
-                {t('home.why_subtitle')}
+                {t('benefits.subtitle')}
               </p>
               
               <div className="space-y-6">
@@ -309,7 +474,8 @@ const Index = () => {
               <div className="mt-8">
                 <Link to="/contact">
                   <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    {t('home.demo_cta')}
+                    <Users className="h-5 w-5 mr-2" />
+                    {t('hero.cta_expert')}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </Link>
@@ -373,23 +539,27 @@ const Index = () => {
         <div className="absolute inset-0 bg-gradient-hero opacity-90"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-6">
               {t('home.cta_title')}
             </h2>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-xl text-white/90 mb-4">
               {t('home.cta_subtitle')}
             </p>
+            <p className="text-lg text-white/80 mb-8">
+              {t('home.cta_additional')}
+            </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Link to="/diagnostic" className="w-full sm:w-auto">
                 <Button variant="secondary" size="xl" className="w-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                   <Brain className="h-5 w-5 mr-2" />
                   {t('home.diagnostic_5min')}
                 </Button>
               </Link>
-              <Link to="/catalogue" className="w-full sm:w-auto">
+              <Link to="/contact" className="w-full sm:w-auto">
                 <Button variant="outline" size="xl" className="w-full border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  {t('home.explore_catalogue')}
+                  <Users className="h-5 w-5 mr-2" />
+                  {t('home.expert_cta')}
                 </Button>
               </Link>
             </div>
@@ -397,15 +567,15 @@ const Index = () => {
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
               <div>
                 <div className="text-3xl font-bold">500+</div>
-                <div className="text-white/80">{t('home.solutions_count')}</div>
+                <div className="text-white/80 text-sm">{t('home.solutions_count')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">95%</div>
-                <div className="text-white/80">{t('home.satisfaction')}</div>
+                <div className="text-white/80 text-sm">{t('home.satisfaction')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">24h</div>
-                <div className="text-white/80">{t('home.response_time')}</div>
+                <div className="text-white/80 text-sm">{t('home.response_time')}</div>
               </div>
             </div>
           </div>
