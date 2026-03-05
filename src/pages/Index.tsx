@@ -17,9 +17,6 @@ const Index = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  /* ── FAQ state ── */
-  const [openFaq, setOpenFaq] = React.useState<number | null>(null);
-
   const faqs = [
     {
       q: "C'est pour qui exactement ?",
@@ -132,6 +129,12 @@ const Index = () => {
         }}
       />
       <StructuredData type="WebSite" data={{ name: 'Solutio', url: 'https://solutio.work' }} />
+      <StructuredData
+        type="FAQPage"
+        data={{
+          questions: faqs.map((f) => ({ question: f.q, answer: f.a })),
+        }}
+      />
 
       {/* ═══════════════════════════════════════ HERO ═══════════════════════════════════════ */}
       <section className="relative min-h-[100vh] flex items-end overflow-hidden">

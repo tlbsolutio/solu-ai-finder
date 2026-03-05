@@ -1,3 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /cartographie/login
+Disallow: /cartographie/scan
+Disallow: /cartographie/sessions
+Disallow: /cartographie/admin
+Disallow: /test-connections
+Disallow: /seo-manager
+
 Sitemap: https://solutio.work/sitemap.xml

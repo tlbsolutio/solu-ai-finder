@@ -38,7 +38,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
           provider: {
             "@type": "Organization",
             name: "Solutio",
-            url: "https://solutio.fr"
+            url: "https://solutio.work"
           },
           serviceType: "Digital Transformation Consulting",
           areaServed: "FR"
