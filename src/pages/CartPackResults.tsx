@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
-  ArrowLeft, Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles,
+  Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles,
 } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
@@ -176,7 +176,7 @@ const CartPackResults = () => {
 
   if (loadingExisting) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -184,27 +184,27 @@ const CartPackResults = () => {
 
   if (analyzing) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 p-8">
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
           <Sparkles className="w-8 h-8 text-primary animate-pulse" />
         </div>
         <div className="text-center space-y-2">
           <h2 className="text-xl font-semibold">Analyse en cours...</h2>
           <p className="text-muted-foreground text-sm max-w-xs">
-            L'IA analyse vos reponses et detecte les objets, processus et opportunites d'amelioration.
+            L'IA analyse vos reponses et detecte les processus et opportunites.
           </p>
         </div>
         <div className="w-48">
           <Progress value={undefined} className="h-2 animate-pulse" />
         </div>
-        <p className="text-xs text-muted-foreground">Cela prend environ 10-20 secondes</p>
+        <p className="text-xs text-muted-foreground">~10-20 secondes</p>
       </div>
     );
   }
 
   if (!result) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">Aucun resultat disponible</p>
         <Button onClick={triggerAnalysis}>Lancer l'analyse</Button>
       </div>
@@ -220,20 +220,18 @@ const CartPackResults = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/cartographie/sessions/${id}/pack/${bloc}`)}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="font-semibold">{packDef?.icon} {packDef?.title} — Resultats</h1>
-              <p className="text-xs text-muted-foreground">Analyse IA du pack {bloc}/10</p>
+    <div className="flex-1">
+      <header className="sticky top-12 z-10 border-b bg-card/95 backdrop-blur px-4 py-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">{packDef?.icon}</span>
+            <div className="min-w-0">
+              <h1 className="font-semibold text-sm sm:text-base truncate">{packDef?.title} — Resultats</h1>
+              <p className="text-[11px] text-muted-foreground">Pack {bloc}/10</p>
             </div>
           </div>
-          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>
-            Retour au dashboard
+          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
+            Dashboard
           </Button>
         </div>
       </header>

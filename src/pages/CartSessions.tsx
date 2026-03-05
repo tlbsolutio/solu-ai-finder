@@ -3,14 +3,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartContext } from "@/contexts/CartSessionContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { ArrowLeft, Plus, Network, LogOut, User } from "lucide-react";
+import { Plus, Network, Calendar, Layers, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CartSession {
@@ -27,7 +26,7 @@ interface CartSession {
 const CartSessions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ownerId, ensureSession, isPaid, userEmail, userName, signOut } = useCartContext();
+  const { ownerId, ensureSession, isPaid } = useCartContext();
   const { toast } = useToast();
 
   const [sessions, setSessions] = useState<CartSession[]>([]);
@@ -79,10 +78,10 @@ const CartSessions = () => {
 
   const getStatusColor = (s?: string) => {
     switch (s) {
-      case "brouillon": return "bg-gray-500";
-      case "en_cours": return "bg-blue-500";
-      case "analyse_validee": return "bg-green-500";
-      default: return "bg-gray-400";
+      case "brouillon": return "bg-slate-100 text-slate-700 border-slate-200";
+      case "en_cours": return "bg-blue-50 text-blue-700 border-blue-200";
+      case "analyse_validee": return "bg-green-50 text-green-700 border-green-200";
+      default: return "bg-slate-100 text-slate-600 border-slate-200";
     }
   };
 
@@ -98,73 +97,100 @@ const CartSessions = () => {
   if (loading) return <ContentLoader />;
 
   return (
-    <div className="min-h-screen">
-      <header className="border-b bg-card px-4 sm:px-6 py-3 sm:py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/cartographie")}><ArrowLeft className="h-5 w-5" /></Button>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0"><Network className="w-5 h-5 text-cyan-500" /></div>
-              <div>
-                <h1 className="text-lg sm:text-xl font-semibold">Mes sessions</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">{sessions.length} session(s)</p>
-              </div>
-            </div>
+    <div className="flex-1 flex flex-col">
+      {/* Page header */}
+      <div className="px-4 sm:px-6 pt-5 pb-4 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Mes sessions</h1>
+            <p className="text-sm text-muted-foreground">{sessions.length} cartographie{sessions.length !== 1 ? "s" : ""}</p>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button onClick={() => setShowNewDialog(true)} className="flex-1 sm:flex-initial"><Plus className="w-4 h-4 mr-2" />Nouvelle session</Button>
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1.5 rounded-md">
-                <User className="w-3 h-3" />
-                <span className="max-w-[120px] truncate">{userName || userEmail || "Utilisateur"}</span>
-              </div>
-              <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate("/cartographie/login"); }} title="Se deconnecter">
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
+          <Button onClick={() => setShowNewDialog(true)} size="sm">
+            <Plus className="w-4 h-4 mr-1.5" />
+            <span className="hidden sm:inline">Nouvelle session</span>
+            <span className="sm:hidden">Nouveau</span>
+          </Button>
         </div>
-      </header>
+      </div>
 
-      <main className="p-4 sm:p-6">
-        <Card>
-          <div className="overflow-x-auto">
-            <Table className="min-w-[500px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Packs</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Aucune session. Creez votre premiere cartographie.</TableCell></TableRow>
-                ) : sessions.map(s => (
-                  <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/cartographie/sessions/${s.id}`)}>
-                    <TableCell className="font-medium max-w-[200px] truncate">{s.nom}</TableCell>
-                    <TableCell><span className="text-sm font-medium">{s.packs_completed}/10</span></TableCell>
-                    <TableCell><Badge className={`${getStatusColor(s.status)} text-white text-xs`}>{getStatusLabel(s.status)}</Badge></TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{new Date(s.updated_at).toLocaleDateString("fr-FR")}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      {/* Session cards */}
+      <div className="flex-1 px-4 sm:px-6 pb-6">
+        {sessions.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Network className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <p className="font-medium mb-1">Aucune session</p>
+              <p className="text-sm text-muted-foreground mb-4">Creez votre premiere cartographie organisationnelle</p>
+              <Button onClick={() => setShowNewDialog(true)}>
+                <Plus className="w-4 h-4 mr-2" />Creer une session
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {sessions.map(s => (
+              <Card
+                key={s.id}
+                className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30 active:scale-[0.98]"
+                onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="min-w-0">
+                      <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{s.nom}</h3>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary transition-colors" />
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className="mb-3">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Progression</span>
+                      <span className="font-medium text-foreground">{s.packs_completed}/10</span>
+                    </div>
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all"
+                        style={{ width: `${(s.packs_completed / 10) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
+                      {getStatusLabel(s.status)}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(s.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </Card>
-      </main>
+        )}
+      </div>
 
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Nouvelle session Cartographie</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Nouvelle cartographie</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
             <div>
-              <Label>Nom de la session *</Label>
-              <Input value={newSessionName} onChange={e => setNewSessionName(e.target.value)} placeholder="Ex: Cartographie Q1 2026" onKeyDown={e => e.key === "Enter" && createSession()} />
+              <Label className="text-sm">Nom de la session</Label>
+              <Input
+                value={newSessionName}
+                onChange={e => setNewSessionName(e.target.value)}
+                placeholder="Ex: Cartographie Q1 2026"
+                onKeyDown={e => e.key === "Enter" && createSession()}
+                className="mt-1.5"
+                autoFocus
+              />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>Annuler</Button>
             <Button onClick={createSession} disabled={creating}>{creating ? "Creation..." : "Creer"}</Button>
           </DialogFooter>

@@ -16,13 +16,15 @@ import { FormattedText } from "@/components/cartographie/FormattedText";
 import { FreemiumGate } from "@/components/cartographie/FreemiumGate";
 import { useToast } from "@/hooks/use-toast";
 import {
-  ArrowLeft, Network, Sparkles, CheckCircle, AlertCircle,
+  Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop,
 } from "lucide-react";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
+import { useCartPdfExport } from "@/hooks/useCartPdfExport";
+import { Download } from "lucide-react";
 
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,6 +41,7 @@ const CartSessionDashboard = () => {
   const [generatingOllama, setGeneratingOllama] = useState(false);
   const [ollamaStep, setOllamaStep] = useState(0);
   const [showGate, setShowGate] = useState(false);
+  const { generatePdf, isLoading: pdfLoading } = useCartPdfExport();
 
   if (loading) return <ContentLoader />;
   if (error || !session) {
@@ -122,44 +125,48 @@ const CartSessionDashboard = () => {
   };
 
   const Header = () => (
-    <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur px-4 sm:px-6 py-3">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/cartographie/sessions")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
-            <Network className="w-5 h-5 text-cyan-500" />
+    <header className="sticky top-12 z-10 border-b bg-card/95 backdrop-blur px-4 sm:px-6 py-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
+            <Network className="w-4 h-4 text-cyan-500" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold truncate">{session.nom}</h1>
-            <p className="text-xs text-muted-foreground truncate">
-              {packsCompleted}/10 packs completes
+            <h1 className="text-sm sm:text-base font-semibold truncate">{session.nom}</h1>
+            <p className="text-[11px] text-muted-foreground">
+              {packsCompleted}/10 packs
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="outline" className="hidden sm:flex gap-1">
-            <span className="font-bold text-primary">{packsCompleted}</span>
-            <span className="text-muted-foreground">/10 packs</span>
-          </Badge>
-
+        <div className="flex items-center gap-1.5 shrink-0">
           {packsCompleted >= 5 && !isFinalGenerated && (
-            <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal}>
+            <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} className="h-8 text-xs">
               <Sparkles className="w-3.5 h-3.5 mr-1" />
-              {generatingFinal ? "Generation..." : "Generer analyse"}
+              <span className="hidden sm:inline">{generatingFinal ? "Generation..." : "Generer analyse"}</span>
+              <span className="sm:hidden">{generatingFinal ? "..." : "Analyser"}</span>
             </Button>
           )}
           {isFinalGenerated && (
             <>
-              <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} variant="outline">
+              <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} variant="outline" className="h-8 text-xs hidden sm:flex">
                 <Sparkles className="w-3.5 h-3.5 mr-1" />
                 Regenerer
               </Button>
-              <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary">
+              <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className="h-8 text-xs">
                 <Brain className="w-3.5 h-3.5 mr-1" />
-                {generatingOllama ? `Analyse... (${ollamaStep}/6)` : "Analyse approfondie"}
+                <span className="hidden sm:inline">{generatingOllama ? `Analyse... (${ollamaStep}/6)` : "Approfondie"}</span>
+                <span className="sm:hidden">{generatingOllama ? `${ollamaStep}/6` : "IA"}</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs"
+                disabled={pdfLoading}
+                onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline ml-1">{pdfLoading ? "..." : "PDF"}</span>
               </Button>
             </>
           )}
@@ -178,24 +185,26 @@ const CartSessionDashboard = () => {
   // POST-GENERATION: Full tabs mode
   if (isFinalGenerated) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex-1 bg-background">
         <Header />
 
         <div className="px-4 sm:px-6 pt-4">
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="flex flex-wrap gap-1 h-auto bg-muted p-1 overflow-x-auto">
-              <TabsTrigger value="overview" className="text-xs gap-1"><BarChart3 className="w-3.5 h-3.5" />Vue d'ensemble</TabsTrigger>
-              <TabsTrigger value="carte" className="text-xs gap-1"><Map className="w-3.5 h-3.5" />Carte</TabsTrigger>
-              <TabsTrigger value="quickwins" className="text-xs gap-1"><Zap className="w-3.5 h-3.5" />Quickwins</TabsTrigger>
-              <TabsTrigger value="processus" className="text-xs gap-1"><Settings className="w-3.5 h-3.5" />Processus</TabsTrigger>
-              <TabsTrigger value="outils" className="text-xs gap-1"><Layers className="w-3.5 h-3.5" />Outils</TabsTrigger>
-              <TabsTrigger value="equipes" className="text-xs gap-1"><Users className="w-3.5 h-3.5" />Equipes</TabsTrigger>
-              <TabsTrigger value="irritants" className="text-xs gap-1"><AlertTriangle className="w-3.5 h-3.5" />Irritants</TabsTrigger>
-              <TabsTrigger value="plan" className="text-xs gap-1"><ClipboardList className="w-3.5 h-3.5" />Plan d'actions</TabsTrigger>
-              <TabsTrigger value="recommandations" className="text-xs gap-1"><Laptop className="w-3.5 h-3.5" />Recommandations</TabsTrigger>
-              <TabsTrigger value="questionnaire" className="text-xs gap-1"><FileText className="w-3.5 h-3.5" />Questionnaire</TabsTrigger>
-              <TabsTrigger value="analyse" className="text-xs gap-1"><Brain className="w-3.5 h-3.5" />Analyse IA</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none">
+              <TabsList className="inline-flex gap-0.5 h-auto bg-muted p-1 w-max">
+                <TabsTrigger value="overview" className="text-xs gap-1 shrink-0"><BarChart3 className="w-3.5 h-3.5" /><span className="hidden sm:inline">Vue d'ensemble</span><span className="sm:hidden">Resume</span></TabsTrigger>
+                <TabsTrigger value="carte" className="text-xs gap-1 shrink-0"><Map className="w-3.5 h-3.5" />Carte</TabsTrigger>
+                <TabsTrigger value="quickwins" className="text-xs gap-1 shrink-0"><Zap className="w-3.5 h-3.5" />Quickwins</TabsTrigger>
+                <TabsTrigger value="processus" className="text-xs gap-1 shrink-0"><Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Processus</span><span className="sm:hidden">Proc.</span></TabsTrigger>
+                <TabsTrigger value="outils" className="text-xs gap-1 shrink-0"><Layers className="w-3.5 h-3.5" />Outils</TabsTrigger>
+                <TabsTrigger value="equipes" className="text-xs gap-1 shrink-0"><Users className="w-3.5 h-3.5" />Equipes</TabsTrigger>
+                <TabsTrigger value="irritants" className="text-xs gap-1 shrink-0"><AlertTriangle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Irritants</span><span className="sm:hidden">Irrit.</span></TabsTrigger>
+                <TabsTrigger value="plan" className="text-xs gap-1 shrink-0"><ClipboardList className="w-3.5 h-3.5" /><span className="hidden sm:inline">Plan d'actions</span><span className="sm:hidden">Plan</span></TabsTrigger>
+                <TabsTrigger value="recommandations" className="text-xs gap-1 shrink-0"><Laptop className="w-3.5 h-3.5" /><span className="hidden sm:inline">Recommandations</span><span className="sm:hidden">Reco.</span></TabsTrigger>
+                <TabsTrigger value="questionnaire" className="text-xs gap-1 shrink-0"><FileText className="w-3.5 h-3.5" /><span className="hidden sm:inline">Questionnaire</span><span className="sm:hidden">Q&A</span></TabsTrigger>
+                <TabsTrigger value="analyse" className="text-xs gap-1 shrink-0"><Brain className="w-3.5 h-3.5" /><span className="hidden sm:inline">Analyse IA</span><span className="sm:hidden">IA</span></TabsTrigger>
+              </TabsList>
+            </div>
 
             {/* VUE D'ENSEMBLE */}
             <TabsContent value="overview" className="space-y-4 pb-8">

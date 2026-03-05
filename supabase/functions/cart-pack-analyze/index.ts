@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const OLLAMA_URL = "http://76.13.50.143:11434/api/generate";
+const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "http://76.13.50.143:11434/api/generate";
 const OLLAMA_TIMEOUT = 120000;
 const MODEL = "mistral-nemo:12b";
 

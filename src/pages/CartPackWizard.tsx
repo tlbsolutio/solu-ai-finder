@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud } from "lucide-react";
+import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
 const getDraftKey = (sessionId: string, bloc: number) => `cart_pack_draft_${sessionId}_${bloc}`;
@@ -245,7 +245,7 @@ const CartPackWizard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -253,7 +253,7 @@ const CartPackWizard = () => {
 
   if (!packDef) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <p className="text-muted-foreground">Pack introuvable</p>
       </div>
     );
@@ -261,20 +261,12 @@ const CartPackWizard = () => {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="border-b bg-card px-4 py-3 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <span className="font-semibold">{packDef.icon} {packDef.title}</span>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
-          <p className="text-muted-foreground font-medium">Aucune question disponible pour ce pack.</p>
-          <p className="text-sm text-muted-foreground max-w-sm">
-            Les questions de ce bloc ne sont pas encore chargees en base de donnees.
-          </p>
-          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au dashboard</Button>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <p className="text-muted-foreground font-medium">Aucune question disponible pour ce pack.</p>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          Les questions de ce bloc ne sont pas encore chargees en base de donnees.
+        </p>
+        <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au dashboard</Button>
       </div>
     );
   }
@@ -287,31 +279,23 @@ const CartPackWizard = () => {
   const isLastSection = currentSectionIndex === sections.length - 1;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur px-4 py-3 space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xl">{packDef.icon}</span>
-                <h1 className="font-semibold text-base sm:text-lg">{packDef.title}</h1>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Section {currentSectionIndex + 1}/{sections.length} • {totalAnswered}/{questions.length} repondues
+    <div className="flex-1 bg-background flex flex-col">
+      <header className="sticky top-12 z-10 border-b bg-card/95 backdrop-blur px-4 py-2.5 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">{packDef.icon}</span>
+            <div className="min-w-0">
+              <h1 className="font-semibold text-sm sm:text-base truncate">{packDef.title}</h1>
+              <p className="text-[11px] text-muted-foreground">
+                {totalAnswered}/{questions.length} repondues
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {syncing && <Cloud className="w-4 h-4 animate-pulse text-muted-foreground" />}
-            <Button variant="outline" size="sm" onClick={() => syncToSupabase(true)} disabled={saving || Object.keys(drafts).length === 0}>
-              <Save className="w-3.5 h-3.5 mr-1" />
-              Sauvegarder
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
-              Quitter
+          <div className="flex items-center gap-1.5">
+            {syncing && <Cloud className="w-3.5 h-3.5 animate-pulse text-muted-foreground" />}
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => syncToSupabase(true)} disabled={saving || Object.keys(drafts).length === 0}>
+              <Save className="w-3.5 h-3.5 sm:mr-1" />
+              <span className="hidden sm:inline">Sauvegarder</span>
             </Button>
           </div>
         </div>
