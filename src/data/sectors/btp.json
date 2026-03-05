@@ -1,21 +1,38 @@
 {
   "id": "btp",
-  "nom": "BTP & Construction",
+  "nom": "BTP / Artisanat / Energie / Installations techniques",
   "codesNAF": ["41", "42", "43"],
-  "motsCles": ["chantier", "construction", "batiment", "gros oeuvre", "second oeuvre", "maitre d'ouvrage", "sous-traitant", "conducteur de travaux", "BIM"],
-  "vocabulaireConfirmation": ["chantier", "conducteur de travaux", "appel d'offres", "BIM"],
+  "motsCles": ["chantier", "construction", "batiment", "gros oeuvre", "second oeuvre", "maitre d'ouvrage", "sous-traitant", "conducteur de travaux", "BIM", "artisan", "electricien", "plombier", "chauffagiste", "isolation", "renovation", "pose", "installation", "energie"],
+  "vocabulaireConfirmation": ["chantier", "conducteur de travaux", "appel d'offres", "BIM", "assurance decennale", "PPSPS", "DUERP", "RGE", "RE2020"],
   "questionsDiscriminantes": [
-    "Utilisez-vous un logiciel de planification de chantier (type MS Project, Primavera) ?",
-    "Comment gerez-vous la coordination entre sous-traitants sur un chantier ?",
-    "Avez-vous mis en place le BIM sur vos projets ?"
+    "Vos qualifications RGE sont-elles a jour et couvrent-elles tous vos domaines d'intervention ?",
+    "Disposez-vous d'un DUERP actualise ?",
+    "Comment pilotez-vous la rentabilite chantier par chantier (marge previsionnelle vs reelle) ?",
+    "Votre PPSPS est-il mis a jour a chaque nouveau lot ?",
+    "Quel est votre taux de sous-traitance et respectez-vous les plafonds RGE (30-50% du CA pose) ?",
+    "Etes-vous prepare a la facturation electronique (reception sept. 2026, emission PME sept. 2027) ?",
+    "Vos assurances (decennale, RC Pro) sont-elles conformes et a jour ?"
   ],
   "kpis": [
+    { "nom": "Marge nette par chantier", "benchmark": "15-25%", "unite": "%" },
     { "nom": "Taux de sinistralite", "benchmark": "< 25 AT/million heures", "unite": "AT/Mh" },
-    { "nom": "Respect delais chantier", "benchmark": "> 85%", "unite": "%" },
-    { "nom": "Taux de marge brute", "benchmark": "15-25%", "unite": "%" },
-    { "nom": "Taux de reclamation client", "benchmark": "< 5%", "unite": "%" }
+    { "nom": "Delai execution vs previsionnel", "benchmark": "> 85%", "unite": "%" },
+    { "nom": "Taux reclamation/reserves", "benchmark": "< 5%", "unite": "%" },
+    { "nom": "Ratio heures productives/totales", "benchmark": "> 75%", "unite": "%" },
+    { "nom": "Tresorerie previsionnelle", "benchmark": "> 3 mois CA", "unite": "mois" },
+    { "nom": "Taux conformite RGE/RE2020", "benchmark": "100%", "unite": "%" }
   ],
-  "outilsMetiers": ["Autocad", "Revit/BIM", "MS Project", "Batigest", "Sage Batigest", "EBP Batiment"],
-  "reglementations": ["RE2020", "DTU", "Code du travail (securite chantier)", "Loi ELAN", "Qualibat/RGE"],
-  "risquesSpecifiques": ["Accidents du travail", "Retards chantier", "Defaillance sous-traitants", "Non-conformite technique"]
+  "outilsMetiers": ["Batappli", "EBP Batiment PRO", "Sage Batigest Connect", "Costructor", "Onaya", "Kizeo Forms", "Graneet", "Autocad", "Revit/BIM", "MS Project"],
+  "reglementations": [
+    "RE2020 (seuils progressifs 2025/2028/2031)",
+    "RGE obligatoire (renouvellement 4 ans, facturante RGE obligatoire 01/01/2027)",
+    "PPSPS obligatoire par lot",
+    "DUERP conservation 40 ans",
+    "Assurance decennale obligatoire",
+    "TVA BTP multi-taux",
+    "REP PMCB (loi AGEC)",
+    "Sous-traitance limitee a 2 rangs performance energetique depuis 01/01/2026",
+    "Facturation electronique (reception sept. 2026, emission PME sept. 2027)"
+  ],
+  "risquesSpecifiques": ["Accidents du travail", "Retards chantier", "Defaillance sous-traitants", "Non-conformite technique", "Perte qualification RGE", "Sinistres decennaux"]
 }

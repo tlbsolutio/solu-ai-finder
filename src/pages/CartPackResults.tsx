@@ -104,7 +104,8 @@ const CartPackResults = () => {
         body: { session_id: id, bloc_number: bloc, reponses: formattedReponses },
       });
 
-      if (error) throw error;
+      if (error) throw new Error(data?.error || error.message || "Erreur lors de l'analyse");
+      if (data?.error) throw new Error(data.error);
 
       const [processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
         supabase.from("cart_processus").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),

@@ -1,21 +1,37 @@
 {
   "id": "services",
-  "nom": "Services aux entreprises",
+  "nom": "Services B2B / Conseil / Expertise / Prestataires",
   "codesNAF": ["62", "63", "69", "70", "71", "73", "74", "78", "80", "82"],
-  "motsCles": ["conseil", "prestation", "mission", "client", "facturation", "consulting", "audit", "expertise", "TJM"],
-  "vocabulaireConfirmation": ["mission", "prestation", "TJM", "taux d'occupation"],
+  "motsCles": ["conseil", "prestation", "mission", "client", "facturation", "consulting", "audit", "expertise", "TJM", "consultant", "formation"],
+  "vocabulaireConfirmation": ["mission", "prestation", "TJM", "taux d'occupation", "Qualiopi"],
   "questionsDiscriminantes": [
-    "Quel est votre taux d'occupation moyen des consultants ?",
-    "Comment gerez-vous le pipeline commercial et les propositions ?",
-    "Avez-vous des processus de capitalisation des connaissances ?"
+    "Quel est votre taux d'occupation/facturation des consultants ?",
+    "Comment gerez-vous votre pipeline et taux de transformation devis vers mission ?",
+    "Disposez-vous de la certification Qualiopi (si formation) ?",
+    "Conformite RGPD ?",
+    "Comment pilotez-vous la rentabilite par mission/client ?",
+    "Quelle est votre dependance aux 3 premiers clients (concentration CA) ?",
+    "Preparation facturation electronique ?"
   ],
   "kpis": [
-    { "nom": "Taux d'occupation", "benchmark": "> 75%", "unite": "%" },
-    { "nom": "TJM moyen", "benchmark": "Variable selon expertise", "unite": "EUR/jour" },
-    { "nom": "Taux de renouvellement client", "benchmark": "> 60%", "unite": "%" },
-    { "nom": "Delai moyen de paiement", "benchmark": "< 45 jours", "unite": "jours" }
+    { "nom": "Taux d'occupation", "benchmark": "> 75% (heures facturables/disponibles)", "unite": "%" },
+    { "nom": "TJM moyen et evolution", "benchmark": "Variable selon expertise", "unite": "EUR/jour" },
+    { "nom": "Marge brute par mission/consultant", "benchmark": "> 30%", "unite": "%" },
+    { "nom": "Taux transformation commerciale", "benchmark": "> 25%", "unite": "%" },
+    { "nom": "DSO (delai paiement)", "benchmark": "< 45 jours", "unite": "jours" },
+    { "nom": "Recurrence client", "benchmark": "> 60%", "unite": "%" },
+    { "nom": "NPS", "benchmark": "> 30", "unite": "score" },
+    { "nom": "Turnover consultants", "benchmark": "< 15%", "unite": "%" },
+    { "nom": "Revenue per employee", "benchmark": "> 100k EUR", "unite": "EUR" }
   ],
-  "outilsMetiers": ["Salesforce", "HubSpot", "Boondmanager", "Staffing tools", "Monday.com", "Notion"],
-  "reglementations": ["RGPD", "Convention collective Syntec", "Portage salarial", "Devoir de conseil"],
-  "risquesSpecifiques": ["Dependance clients majeurs", "Turnover consultants", "Sous-traitance non maitrisee", "Pression tarifaire"]
+  "outilsMetiers": ["Axonaut", "Odoo", "HubSpot", "Pipedrive", "Pennylane", "PayFit", "Notion", "Monday", "Asana", "Digiforma (Qualiopi)", "Boondmanager"],
+  "reglementations": [
+    "Facturation electronique (>70% PME non preparees selon Qonto)",
+    "Qualiopi obligatoire financement public (7 criteres, 32 indicateurs, FAFCEA exige Qualiopi sans derogation des 01/07/2026)",
+    "Convention collective Syntec (IDCC 1486)",
+    "RC Pro obligatoire",
+    "RGPD",
+    "Portage salarial reglemente"
+  ],
+  "risquesSpecifiques": ["Dependance clients majeurs", "Turnover consultants", "Sous-traitance non maitrisee", "Pression tarifaire", "Non-conformite Qualiopi"]
 }

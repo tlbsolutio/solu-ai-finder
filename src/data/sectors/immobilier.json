@@ -1,21 +1,38 @@
 {
   "id": "immobilier",
-  "nom": "Immobilier",
+  "nom": "Immobilier / Gestion de patrimoine",
   "codesNAF": ["68"],
-  "motsCles": ["agence", "mandat", "bien", "location", "gestion locative", "syndic", "copropriete", "transaction", "estimation"],
-  "vocabulaireConfirmation": ["mandat", "compromis", "gestion locative", "syndic"],
+  "motsCles": ["agence", "mandat", "bien", "location", "gestion locative", "syndic", "copropriete", "transaction", "estimation", "negociateur"],
+  "vocabulaireConfirmation": ["mandat", "compromis", "gestion locative", "syndic", "carte T", "loi Hoguet", "Tracfin"],
   "questionsDiscriminantes": [
-    "Quelle est la repartition entre transaction et gestion locative ?",
-    "Comment gerez-vous les mandats et le suivi acquereurs ?",
-    "Utilisez-vous des outils d'estimation automatisee ?"
+    "Conformite loi Hoguet (carte T/G/Syndic a jour CCI, garantie financiere, RC Pro, affichage vitrine) ?",
+    "Ratio mandats exclusifs/simples et taux transformation mandats vers transactions ?",
+    "Formation continue 14h/an (dont non-discrimination depuis 2021, loi ALUR) ?",
+    "Procedure Tracfin formalisee (LCB-FT) ?",
+    "Delai moyen de vente vs marche local ?",
+    "Taux vacance locative et impayes (benchmarks : vacance < 5%, impayes < 3%) ?",
+    "CRM connecte multidiffusion avec ROI par canal ?",
+    "Integration obligations DPE (interdiction location progressive : F en 2025, E en 2028, D en 2034) ?"
   ],
   "kpis": [
-    { "nom": "Nombre de mandats exclusifs", "benchmark": "> 40% du portefeuille", "unite": "%" },
-    { "nom": "Delai moyen de vente", "benchmark": "< 90 jours", "unite": "jours" },
-    { "nom": "Taux de vacance locative", "benchmark": "< 5%", "unite": "%" },
-    { "nom": "CA par negociateur", "benchmark": "> 80k EUR/an", "unite": "EUR/an" }
+    { "nom": "Transformation mandats vers ventes", "benchmark": "30-50%", "unite": "%" },
+    { "nom": "Ratio exclusifs/total", "benchmark": "> 40%", "unite": "%" },
+    { "nom": "Delai moyen de vente", "benchmark": "3-6 mois", "unite": "mois" },
+    { "nom": "Vacance locative", "benchmark": "< 5%", "unite": "%" },
+    { "nom": "Impayes", "benchmark": "< 3%", "unite": "%" },
+    { "nom": "CA par negociateur", "benchmark": "60-100k EUR/an", "unite": "EUR/an" },
+    { "nom": "Transactions par agent/an", "benchmark": "8-15, top > 20", "unite": "nb/an" },
+    { "nom": "Conversion prospect vers client", "benchmark": "~5%", "unite": "%" }
   ],
-  "outilsMetiers": ["Apimo", "Hektor", "Netty", "AC3", "Pericles", "Ublo"],
-  "reglementations": ["Loi Hoguet", "Loi ALUR", "Diagnostic immobilier obligatoire", "RGPD", "Loi Climat Resilience"],
-  "risquesSpecifiques": ["Fluctuation marche", "Reglementation energetique (DPE)", "Concurrence portails", "Litige locataire"]
+  "outilsMetiers": ["CRM (Apimo, Hektor, Pericles)", "Multidiffusion (Ubiflow, Pige Online)", "Gestion locative (LOCKimmo, Vilogi)", "Estimation (MeilleursAgents Pro, PriceHubble)", "Signature (Yousign)", "Netty", "AC3"],
+  "reglementations": [
+    "Loi Hoguet (n 70-9)",
+    "Loi ALUR (formation 14h/an, carte CCI/3 ans)",
+    "Loi ELAN 2018",
+    "LCB-FT/Tracfin",
+    "Climat & Resilience 2021 (interdiction location G 2025, F 2028, E 2034)",
+    "Encadrement loyers zones tendues",
+    "RGPD"
+  ],
+  "risquesSpecifiques": ["Fluctuation marche", "Reglementation energetique DPE", "Concurrence portails", "Litige locataire", "Non-conformite Tracfin"]
 }

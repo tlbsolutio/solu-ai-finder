@@ -1,21 +1,38 @@
 {
   "id": "restauration",
-  "nom": "Restauration & Hotellerie",
+  "nom": "Restauration / Hotellerie / Evenementiel",
   "codesNAF": ["55", "56"],
-  "motsCles": ["restaurant", "hotel", "cuisine", "service", "salle", "menu", "reservation", "traiteur", "chef", "commis"],
-  "vocabulaireConfirmation": ["service", "ticket moyen", "food cost", "taux de remplissage"],
+  "motsCles": ["restaurant", "hotel", "cuisine", "service", "salle", "menu", "reservation", "traiteur", "chef", "commis", "evenementiel"],
+  "vocabulaireConfirmation": ["service", "ticket moyen", "food cost", "taux de remplissage", "HACCP", "RevPAR", "prime cost"],
   "questionsDiscriminantes": [
-    "Quel est votre food cost moyen ?",
-    "Comment gerez-vous les reservations et le no-show ?",
-    "Avez-vous des difficultes de recrutement en salle ou en cuisine ?"
+    "Plan HACCP formalise et personne formee hygiene alimentaire (obligatoire depuis oct. 2012) ?",
+    "Ratio food cost (benchmark <= 30%) et suivi par fiche technique vs estimation ?",
+    "Turnover personnel sur 12 mois et plan fidelisation (moyenne secteur : 60-100% annuel) ?",
+    "Yield management dynamique ?",
+    "Strategie d'ajustement saisonnalite ?",
+    "Note moyenne Google/TripAdvisor et processus de reponse aux avis ?",
+    "Permis d'exploitation et licence boissons a jour ?",
+    "Prime cost (food + labor < 65%) ?"
   ],
   "kpis": [
-    { "nom": "Food cost", "benchmark": "25-35%", "unite": "%" },
-    { "nom": "RevPAR (hotellerie)", "benchmark": "Variable par categorie", "unite": "EUR" },
-    { "nom": "Ticket moyen", "benchmark": "Variable par type", "unite": "EUR" },
-    { "nom": "Taux de remplissage", "benchmark": "> 70%", "unite": "%" }
+    { "nom": "Food cost ratio", "benchmark": "<= 30%", "unite": "%" },
+    { "nom": "Prime cost (food + labor)", "benchmark": "< 65%", "unite": "%" },
+    { "nom": "RevPAR", "benchmark": "Paris ~120 EUR, Province ~50-70 EUR", "unite": "EUR" },
+    { "nom": "Taux d'occupation", "benchmark": "65-75% healthy", "unite": "%" },
+    { "nom": "Panier moyen", "benchmark": "Variable par type", "unite": "EUR" },
+    { "nom": "Turnover staff", "benchmark": "< 30% bon", "unite": "%" },
+    { "nom": "Satisfaction client", "benchmark": "> 4.0/5 Google, > 8/10 Booking", "unite": "score" }
   ],
-  "outilsMetiers": ["TheFork", "Lightspeed Restaurant", "Zelty", "Mews", "Tiller", "Zenchef"],
-  "reglementations": ["HACCP", "Reglement CE 852/2004", "Licence debit boissons", "Affichage allergenes", "Convention HCR"],
-  "risquesSpecifiques": ["Turnover eleve", "Saisonnalite", "Hygiene alimentaire", "Avis clients negatifs"]
+  "outilsMetiers": ["PMS (Mews, Asterio)", "Caisse (Lightspeed, Zelty, L'Addition, Tiller)", "Channel manager (D-EDGE, SiteMinder)", "Planning (Combo/Snapshift, Skello)", "Stock F&B (Koust, Inpulse)", "E-reputation (Guest Suite)", "TheFork", "Zenchef"],
+  "reglementations": [
+    "Formation HACCP obligatoire (loi 27 juillet 2010)",
+    "Paquet hygiene europeen",
+    "Permis d'exploitation (20h formation initiale, 6h renouvellement/10 ans)",
+    "Licence III/IV",
+    "Convention HCR",
+    "Loi AGEC (doggy bags, don invendus)",
+    "14 allergenes a declarer (UE 1169/2011)",
+    "ERP securite/accessibilite"
+  ],
+  "risquesSpecifiques": ["Turnover eleve (60-100% annuel)", "Saisonnalite", "Hygiene alimentaire", "Avis clients negatifs", "Cout matieres premieres volatil"]
 }

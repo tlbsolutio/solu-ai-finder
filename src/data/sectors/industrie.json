@@ -1,21 +1,37 @@
 {
   "id": "industrie",
-  "nom": "Industrie & Manufacturing",
+  "nom": "Industrie / Production / Manufacturing / Logistique",
   "codesNAF": ["10", "11", "13", "14", "15", "16", "17", "18", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33"],
-  "motsCles": ["usine", "production", "fabrication", "atelier", "machine", "qualite", "lean", "supply chain", "maintenance", "TRS"],
-  "vocabulaireConfirmation": ["ligne de production", "TRS", "lean manufacturing", "supply chain"],
+  "motsCles": ["usine", "production", "fabrication", "atelier", "machine", "qualite", "lean", "supply chain", "maintenance", "TRS", "GPAO"],
+  "vocabulaireConfirmation": ["ligne de production", "TRS", "lean manufacturing", "supply chain", "ICPE", "GPAO"],
   "questionsDiscriminantes": [
-    "Quel est votre TRS (Taux de Rendement Synthetique) actuel ?",
-    "Avez-vous mis en place une demarche lean ou amelioration continue ?",
-    "Comment gerez-vous la maintenance de vos equipements (preventive, curative, predictive) ?"
+    "Votre site est-il classe ICPE et sous quel regime ?",
+    "Disposez-vous d'un GPAO integre a l'ERP ?",
+    "Quels sont vos TRS machine par machine ?",
+    "Comment assurez-vous la tracabilite complete (lots, series, matieres) ?",
+    "Engagement certification ISO 9001/14001/45001 ?",
+    "Pilotage couts de revient reels vs previsionnels ?",
+    "Maintenance corrective ou preventive ?"
   ],
   "kpis": [
-    { "nom": "TRS", "benchmark": "> 85%", "unite": "%" },
-    { "nom": "Taux de rebut", "benchmark": "< 2%", "unite": "%" },
+    { "nom": "TRS (Dispo x Perf x Qualite)", "benchmark": "> 85%", "unite": "%" },
+    { "nom": "Taux de rebut/non-conformite", "benchmark": "< 2%", "unite": "%" },
     { "nom": "OTD (On Time Delivery)", "benchmark": "> 95%", "unite": "%" },
-    { "nom": "Taux de disponibilite machines", "benchmark": "> 90%", "unite": "%" }
+    { "nom": "Cout revient reel vs previsionnel", "benchmark": "< 5% ecart", "unite": "%" },
+    { "nom": "OTIF", "benchmark": "> 90%", "unite": "%" },
+    { "nom": "Rotation stocks", "benchmark": "6-12x/an", "unite": "x/an" },
+    { "nom": "MTBF", "benchmark": "Variable", "unite": "heures" },
+    { "nom": "Consommation energetique/unite", "benchmark": "En baisse", "unite": "kWh/unite" }
   ],
-  "outilsMetiers": ["SAP", "Sage X3", "GPAO", "MES", "Clipper", "TopSolid"],
-  "reglementations": ["ISO 9001", "ISO 14001", "ICPE", "REACH", "Directive machines", "RSE/CSRD"],
-  "risquesSpecifiques": ["Arrets de production", "Obsolescence equipements", "Dependance fournisseurs", "Accidents industriels"]
+  "outilsMetiers": ["Clipper ERP-GPAO", "Sage 100 Gestion de Production", "TopSolid'Erp", "Sylob", "Open-Prod (open source)", "Divalto", "SAP", "MES"],
+  "reglementations": [
+    "ICPE (3 regimes : Declaration, Enregistrement, Autorisation + Seveso III)",
+    "REACH/CLP",
+    "Directive IED",
+    "ISO 9001/14001/45001/50001",
+    "CSRD (reporting ESG progressif)",
+    "Audit energetique obligatoire (>250 salaries)",
+    "Directive machines"
+  ],
+  "risquesSpecifiques": ["Arrets de production", "Obsolescence equipements", "Dependance fournisseurs", "Accidents industriels", "Non-conformite ICPE"]
 }

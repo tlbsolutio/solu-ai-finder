@@ -1,21 +1,42 @@
 {
   "id": "transport",
-  "nom": "Transport & Logistique",
+  "nom": "Transport / Mobilite",
   "codesNAF": ["49", "50", "51", "52", "53"],
-  "motsCles": ["livraison", "camion", "flotte", "logistique", "entrepot", "expedition", "fret", "chauffeur", "tournee", "TMS"],
-  "vocabulaireConfirmation": ["tournee", "flotte", "TMS", "taux de remplissage"],
+  "motsCles": ["livraison", "camion", "flotte", "logistique", "entrepot", "expedition", "fret", "chauffeur", "tournee", "TMS", "conducteur"],
+  "vocabulaireConfirmation": ["tournee", "flotte", "TMS", "taux de remplissage", "RSE transport", "chronotachygraphe", "DREAL", "FIMO/FCO"],
   "questionsDiscriminantes": [
-    "Comment optimisez-vous vos tournees de livraison ?",
-    "Quel est votre taux de remplissage moyen des vehicules ?",
-    "Avez-vous un TMS (Transport Management System) en place ?"
+    "Attestation capacite professionnelle DREAL et inscription registre transporteurs a jour ?",
+    "Conformite RSE (CE 561/2006 : max 9h/jour, 56h/semaine, pause 45min apres 4h30) ?",
+    "Chronotachygraphes aux normes (intelligent V2 obligatoire vehicules neufs apres aout 2023) ?",
+    "Taux de remplissage moyen et ratio km vide/charge (benchmark : remplissage > 80%, km vide < 20%) ?",
+    "Capacite financiere requise (9000 EUR premier vehicule, 5000 EUR/vehicule supplementaire > 3.5t) ?",
+    "FIMO/FCO conducteurs a jour ?",
+    "Cout au km complet (benchmark 1.20-1.80 EUR/km PL 40t) ?",
+    "Plan renouvellement flotte (ZFE-m, CRIT'Air) ?",
+    "TMS pour optimisation tournees ?"
   ],
   "kpis": [
-    { "nom": "Taux de remplissage vehicules", "benchmark": "> 80%", "unite": "%" },
-    { "nom": "Cout au km", "benchmark": "Variable par type", "unite": "EUR/km" },
-    { "nom": "Taux de livraison a l'heure", "benchmark": "> 95%", "unite": "%" },
-    { "nom": "Taux de litige transport", "benchmark": "< 1%", "unite": "%" }
+    { "nom": "Taux remplissage", "benchmark": "> 80%", "unite": "%" },
+    { "nom": "Km a vide", "benchmark": "< 20%", "unite": "%" },
+    { "nom": "OTD (livraison a l'heure)", "benchmark": "> 95%, > 98% excellent", "unite": "%" },
+    { "nom": "Cout/km", "benchmark": "1.20-1.80 EUR PL 40t", "unite": "EUR/km" },
+    { "nom": "Infractions RSE", "benchmark": "0%", "unite": "%" },
+    { "nom": "Accidents", "benchmark": "< 2 par million km", "unite": "nb/M km" },
+    { "nom": "Consommation", "benchmark": "30-35L/100km PL 40t", "unite": "L/100km" },
+    { "nom": "Rotation conducteurs", "benchmark": "< 15%", "unite": "%" }
   ],
-  "outilsMetiers": ["TMS (DDS, Alpega)", "WMS (Reflex, Manhattan)", "PTV Route Optimizer", "Trimble", "Shippeo", "Dashdoc"],
-  "reglementations": ["Reglementation sociale transport (RSE)", "ADR matieres dangereuses", "Chronotachygraphe", "Loi climat (ZFE)", "Eco-contribution"],
-  "risquesSpecifiques": ["Cout carburant", "Penuries chauffeurs", "Reglementation ZFE", "Sinistralite flotte"]
+  "outilsMetiers": ["TMS (Dashdoc, Shippeo)", "Telematique (Masternaut, Webfleet, Geotab)", "Bourse de fret (B2PWeb, Teleroute)", "Optimisation tournees (Mapotempo, Kardinal)", "eCMR (Dashdoc)", "PTV Route Optimizer"],
+  "reglementations": [
+    "RSE CE 561/2006 (modifie UE 2020/1054 et 2024/1258)",
+    "Chronotachygraphe UE 165/2014",
+    "DREAL licences et attestations",
+    "Capacite financiere obligatoire",
+    "FIMO (140h) + FCO (35h/5 ans)",
+    "Cabotage CE 1072/2009 (cooling-off 4 jours)",
+    "ADR matieres dangereuses",
+    "ZFE-m/CRIT'Air",
+    "CCNTR",
+    "Loi Climat et Resilience (verdissement flotte)"
+  ],
+  "risquesSpecifiques": ["Cout carburant", "Penuries chauffeurs", "Reglementation ZFE", "Sinistralite flotte", "Infractions RSE", "Non-conformite chronotachygraphe"]
 }

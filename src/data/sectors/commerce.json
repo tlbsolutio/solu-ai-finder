@@ -1,21 +1,37 @@
 {
   "id": "commerce",
-  "nom": "Commerce & Distribution",
+  "nom": "Commerce / Distribution / Retail / E-commerce",
   "codesNAF": ["45", "46", "47"],
-  "motsCles": ["magasin", "boutique", "vente", "stock", "caisse", "retail", "e-commerce", "merchandising", "inventaire"],
-  "vocabulaireConfirmation": ["point de vente", "stock", "merchandising", "ticket moyen"],
+  "motsCles": ["magasin", "boutique", "vente", "stock", "caisse", "retail", "e-commerce", "merchandising", "inventaire", "omnicanal", "fidelisation"],
+  "vocabulaireConfirmation": ["point de vente", "stock", "merchandising", "ticket moyen", "NF525", "taux de transformation"],
   "questionsDiscriminantes": [
-    "Quel est votre ratio ventes en ligne vs. physique ?",
-    "Comment gerez-vous vos stocks et reapprovisionnements ?",
-    "Avez-vous un programme de fidelite client en place ?"
+    "Quel est votre taux de transformation visiteurs vers acheteurs ?",
+    "Avez-vous une strategie omnicanale ?",
+    "Votre logiciel de caisse est-il certifie NF525 ?",
+    "Comment gerez-vous votre rotation des stocks et vos ruptures ?",
+    "Disposez-vous d'un CRM fidelisation ?",
+    "Quels sont vos canaux d'acquisition et leur cout respectif ?",
+    "Conformite RGPD pour la collecte donnees clients ?"
   ],
   "kpis": [
-    { "nom": "Chiffre d'affaires au m2", "benchmark": "3000-8000 EUR/m2/an", "unite": "EUR/m2" },
-    { "nom": "Taux de rotation des stocks", "benchmark": "6-12x/an", "unite": "x/an" },
+    { "nom": "CA par m2", "benchmark": "3000-8000 EUR/m2/an", "unite": "EUR/m2" },
     { "nom": "Panier moyen", "benchmark": "Variable selon secteur", "unite": "EUR" },
-    { "nom": "Taux de demarque", "benchmark": "< 2%", "unite": "%" }
+    { "nom": "Taux de transformation", "benchmark": "20-40% physique, 2-5% web", "unite": "%" },
+    { "nom": "Indice de vente", "benchmark": "1.5-2.5", "unite": "articles" },
+    { "nom": "Rotation stocks", "benchmark": "6-12x/an", "unite": "x/an" },
+    { "nom": "Taux de rupture", "benchmark": "< 3%", "unite": "%" },
+    { "nom": "Taux de demarque (connue + inconnue)", "benchmark": "< 2%", "unite": "%" },
+    { "nom": "CLV (Customer Lifetime Value)", "benchmark": "Variable", "unite": "EUR" }
   ],
-  "outilsMetiers": ["Shopify", "PrestaShop", "Lightspeed", "Cegid Retail", "Odoo", "WooCommerce"],
-  "reglementations": ["RGPD", "Droit de la consommation", "Affichage des prix", "Soldes reglementees", "Loi anti-gaspillage AGEC"],
-  "risquesSpecifiques": ["Rupture de stock", "Vol/demarque", "Concurrence e-commerce", "Saisonnalite"]
+  "outilsMetiers": ["Hiboutik", "Lightspeed", "Cegid Retail", "Clictill", "Fastmag", "Archipelia", "Odoo", "Hey Pongo", "Skello", "Shopify", "PrestaShop"],
+  "reglementations": [
+    "Certification NF525/LNE obligatoire (amende 7500 EUR/caisse non conforme)",
+    "Facturation electronique sept. 2026",
+    "RGPD",
+    "Conventions collectives commerce de detail",
+    "Accessibilite ERP",
+    "Loi anti-gaspillage AGEC",
+    "Affichage des prix obligatoire"
+  ],
+  "risquesSpecifiques": ["Rupture de stock", "Vol/demarque", "Concurrence e-commerce", "Saisonnalite", "Non-conformite caisse NF525"]
 }

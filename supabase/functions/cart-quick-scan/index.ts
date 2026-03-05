@@ -6,22 +6,68 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const OLLAMA_URL = "http://76.13.50.143:11434/api/generate";
+const OLLAMA_TIMEOUT = 90000; // 90 sec
+const MODEL = "mistral-nemo:12b";
+
+async function callOllama(prompt: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT);
+
+    const res = await fetch(OLLAMA_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: MODEL, prompt, stream: false, format: "json" }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+    if (!res.ok) {
+      console.error(`Ollama error: ${res.status}`);
+      return null;
+    }
+    const data = await res.json();
+    return data.response || null;
+  } catch (e) {
+    console.error("Ollama failed:", e);
+    return null;
+  }
+}
+
+async function callGeminiFallback(prompt: string, apiKey: string): Promise<string | null> {
+  if (!apiKey) return null;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch {
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-  }
-
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-  const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-    global: { headers: { Authorization: authHeader } },
-  });
 
-  const { data: { user }, error: userError } = await userClient.auth.getUser();
-  if (userError || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  // Auth is optional for quick scan (free tier)
+  let userId: string | null = null;
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const userClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    userId = user?.id || null;
   }
 
   try {
@@ -35,81 +81,119 @@ serve(async (req) => {
       .map(([q, a]) => `Q: ${q}\nR: ${a}`)
       .join("\n\n");
 
-    const systemPrompt = `Tu es un consultant expert en transformation organisationnelle.
+    const prompt = `Tu es un consultant expert en transformation organisationnelle pour les PME francaises.
 On te donne une description libre d'une entreprise et ses reponses a un mini-questionnaire rapide (10-15 questions couvrant 10 axes).
-Tu dois produire un diagnostic rapide sous forme de JSON avec:
-- Des scores estimes par axe (1-5)
-- 3-5 quick wins actionnables
-- Un resume des principaux dysfonctionnements detectes
-Reponds UNIQUEMENT en JSON valide.`;
 
-    const userPrompt = `DESCRIPTION DE L'ENTREPRISE :
+REGLES :
+- Score base UNIQUEMENT sur les reponses fournies
+- Quick wins actionnables et priorises (P1 = impact fort + effort faible, P2 = impact fort + effort moyen, P3 = reste)
+- Dysfonctionnements avec impact estime
+- Ne jamais inventer ce qui n'est pas dans les reponses
+
+DESCRIPTION DE L'ENTREPRISE :
 ${description_libre || "Non fournie"}
 
 REPONSES RAPIDES :
 ${reponsesText || "Aucune"}
 
-Produis ce JSON :
+Produis ce JSON EXACT :
 {
   "scores": {
     "1": 3, "2": 3, "3": 3, "4": 3, "5": 3,
     "6": 3, "7": 3, "8": 3, "9": 3, "10": 3
   },
   "quick_wins": [
-    { "action": "...", "impact": "Fort", "effort": "Faible", "categorie": "..." }
+    { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3" }
   ],
-  "dysfonctionnements": ["..."],
-  "resume": "Resume en 3-5 lignes du diagnostic rapide"
+  "dysfonctionnements": ["Dysfonctionnement 1 — Impact estime: X"],
+  "resume": "Resume en 3-5 lignes du diagnostic rapide avec les points cles"
 }
 
 Axes : 1=Contexte, 2=Clients, 3=Organisation, 4=RH, 5=Commercial, 6=Operations, 7=Outils/SI, 8=Communication, 9=Qualite, 10=KPIs
-Score: 1=Tres faible, 2=Faible, 3=Moyen, 4=Bon, 5=Excellent`;
+Score: 1=Critique, 2=Emergent, 3=En developpement, 4=Mature, 5=Optimise
+Reponds UNIQUEMENT en JSON valide.`;
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    let rawContent: string | null = null;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-        temperature: 0.3,
-      }),
-    });
+    // Try Ollama first
+    rawContent = await callOllama(prompt);
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      throw new Error(`AI error ${aiResponse.status}: ${errText}`);
+    // Fallback chain: Gemini
+    if (!rawContent) {
+      const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+      if (GEMINI_API_KEY) {
+        rawContent = await callGeminiFallback(prompt, GEMINI_API_KEY);
+      }
     }
 
-    const aiData = await aiResponse.json();
-    let rawContent = aiData.choices?.[0]?.message?.content || "{}";
-    rawContent = rawContent.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+    // Last resort: Lovable gateway
+    if (!rawContent) {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (LOVABLE_API_KEY) {
+        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.3,
+          }),
+        });
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          rawContent = aiData.choices?.[0]?.message?.content || null;
+        }
+      }
+    }
+
+    if (!rawContent) {
+      throw new Error("No AI provider available (Ollama, Gemini, Lovable all failed)");
+    }
+
+    // Robust JSON extraction
+    const jsonMatch = rawContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+    if (jsonMatch) {
+      rawContent = jsonMatch[1].trim();
+    } else {
+      rawContent = rawContent.trim();
+    }
 
     let resultats: any;
-    try { resultats = JSON.parse(rawContent); } catch {
-      resultats = {
-        scores: { "1": 3, "2": 3, "3": 3, "4": 3, "5": 3, "6": 3, "7": 3, "8": 3, "9": 3, "10": 3 },
-        quick_wins: [{ action: "Contactez-nous pour une analyse complete", impact: "Fort", effort: "Faible", categorie: "General" }],
-        dysfonctionnements: ["Analyse partielle - completez le scan complet pour des resultats detailles"],
-        resume: "Les donnees fournies sont insuffisantes pour un diagnostic precis. Un scan complet est recommande.",
-      };
+    try {
+      resultats = JSON.parse(rawContent);
+    } catch {
+      const objMatch = rawContent.match(/\{[\s\S]*\}/);
+      if (objMatch) {
+        try { resultats = JSON.parse(objMatch[0]); } catch {}
+      }
+      if (!resultats) {
+        resultats = {
+          scores: { "1": 3, "2": 3, "3": 3, "4": 3, "5": 3, "6": 3, "7": 3, "8": 3, "9": 3, "10": 3 },
+          quick_wins: [{ action: "Contactez-nous pour une analyse complete", impact: "Fort", effort: "Faible", categorie: "General", priorite: "P1" }],
+          dysfonctionnements: ["Analyse partielle - completez le scan complet pour des resultats detailles"],
+          resume: "Les donnees fournies sont insuffisantes pour un diagnostic precis. Un scan complet est recommande.",
+        };
+      }
     }
 
-    // Save to DB
-    await supabase.from("cart_quick_scans").insert({
-      owner_id: user.id,
-      description_libre: description_libre || "",
-      reponses_rapides: reponses_rapides || {},
-      resultats,
-    });
+    // Save to DB (best-effort)
+    try {
+      await supabase.from("cart_quick_scans").insert({
+        owner_id: userId || "anonymous",
+        description_libre: description_libre || "",
+        reponses_rapides: reponses_rapides || {},
+        resultats,
+      });
+    } catch (dbErr) {
+      console.error("Failed to save quick scan to DB:", dbErr);
+    }
 
     return new Response(JSON.stringify({ success: true, ...resultats }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error("cart-quick-scan error:", message);
     return new Response(JSON.stringify({ error: message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

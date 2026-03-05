@@ -1,21 +1,38 @@
 {
   "id": "sante",
-  "nom": "Sante & Medico-social",
+  "nom": "Sante / Medico-social / Bien-etre",
   "codesNAF": ["86", "87", "88"],
-  "motsCles": ["patient", "soin", "medical", "clinique", "hopital", "EHPAD", "cabinet", "pharmacie", "medecin", "infirmier"],
-  "vocabulaireConfirmation": ["patient", "parcours de soin", "DMP", "ARS"],
+  "motsCles": ["patient", "soin", "medical", "clinique", "hopital", "EHPAD", "cabinet", "pharmacie", "medecin", "infirmier", "medico-social", "bien-etre"],
+  "vocabulaireConfirmation": ["patient", "parcours de soin", "DMP", "ARS", "HAS", "DUI", "Segur", "CPOM"],
   "questionsDiscriminantes": [
-    "Comment gerez-vous le dossier patient informatise ?",
-    "Etes-vous conforme aux exigences de certification HAS ?",
-    "Comment assurez-vous la continuite des soins entre equipes ?"
+    "Etes-vous pret pour l'evaluation externe HAS (nouveau referentiel) ?",
+    "Disposez-vous d'un DUI conforme Segur du Numerique ?",
+    "Comment pilotez-vous votre demarche qualite/gestion des risques ?",
+    "Taux d'absenteisme et gestion des remplacements ?",
+    "Le CVS fonctionne-t-il conformement a la reglementation ?",
+    "Vos CPOM sont-ils a jour ?",
+    "Comment recueillez-vous le point de vue des personnes accompagnees ?"
   ],
   "kpis": [
-    { "nom": "Taux d'occupation lits", "benchmark": "> 85%", "unite": "%" },
-    { "nom": "Duree moyenne de sejour", "benchmark": "Variable par service", "unite": "jours" },
-    { "nom": "Taux de satisfaction patient", "benchmark": "> 80%", "unite": "%" },
-    { "nom": "Taux d'evenements indesirables", "benchmark": "< 5%", "unite": "%" }
+    { "nom": "GIR Moyen Pondere (GMP)", "benchmark": "Variable", "unite": "score" },
+    { "nom": "Pathos Moyen Pondere (PMP)", "benchmark": "Variable", "unite": "score" },
+    { "nom": "IQSS", "benchmark": "Variable", "unite": "score" },
+    { "nom": "Taux d'occupation", "benchmark": "> 95%", "unite": "%" },
+    { "nom": "Absenteisme soignant", "benchmark": "< 10%", "unite": "%" },
+    { "nom": "Ratio soignants/residents", "benchmark": "Variable par type", "unite": "ratio" },
+    { "nom": "Evenements indesirables", "benchmark": "< 5%", "unite": "%" },
+    { "nom": "Satisfaction residents/familles", "benchmark": "> 80%", "unite": "%" }
   ],
-  "outilsMetiers": ["Doctolib", "Mediboard", "Hopital Manager", "Crossway", "Easily", "NetSoins"],
-  "reglementations": ["Code de la sante publique", "RGPD sante (HDS)", "Certification HAS", "Loi Rist", "Espace numerique de sante"],
-  "risquesSpecifiques": ["Penuries de personnel", "Non-conformite reglementaire", "Cybersecurite donnees sante", "Burnout soignants"]
+  "outilsMetiers": ["Ageval (qualite medico-social)", "NETSoins/Orisha (DUI)", "Evolucare/IMAGO", "Elap", "Fortify/Silae (paie specialisee)", "BlueKanGo (QHSE)", "Doctolib"],
+  "reglementations": [
+    "Evaluation externe HAS obligatoire (nouveau referentiel ESSMS)",
+    "Segur du Numerique (DUI references ANS)",
+    "Reforme SERAFIN-PH",
+    "CPOM obligatoires",
+    "Comptabilite M22",
+    "Conventions CCN 51/FPH/FHP avec primes Segur",
+    "RGPD donnees de sante (obligations renforcees)",
+    "Code de la sante publique"
+  ],
+  "risquesSpecifiques": ["Penuries de personnel", "Non-conformite reglementaire HAS", "Cybersecurite donnees sante", "Burnout soignants", "Absenteisme chronique"]
 }

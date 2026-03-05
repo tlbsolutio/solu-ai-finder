@@ -1,21 +1,39 @@
 {
   "id": "tech",
-  "nom": "Tech & Digital",
+  "nom": "Tech / SaaS / Digital / Agences web",
   "codesNAF": ["58", "59", "60", "61", "62", "63"],
-  "motsCles": ["logiciel", "SaaS", "developpement", "startup", "agile", "cloud", "API", "devops", "product", "sprint"],
-  "vocabulaireConfirmation": ["sprint", "backlog", "SaaS", "ARR/MRR"],
+  "motsCles": ["logiciel", "SaaS", "developpement", "startup", "agile", "cloud", "API", "devops", "product", "sprint", "agence web", "digital"],
+  "vocabulaireConfirmation": ["sprint", "backlog", "SaaS", "ARR/MRR", "CI/CD", "dette technique", "LTV/CAC"],
   "questionsDiscriminantes": [
-    "Quel est votre modele de revenus (SaaS, licence, service) ?",
-    "Utilisez-vous des methodologies agiles (Scrum, Kanban) ?",
-    "Comment gerez-vous le cycle de deploiement (CI/CD) ?"
+    "Quel est votre ratio LTV/CAC et comment l'avez-vous calcule ?",
+    "Quel % de votre MRR provient d'expansion vs new business ?",
+    "Frequence de deploiement en production et pipeline CI/CD automatise ?",
+    "Avez-vous quantifie votre dette technique (SonarQube) et quel % de sprints y est consacre ?",
+    "Net Revenue Retention sur 12 mois ?",
+    "Strategie PI formalisee (CII/CIR, agrement) ?",
+    "Time to Value client ?",
+    "Couverture tests automatises et revue de code systematique ?",
+    "Product Manager dedie ou fondateur multi-casquettes ?"
   ],
   "kpis": [
-    { "nom": "MRR/ARR", "benchmark": "Croissance > 20%/an", "unite": "EUR" },
-    { "nom": "Churn rate", "benchmark": "< 5%/mois", "unite": "%/mois" },
-    { "nom": "Velocity sprint", "benchmark": "Stable ou croissante", "unite": "points" },
-    { "nom": "Lead time deploiement", "benchmark": "< 1 semaine", "unite": "jours" }
+    { "nom": "MRR growth", "benchmark": "8-20% early, 5-15% established", "unite": "%/mois" },
+    { "nom": "Churn annuel", "benchmark": "< 5%", "unite": "%/an" },
+    { "nom": "LTV:CAC", "benchmark": ">= 3:1", "unite": "ratio" },
+    { "nom": "NRR (Net Revenue Retention)", "benchmark": "> 100%, 110-120% excellent", "unite": "%" },
+    { "nom": "GRR (Gross Revenue Retention)", "benchmark": "85-95%", "unite": "%" },
+    { "nom": "CAC payback", "benchmark": "< 12 mois", "unite": "mois" },
+    { "nom": "DORA deployment frequency", "benchmark": "elite: multiple/jour", "unite": "frequence" },
+    { "nom": "Rule of 40", "benchmark": "> 40% = healthy", "unite": "%" }
   ],
-  "outilsMetiers": ["Jira", "GitHub/GitLab", "Slack", "Figma", "AWS/GCP/Azure", "Datadog"],
-  "reglementations": ["RGPD", "Directive NIS2", "AI Act", "Accessibilite numerique (RGAA)", "Open source compliance"],
-  "risquesSpecifiques": ["Dette technique", "Cybersecurite", "Retention talents tech", "Scalabilite"]
+  "outilsMetiers": ["ChartMogul/Baremetrics (metriques SaaS)", "GitHub Actions/GitLab CI", "SonarQube", "Jira/Linear", "OVHcloud/Scaleway (hebergement francais)", "Brevo (marketing automation)", "Figma", "Datadog"],
+  "reglementations": [
+    "CIR 30% sur R&D + CII 20% sur innovation (documentation et agrement)",
+    "RGPD/CNIL",
+    "Loi Republique Numerique 2016",
+    "RGAA (accessibilite web secteur public)",
+    "Convention Syntec",
+    "Directive NIS2",
+    "AI Act"
+  ],
+  "risquesSpecifiques": ["Dette technique", "Cybersecurite", "Retention talents tech", "Scalabilite", "Burn rate excessif"]
 }

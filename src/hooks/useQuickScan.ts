@@ -19,12 +19,6 @@ export function useQuickScan() {
     setResult(null);
 
     try {
-      // Ensure anonymous session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        await supabase.auth.signInAnonymously();
-      }
-
       const { data, error: fnError } = await supabase.functions.invoke("cart-quick-scan", {
         body: { description_libre: descriptionLibre, reponses_rapides: reponsesRapides },
       });
