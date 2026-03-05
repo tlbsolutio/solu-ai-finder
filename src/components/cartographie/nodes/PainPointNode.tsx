@@ -3,33 +3,40 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { AlertTriangle } from "lucide-react";
 
 function getGraviteColor(gravite?: number) {
-  if (!gravite) return "border-red-200";
-  if (gravite >= 4) return "border-red-500";
-  if (gravite >= 3) return "border-orange-400";
-  return "border-yellow-400";
+  if (!gravite) return "border-red-500/30";
+  if (gravite >= 4) return "border-red-500/70";
+  if (gravite >= 3) return "border-orange-500/50";
+  return "border-amber-500/40";
+}
+
+function getGraviteGlow(gravite?: number) {
+  if (!gravite) return "shadow-red-500/5";
+  if (gravite >= 4) return "shadow-red-500/20";
+  if (gravite >= 3) return "shadow-orange-500/15";
+  return "shadow-amber-500/10";
 }
 
 export const PainPointNode = memo(({ data }: NodeProps) => {
   const d = data as { label: string; gravite?: number; description?: string };
 
   return (
-    <div className={`bg-white rounded-lg border-2 ${getGraviteColor(d.gravite)} shadow-sm px-3 py-2 min-w-[130px] max-w-[170px]`}>
-      <Handle type="target" position={Position.Top} className="!bg-red-400" />
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-6 h-6 rounded bg-red-100 flex items-center justify-center shrink-0">
-          <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+    <div className={`bg-slate-800 rounded-xl border ${getGraviteColor(d.gravite)} shadow-lg ${getGraviteGlow(d.gravite)} px-3.5 py-2.5 min-w-[140px] max-w-[190px] hover:border-red-400/60 transition-colors`}>
+      <Handle type="target" position={Position.Top} className="!bg-red-500 !w-2 !h-2 !border-slate-800" />
+      <div className="flex items-center gap-2 mb-1.5">
+        <div className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center shrink-0">
+          <AlertTriangle className="w-4 h-4 text-red-400" />
         </div>
-        <span className="text-xs font-semibold truncate">{d.label}</span>
+        <span className="text-xs font-semibold text-slate-100 truncate">{d.label}</span>
       </div>
       {d.gravite != null && (
         <div className="flex items-center gap-1">
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < d.gravite! ? "bg-red-500" : "bg-gray-200"}`} />
+            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < d.gravite! ? "bg-red-500" : "bg-slate-600"}`} />
           ))}
-          <span className="text-[10px] text-muted-foreground ml-1">Gravite {d.gravite}/5</span>
+          <span className="text-[10px] text-slate-400 ml-1">Gravite {d.gravite}/5</span>
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-red-400" />
+      <Handle type="source" position={Position.Bottom} className="!bg-red-500 !w-2 !h-2 !border-slate-800" />
     </div>
   );
 });

@@ -26,6 +26,7 @@ import CartSessionDashboard from "./pages/CartSessionDashboard";
 import CartPackWizard from "./pages/CartPackWizard";
 import CartPackResults from "./pages/CartPackResults";
 import CartLogin from "./pages/CartLogin";
+import CartAdmin from "./pages/CartAdmin";
 import { AuthGuard } from "./components/cartographie/AuthGuard";
 import CartLayout from "./components/layout/CartLayout";
 import NotFound from "./pages/NotFound";
@@ -64,6 +65,7 @@ const App = () => (
                   <Route path="/cartographie/sessions/:id" element={<AuthGuard><CartLayout><CartSessionDashboard /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><CartLayout><CartPackWizard /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><CartLayout><CartPackResults /></CartLayout></AuthGuard>} />
+                  <Route path="/cartographie/admin" element={<AuthGuard><CartLayout><CartAdmin /></CartLayout></AuthGuard>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>

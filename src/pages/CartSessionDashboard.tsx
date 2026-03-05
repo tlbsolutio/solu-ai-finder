@@ -18,13 +18,58 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
-  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2,
+  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock,
 } from "lucide-react";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 import { Download } from "lucide-react";
+
+const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
+
+const LockedTabContent = ({ onUnlock }: { onUnlock: () => void }) => (
+  <div className="relative pb-8">
+    <div className="absolute inset-0 z-10 flex items-center justify-center">
+      <Card className="max-w-sm w-full text-center shadow-lg">
+        <CardContent className="p-6 space-y-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-lg">Contenu verrouille</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Cette section est reservee aux utilisateurs de la version complete.
+            </p>
+          </div>
+          <Button onClick={onUnlock} className="w-full bg-gradient-primary hover:opacity-90">
+            <Lock className="w-4 h-4 mr-2" />
+            Debloquez l'acces complet
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+    <div className="filter blur-sm opacity-40 pointer-events-none select-none" aria-hidden="true">
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="h-4 bg-muted rounded w-3/4 mb-3" />
+            <div className="h-3 bg-muted rounded w-full mb-2" />
+            <div className="h-3 bg-muted rounded w-5/6 mb-2" />
+            <div className="h-3 bg-muted rounded w-2/3" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="h-4 bg-muted rounded w-1/2 mb-3" />
+            <div className="h-3 bg-muted rounded w-full mb-2" />
+            <div className="h-3 bg-muted rounded w-4/5" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  </div>
+);
 
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
@@ -232,15 +277,15 @@ const CartSessionDashboard = () => {
               <TabsList className="inline-flex gap-0.5 h-auto bg-muted p-1 w-max">
                 <TabsTrigger value="overview" className="text-xs gap-1 shrink-0"><BarChart3 className="w-3.5 h-3.5" /><span className="hidden sm:inline">Vue d'ensemble</span><span className="sm:hidden">Resume</span></TabsTrigger>
                 <TabsTrigger value="carte" className="text-xs gap-1 shrink-0"><Map className="w-3.5 h-3.5" />Carte</TabsTrigger>
-                <TabsTrigger value="quickwins" className="text-xs gap-1 shrink-0"><Zap className="w-3.5 h-3.5" />Quickwins</TabsTrigger>
-                <TabsTrigger value="processus" className="text-xs gap-1 shrink-0"><Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Processus</span><span className="sm:hidden">Proc.</span></TabsTrigger>
-                <TabsTrigger value="outils" className="text-xs gap-1 shrink-0"><Layers className="w-3.5 h-3.5" />Outils</TabsTrigger>
-                <TabsTrigger value="equipes" className="text-xs gap-1 shrink-0"><Users className="w-3.5 h-3.5" />Equipes</TabsTrigger>
-                <TabsTrigger value="irritants" className="text-xs gap-1 shrink-0"><AlertTriangle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Irritants</span><span className="sm:hidden">Irrit.</span></TabsTrigger>
-                <TabsTrigger value="plan" className="text-xs gap-1 shrink-0"><ClipboardList className="w-3.5 h-3.5" /><span className="hidden sm:inline">Plan d'actions</span><span className="sm:hidden">Plan</span></TabsTrigger>
-                <TabsTrigger value="recommandations" className="text-xs gap-1 shrink-0"><Laptop className="w-3.5 h-3.5" /><span className="hidden sm:inline">Recommandations</span><span className="sm:hidden">Reco.</span></TabsTrigger>
+                <TabsTrigger value="quickwins" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Zap className="w-3.5 h-3.5" />Quickwins{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="processus" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Processus</span><span className="sm:hidden">Proc.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="outils" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Layers className="w-3.5 h-3.5" />Outils{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="equipes" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Users className="w-3.5 h-3.5" />Equipes{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="irritants" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><AlertTriangle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Irritants</span><span className="sm:hidden">Irrit.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="plan" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><ClipboardList className="w-3.5 h-3.5" /><span className="hidden sm:inline">Plan d'actions</span><span className="sm:hidden">Plan</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="recommandations" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Laptop className="w-3.5 h-3.5" /><span className="hidden sm:inline">Recommandations</span><span className="sm:hidden">Reco.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
                 <TabsTrigger value="questionnaire" className="text-xs gap-1 shrink-0"><FileText className="w-3.5 h-3.5" /><span className="hidden sm:inline">Questionnaire</span><span className="sm:hidden">Q&A</span></TabsTrigger>
-                <TabsTrigger value="analyse" className="text-xs gap-1 shrink-0"><Brain className="w-3.5 h-3.5" /><span className="hidden sm:inline">Analyse IA</span><span className="sm:hidden">IA</span></TabsTrigger>
+                <TabsTrigger value="analyse" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Brain className="w-3.5 h-3.5" /><span className="hidden sm:inline">Analyse IA</span><span className="sm:hidden">IA</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -354,11 +399,14 @@ const CartSessionDashboard = () => {
 
             {/* QUICKWINS */}
             <TabsContent value="quickwins" className="pb-8">
-              <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+                <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />
+              )}
             </TabsContent>
 
             {/* PROCESSUS */}
             <TabsContent value="processus" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Processus ({processus.length})</CardTitle>
@@ -385,10 +433,12 @@ const CartSessionDashboard = () => {
                   ))}
                 </CardContent>
               </Card>
+              )}
             </TabsContent>
 
             {/* OUTILS */}
             <TabsContent value="outils" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Outils & SI ({outils.length})</CardTitle>
@@ -417,10 +467,12 @@ const CartSessionDashboard = () => {
                   ))}
                 </CardContent>
               </Card>
+              )}
             </TabsContent>
 
             {/* EQUIPES */}
             <TabsContent value="equipes" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Equipes ({equipes.length})</CardTitle>
@@ -444,10 +496,12 @@ const CartSessionDashboard = () => {
                   ))}
                 </CardContent>
               </Card>
+              )}
             </TabsContent>
 
             {/* IRRITANTS */}
             <TabsContent value="irritants" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2 px-4 pt-4">
@@ -493,25 +547,30 @@ const CartSessionDashboard = () => {
                   </Card>
                 )}
               </div>
+              )}
             </TabsContent>
 
             {/* PLAN D'ACTIONS */}
             <TabsContent value="plan" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <CartPlanActionsTab
                 sessionId={id!}
                 quickwins={quickwins}
                 aiPlanOptimisation={session.ai_plan_optimisation}
                 onReload={reload}
               />
+              )}
             </TabsContent>
 
             {/* RECOMMANDATIONS */}
             <TabsContent value="recommandations" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <CartRecommandationsTab
                 outils={outils}
                 aiAnalyseTransversale={session.ai_analyse_transversale}
                 aiPlanOptimisation={session.ai_plan_optimisation}
               />
+              )}
             </TabsContent>
 
             {/* QUESTIONNAIRE */}
@@ -554,6 +613,7 @@ const CartSessionDashboard = () => {
 
             {/* ANALYSE IA */}
             <TabsContent value="analyse" className="pb-8">
+              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
               <div className="space-y-4">
                 {[
                   { key: "ai_resume_executif", label: "Resume executif" },
@@ -626,6 +686,7 @@ const CartSessionDashboard = () => {
                   </Card>
                 )}
               </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
@@ -641,6 +702,17 @@ const CartSessionDashboard = () => {
       <Header />
 
       <main className="p-4 sm:p-6 space-y-6">
+        {!isPaid && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50/60 px-4 py-2.5">
+            <p className="text-sm text-amber-800">
+              Version d'essai — certaines fonctionnalites sont limitees
+            </p>
+            <Button size="sm" variant="outline" className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100" onClick={() => setShowGate(true)}>
+              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              Passer a la version complete
+            </Button>
+          </div>
+        )}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Layers, label: "Packs completes", value: `${packsCompleted}/10` },

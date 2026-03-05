@@ -3,19 +3,19 @@ import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Users } from "lucide-react";
 
 function getScoreColor(score?: number) {
-  if (!score) return "bg-gray-200";
-  if (score >= 3.6) return "bg-green-500";
-  if (score >= 2.6) return "bg-yellow-500";
+  if (!score) return "bg-slate-600";
+  if (score >= 3.6) return "bg-emerald-500";
+  if (score >= 2.6) return "bg-amber-500";
   if (score >= 1.6) return "bg-orange-500";
   return "bg-red-500";
 }
 
 function getStatusBadge(score?: number) {
-  if (!score) return { label: "N/A", className: "bg-gray-100 text-gray-600" };
-  if (score >= 3.6) return { label: "Sain", className: "bg-green-100 text-green-700" };
-  if (score >= 2.6) return { label: "Attention", className: "bg-yellow-100 text-yellow-700" };
-  if (score >= 1.6) return { label: "Alerte", className: "bg-orange-100 text-orange-700" };
-  return { label: "Critique", className: "bg-red-100 text-red-700" };
+  if (!score) return { label: "N/A", className: "bg-slate-700 text-slate-400" };
+  if (score >= 3.6) return { label: "Sain", className: "bg-emerald-900/60 text-emerald-300" };
+  if (score >= 2.6) return { label: "Attention", className: "bg-amber-900/60 text-amber-300" };
+  if (score >= 1.6) return { label: "Alerte", className: "bg-orange-900/60 text-orange-300" };
+  return { label: "Critique", className: "bg-red-900/60 text-red-300" };
 }
 
 export const TeamNode = memo(({ data }: NodeProps) => {
@@ -23,26 +23,26 @@ export const TeamNode = memo(({ data }: NodeProps) => {
   const status = getStatusBadge(d.maturityScore);
 
   return (
-    <div className="bg-white rounded-lg border-2 border-orange-300 shadow-sm px-3 py-2 min-w-[140px] max-w-[180px]">
-      <Handle type="target" position={Position.Top} className="!bg-orange-400" />
-      <div className="flex items-center gap-2 mb-1">
-        <div className="w-6 h-6 rounded bg-orange-100 flex items-center justify-center shrink-0">
-          <Users className="w-3.5 h-3.5 text-orange-600" />
+    <div className="bg-slate-800 rounded-xl border border-orange-500/40 shadow-lg shadow-orange-500/10 px-3.5 py-2.5 min-w-[150px] max-w-[200px] hover:border-orange-400/70 transition-colors">
+      <Handle type="target" position={Position.Top} className="!bg-orange-500 !w-2 !h-2 !border-slate-800" />
+      <div className="flex items-center gap-2 mb-1.5">
+        <div className="w-7 h-7 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+          <Users className="w-4 h-4 text-orange-400" />
         </div>
-        <span className="text-xs font-semibold truncate">{d.label}</span>
+        <span className="text-xs font-semibold text-slate-100 truncate">{d.label}</span>
       </div>
       {d.maturityScore != null && (
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${getScoreColor(d.maturityScore)}`} style={{ width: `${(d.maturityScore / 5) * 100}%` }} />
             </div>
-            <span className="text-[10px] text-muted-foreground">{d.maturityScore}/5</span>
+            <span className="text-[10px] text-slate-400">{d.maturityScore}/5</span>
           </div>
           <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${status.className}`}>{status.label}</span>
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} className="!bg-orange-400" />
+      <Handle type="source" position={Position.Bottom} className="!bg-orange-500 !w-2 !h-2 !border-slate-800" />
     </div>
   );
 });

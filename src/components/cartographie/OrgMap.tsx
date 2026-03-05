@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ReactFlow,
   MiniMap,
@@ -10,11 +10,15 @@ import {
   type Node,
   type Edge,
   Panel,
+  MarkerType,
+  ConnectionLineType,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+// ELK loaded dynamically to keep main bundle small (~1.6MB)
 import { toPng } from "html-to-image";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, EyeOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Download, Eye, EyeOff, Maximize2, LayoutGrid } from "lucide-react";
 import { TeamNode } from "./nodes/TeamNode";
 import { ToolNode } from "./nodes/ToolNode";
 import { ProcessNode } from "./nodes/ProcessNode";
@@ -44,38 +48,107 @@ interface OrgMapProps {
   aiCartographyJson?: any;
 }
 
-function layoutNodes(nodes: Node[]): Node[] {
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 80;
+
+let elkInstance: any = null;
+async function getElk() {
+  if (!elkInstance) {
+    const ELK = (await import("elkjs/lib/elk.bundled.js")).default;
+    elkInstance = new ELK();
+  }
+  return elkInstance;
+}
+
+async function elkLayout(nodes: Node[], edges: Edge[], direction = "DOWN"): Promise<Node[]> {
+  if (nodes.length === 0) return nodes;
+
+  const graph = {
+    id: "root",
+    layoutOptions: {
+      "elk.algorithm": "layered",
+      "elk.direction": direction,
+      "elk.spacing.nodeNode": "50",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "80",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "40",
+      "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
+      "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+      "elk.padding": "[top=50,left=50,bottom=50,right=50]",
+    },
+    children: nodes.map((n) => ({
+      id: n.id,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+    })),
+    edges: edges.map((e) => ({
+      id: e.id,
+      sources: [e.source],
+      targets: [e.target],
+    })),
+  };
+
+  try {
+    const elk = await getElk();
+    const laid = await elk.layout(graph);
+    const posMap = new Map<string, { x: number; y: number }>();
+    for (const child of laid.children || []) {
+      posMap.set(child.id, { x: child.x || 0, y: child.y || 0 });
+    }
+    return nodes.map((n) => ({
+      ...n,
+      position: posMap.get(n.id) || n.position,
+    }));
+  } catch {
+    return fallbackLayout(nodes);
+  }
+}
+
+function fallbackLayout(nodes: Node[]): Node[] {
   const typeGroups: Record<string, Node[]> = {};
   for (const n of nodes) {
     const t = n.type || "process";
     if (!typeGroups[t]) typeGroups[t] = [];
     typeGroups[t].push(n);
   }
-
   const typeOrder = ["team", "process", "tool", "painpoint"];
   let y = 0;
-  const GAP_Y = 120;
-  const GAP_X = 200;
-
   for (const type of typeOrder) {
     const group = typeGroups[type] || [];
-    const startX = Math.max(0, (800 - group.length * GAP_X) / 2);
+    const startX = Math.max(0, (900 - group.length * 220) / 2);
     for (let i = 0; i < group.length; i++) {
-      group[i].position = { x: startX + i * GAP_X, y };
+      group[i].position = { x: startX + i * 220, y };
     }
-    if (group.length > 0) y += GAP_Y;
+    if (group.length > 0) y += 140;
   }
-
   return nodes;
 }
 
-const EDGE_STYLES: Record<string, { stroke: string; strokeDasharray?: string; animated?: boolean }> = {
-  uses: { stroke: "#94a3b8" },
-  depends_on: { stroke: "#3b82f6" },
-  feeds_into: { stroke: "#22c55e" },
-  blocks: { stroke: "#ef4444", animated: true },
-  causes: { stroke: "#ef4444", strokeDasharray: "5 5" },
+const EDGE_COLORS: Record<string, string> = {
+  uses: "#818cf8",       // indigo
+  depends_on: "#60a5fa", // blue
+  feeds_into: "#34d399", // green
+  blocks: "#f87171",     // red
+  causes: "#fb923c",     // orange
+  default: "#94a3b8",    // slate
 };
+
+function buildEdgeStyle(type: string, animated?: boolean): Partial<Edge> {
+  const color = EDGE_COLORS[type] || EDGE_COLORS.default;
+  return {
+    style: {
+      stroke: color,
+      strokeWidth: 2,
+      ...(type === "causes" ? { strokeDasharray: "6 4" } : {}),
+    },
+    animated: animated || type === "blocks",
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      color,
+      width: 16,
+      height: 16,
+    },
+  };
+}
 
 function generateFromData(
   processus: CartProcessusV2[],
@@ -126,61 +199,67 @@ function generateFromData(
     });
   }
 
-  // Generate edges
   const equipeNodes = nodes.filter((n) => n.type === "team");
   const processNodes = nodes.filter((n) => n.type === "process");
   const outilNodes = nodes.filter((n) => n.type === "tool");
   const irritantNodes = nodes.filter((n) => n.type === "painpoint");
 
+  // Equipe → Processus
   processNodes.forEach((pn, i) => {
     if (equipeNodes.length > 0) {
+      const eq = equipeNodes[i % equipeNodes.length];
       edges.push({
         id: `e-eq-pr-${i}`,
-        source: equipeNodes[i % equipeNodes.length].id,
+        source: eq.id,
         target: pn.id,
-        type: "default",
-        style: EDGE_STYLES.depends_on,
         label: "gere",
+        ...buildEdgeStyle("feeds_into"),
       });
     }
   });
 
+  // Processus → Outil
   outilNodes.forEach((on, i) => {
     if (processNodes.length > 0) {
+      const pr = processNodes[i % processNodes.length];
       edges.push({
         id: `e-pr-ou-${i}`,
-        source: processNodes[i % processNodes.length].id,
+        source: pr.id,
         target: on.id,
-        type: "default",
-        style: EDGE_STYLES.uses,
         label: "utilise",
+        ...buildEdgeStyle("uses"),
       });
     }
   });
 
+  // Irritant → Processus (blocks)
   irritantNodes.forEach((irn, i) => {
     if (processNodes.length > 0) {
+      const pr = processNodes[i % processNodes.length];
       edges.push({
-        id: `e-pr-ir-${i}`,
-        source: processNodes[i % processNodes.length].id,
-        target: irn.id,
-        type: "default",
-        style: EDGE_STYLES.causes,
-        label: "cause",
-      });
-    } else if (equipeNodes.length > 0) {
-      edges.push({
-        id: `e-eq-ir-${i}`,
-        source: equipeNodes[i % equipeNodes.length].id,
-        target: irn.id,
-        type: "default",
-        style: EDGE_STYLES.causes,
-        label: "cause",
+        id: `e-ir-pr-${i}`,
+        source: irn.id,
+        target: pr.id,
+        label: "bloque",
+        ...buildEdgeStyle("blocks"),
       });
     }
   });
 
-  return { nodes: layoutNodes(nodes), edges };
+  // Cross-link processus if > 1
+  if (processNodes.length > 1) {
+    for (let i = 0; i < processNodes.length - 1; i++) {
+      edges.push({
+        id: `e-pr-pr-${i}`,
+        source: processNodes[i].id,
+        target: processNodes[i + 1].id,
+        label: "alimente",
+        ...buildEdgeStyle("feeds_into"),
+      });
+    }
+  }
+
+  return { nodes, edges };
 }
 
 function parseAiCartography(json: any): { nodes: Node[]; edges: Edge[] } {
@@ -190,24 +269,22 @@ function parseAiCartography(json: any): { nodes: Node[]; edges: Edge[] } {
     id: n.id,
     type: n.type === "equipe" ? "team" : n.type === "outil" ? "tool" : n.type === "irritant" ? "painpoint" : "process",
     data: { label: n.label, maturityScore: n.maturityScore, gravite: n.gravite, description: n.description },
-    position: n.position || { x: 0, y: 0 },
+    position: { x: 0, y: 0 },
   }));
 
   const edges: Edge[] = json.edges.map((e: any, i: number) => ({
     id: e.id || `ai-e-${i}`,
     source: e.source,
     target: e.target,
-    style: EDGE_STYLES[e.type] || EDGE_STYLES.uses,
     label: e.label,
-    animated: e.type === "blocks",
+    ...buildEdgeStyle(e.type || "default", e.animated),
   }));
 
-  const needsLayout = nodes.every((n: Node) => n.position.x === 0 && n.position.y === 0);
-  return { nodes: needsLayout ? layoutNodes(nodes) : nodes, edges };
+  return { nodes, edges };
 }
 
 export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiCartographyJson }: OrgMapProps) {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(() => {
+  const { nodes: rawNodes, edges: rawEdges } = useMemo(() => {
     if (aiCartographyJson) {
       const result = parseAiCartography(aiCartographyJson);
       if (result.nodes.length > 0) return result;
@@ -215,10 +292,22 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     return generateFromData(processus, outils, equipes, irritants, packResumes);
   }, [processus, outils, equipes, irritants, packResumes, aiCartographyJson]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(rawNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(rawEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const [layoutDone, setLayoutDone] = useState(false);
+
+  // Apply ELK layout
+  useEffect(() => {
+    if (rawNodes.length === 0) return;
+    setLayoutDone(false);
+    elkLayout(rawNodes, rawEdges).then((laidOut) => {
+      setNodes(laidOut);
+      setEdges(rawEdges);
+      setLayoutDone(true);
+    });
+  }, [rawNodes, rawEdges]);
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
@@ -240,7 +329,7 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
   const handleExportPng = useCallback(() => {
     const el = document.querySelector(".react-flow") as HTMLElement;
     if (!el) return;
-    toPng(el, { backgroundColor: "#ffffff", quality: 0.95 }).then((dataUrl) => {
+    toPng(el, { backgroundColor: "#0f172a", quality: 0.95 }).then((dataUrl) => {
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = "cartographie-organisationnelle.png";
@@ -248,24 +337,40 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     });
   }, []);
 
+  const handleReLayout = useCallback(async () => {
+    const laidOut = await elkLayout(nodes, edges);
+    setNodes(laidOut);
+  }, [nodes, edges]);
+
   const totalNodes = processus.length + outils.length + equipes.length + irritants.length;
   if (totalNodes === 0 && !aiCartographyJson) {
     return (
-      <div className="h-[400px] flex items-center justify-center text-muted-foreground text-sm">
-        Completez des packs pour voir la carte s'enrichir
+      <div className="h-[500px] flex items-center justify-center text-muted-foreground text-sm bg-slate-950 rounded-lg">
+        <div className="text-center space-y-2">
+          <LayoutGrid className="w-8 h-8 mx-auto text-slate-600" />
+          <p>Completez des packs pour voir la carte s'enrichir</p>
+        </div>
       </div>
     );
   }
 
   const legendItems = [
-    { type: "team", color: "bg-orange-400", label: "Equipes" },
-    { type: "process", color: "bg-blue-400", label: "Processus" },
-    { type: "tool", color: "bg-indigo-400", label: "Outils" },
-    { type: "painpoint", color: "bg-red-400", label: "Irritants" },
+    { type: "team", color: "bg-orange-500", label: "Equipes", count: equipes.length },
+    { type: "process", color: "bg-blue-500", label: "Processus", count: processus.length },
+    { type: "tool", color: "bg-indigo-500", label: "Outils", count: outils.length },
+    { type: "painpoint", color: "bg-red-500", label: "Irritants", count: irritants.length },
   ];
 
   return (
-    <div className="relative" style={{ height: 500 }}>
+    <div className="relative rounded-lg overflow-hidden" style={{ height: 600 }}>
+      {!layoutDone && (
+        <div className="absolute inset-0 z-50 bg-slate-950 flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-slate-400">Calcul du layout...</p>
+          </div>
+        </div>
+      )}
       <ReactFlow
         nodes={filteredNodes}
         edges={filteredEdges}
@@ -273,18 +378,29 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        connectionLineType={ConnectionLineType.SmoothStep}
         snapToGrid
         snapGrid={[20, 20]}
         fitView
-        fitViewOptions={{ padding: 0.2 }}
-        minZoom={0.3}
-        maxZoom={2}
+        fitViewOptions={{ padding: 0.3, maxZoom: 1.2 }}
+        minZoom={0.2}
+        maxZoom={2.5}
+        style={{ background: "#0f172a" }}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          style: { strokeWidth: 2 },
+        }}
       >
-        <Controls position="top-left" />
+        <Controls
+          position="top-left"
+          className="!bg-slate-800 !border-slate-700 !shadow-lg [&>button]:!bg-slate-800 [&>button]:!border-slate-700 [&>button]:!text-slate-300 [&>button:hover]:!bg-slate-700"
+        />
         <MiniMap
           nodeStrokeWidth={3}
           zoomable
           pannable
+          className="!bg-slate-900 !border-slate-700"
+          maskColor="rgba(15, 23, 42, 0.7)"
           nodeColor={(n) => {
             if (n.type === "team") return "#f97316";
             if (n.type === "tool") return "#6366f1";
@@ -292,30 +408,66 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
             return "#3b82f6";
           }}
         />
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={24}
+          size={1}
+          color="#334155"
+        />
 
+        {/* Top-right: Legend + Controls */}
         <Panel position="top-right">
-          <div className="bg-white/90 backdrop-blur rounded-lg shadow-sm border p-2 space-y-1">
-            <Button variant="outline" size="sm" className="w-full text-xs" onClick={handleExportPng}>
-              <Download className="w-3 h-3 mr-1" />
-              Export PNG
-            </Button>
-            <div className="border-t pt-1 mt-1">
-              {legendItems.map(({ type, color, label }) => (
+          <div className="bg-slate-900/95 backdrop-blur-sm rounded-xl shadow-xl border border-slate-700/50 p-3 space-y-2 min-w-[160px]">
+            <div className="flex gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-xs text-slate-300 hover:text-white hover:bg-slate-700/50 h-7"
+                onClick={handleExportPng}
+              >
+                <Download className="w-3 h-3 mr-1" />
+                PNG
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-xs text-slate-300 hover:text-white hover:bg-slate-700/50 h-7"
+                onClick={handleReLayout}
+              >
+                <Maximize2 className="w-3 h-3 mr-1" />
+                Reset
+              </Button>
+            </div>
+
+            <div className="border-t border-slate-700/50 pt-2 space-y-0.5">
+              {legendItems.map(({ type, color, label, count }) => (
                 <button
                   key={type}
                   onClick={() => toggleType(type)}
-                  className="flex items-center gap-1.5 w-full px-1 py-0.5 text-xs hover:bg-muted rounded"
+                  className="flex items-center gap-2 w-full px-2 py-1 text-xs rounded-md hover:bg-slate-800 transition-colors"
                 >
                   {hiddenTypes.has(type) ? (
-                    <EyeOff className="w-3 h-3 text-muted-foreground" />
+                    <EyeOff className="w-3 h-3 text-slate-500" />
                   ) : (
-                    <Eye className="w-3 h-3" />
+                    <Eye className="w-3 h-3 text-slate-400" />
                   )}
-                  <div className={`w-2.5 h-2.5 rounded-full ${color} ${hiddenTypes.has(type) ? "opacity-30" : ""}`} />
-                  <span className={hiddenTypes.has(type) ? "text-muted-foreground line-through" : ""}>{label}</span>
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${color} ${hiddenTypes.has(type) ? "opacity-20" : ""}`}
+                  />
+                  <span className={`flex-1 text-left ${hiddenTypes.has(type) ? "text-slate-600 line-through" : "text-slate-300"}`}>
+                    {label}
+                  </span>
+                  <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-slate-600 text-slate-400">
+                    {count}
+                  </Badge>
                 </button>
               ))}
+            </div>
+
+            <div className="border-t border-slate-700/50 pt-2">
+              <p className="text-[10px] text-slate-500 text-center">
+                {filteredNodes.length} noeuds • {filteredEdges.length} liens
+              </p>
             </div>
           </div>
         </Panel>
