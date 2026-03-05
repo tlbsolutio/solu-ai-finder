@@ -1,0 +1,21 @@
+{
+  "id": "commerce",
+  "nom": "Commerce & Distribution",
+  "codesNAF": ["45", "46", "47"],
+  "motsCles": ["magasin", "boutique", "vente", "stock", "caisse", "retail", "e-commerce", "merchandising", "inventaire"],
+  "vocabulaireConfirmation": ["point de vente", "stock", "merchandising", "ticket moyen"],
+  "questionsDiscriminantes": [
+    "Quel est votre ratio ventes en ligne vs. physique ?",
+    "Comment gerez-vous vos stocks et reapprovisionnements ?",
+    "Avez-vous un programme de fidelite client en place ?"
+  ],
+  "kpis": [
+    { "nom": "Chiffre d'affaires au m2", "benchmark": "3000-8000 EUR/m2/an", "unite": "EUR/m2" },
+    { "nom": "Taux de rotation des stocks", "benchmark": "6-12x/an", "unite": "x/an" },
+    { "nom": "Panier moyen", "benchmark": "Variable selon secteur", "unite": "EUR" },
+    { "nom": "Taux de demarque", "benchmark": "< 2%", "unite": "%" }
+  ],
+  "outilsMetiers": ["Shopify", "PrestaShop", "Lightspeed", "Cegid Retail", "Odoo", "WooCommerce"],
+  "reglementations": ["RGPD", "Droit de la consommation", "Affichage des prix", "Soldes reglementees", "Loi anti-gaspillage AGEC"],
+  "risquesSpecifiques": ["Rupture de stock", "Vol/demarque", "Concurrence e-commerce", "Saisonnalite"]
+}

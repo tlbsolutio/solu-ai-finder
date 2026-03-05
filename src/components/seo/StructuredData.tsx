@@ -40,7 +40,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
             name: "Solutio",
             url: "https://solutio.fr"
           },
-          serviceType: "SaaS Consulting",
+          serviceType: "Digital Transformation Consulting",
           areaServed: "FR"
         };
       
@@ -79,9 +79,8 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
             "@type": "SearchAction",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: `${data.url || "https://solutio.work"}/catalogue?search={search_term_string}`
-            },
-            "query-input": "required name=search_term_string"
+              urlTemplate: `${data.url || "https://solutio.work"}/diagnostic`
+            }
           }
         };
       

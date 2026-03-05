@@ -33,7 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <h4 className="font-semibold text-foreground mb-4">{t('footer.solutions')}</h4>
               <div className="space-y-2 text-sm">
                 <Link to="/diagnostic" className="block text-muted-foreground hover:text-primary">{t('nav.diagnostic')}</Link>
-                <Link to="/catalogue" className="block text-muted-foreground hover:text-primary">{t('nav.catalogue')}</Link>
+                <Link to="/cartographie" className="block text-muted-foreground hover:text-primary">{t('nav.cartographie')}</Link>
                 <Link to="/contact" className="block text-muted-foreground hover:text-primary">{t('nav.contact')}</Link>
               </div>
             </div>
@@ -41,9 +41,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">{t('footer.legal')}</h4>
               <div className="space-y-2 text-sm">
-                <a href="#" className="block text-muted-foreground hover:text-primary">{t('footer.legal_notice')}</a>
-                <a href="#" className="block text-muted-foreground hover:text-primary">{t('footer.privacy')}</a>
-                <a href="#" className="block text-muted-foreground hover:text-primary">{t('footer.terms')}</a>
+                <Link to="/legal" className="block text-muted-foreground hover:text-primary">{t('footer.legal_notice')}</Link>
+                <Link to="/privacy" className="block text-muted-foreground hover:text-primary">{t('footer.privacy')}</Link>
+                <Link to="/cookies" className="block text-muted-foreground hover:text-primary">{t('footer.terms')}</Link>
                 <div className="pt-2 border-t border-border/50">
                   <a 
                     href="https://www.linkedin.com/company/solutio-work/" 

@@ -1,259 +1,201 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import heroBackground from '@/assets/hero-modern.jpg';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, UserCircle, TrendingUp as Growth, Workflow, Palette, ShoppingCart, Briefcase, FileText, Shield, Calculator, UserCheck, GraduationCap, Headphones, Heart, Package, Code, Scale, X, AlertCircle, Sparkles, TrendingDown, BarChart3, UserPlus } from 'lucide-react';
+import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, X, AlertCircle, TrendingDown, BarChart3, MapPin, Compass, Handshake } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
+
 const Index = () => {
   const { t } = useLanguage();
-  
-  const methodSteps = [{
-    icon: Brain,
-    title: t('method.step1.title'),
-    description: t('method.step1.description'),
-    color: "text-blue-500"
-  }, {
-    icon: Search,
-    title: t('method.step2.title'),
-    description: t('method.step2.description'),
-    color: "text-green-500"
-  }, {
-    icon: Zap,
-    title: t('method.step3.title'),
-    description: t('method.step3.description'),
-    color: "text-yellow-500"
-  }];
-  
-  const benefits = [{
-    icon: Clock,
-    title: t('benefits.time.title'),
-    description: t('benefits.time.description')
-  }, {
-    icon: DollarSign,
-    title: t('benefits.costs.title'),
-    description: t('benefits.costs.description')
-  }, {
-    icon: Target,
-    title: t('benefits.clarity.title'),
-    description: t('benefits.clarity.description')
-  }, {
-    icon: UserPlus,
-    title: t('benefits.expert.title'),
-    description: t('benefits.expert.description')
-  }];
-  const testimonials = [{
-    quote: "Grâce à Solutio, j'ai automatisé ma gestion des leads et gagné 15h par semaine !",
-    author: "Marie D.",
-    role: "Consultante Marketing",
-    company: "Freelance"
-  }, {
-    quote: "L'accompagnement était parfait. Nous avons trouvé la solution idéale en 2 semaines.",
-    author: "Thomas L.",
-    role: "CEO",
-    company: "TechStart"
-  }];
-  const categories = [{
-    icon: UserCircle,
-    name: t('categories.crm'),
-    count: t('categories.count', { count: '45+' }),
-    slug: "crm-relation-client"
-  }, {
-    icon: Growth,
-    name: t('categories.marketing'),
-    count: t('categories.count', { count: '38+' }),
-    slug: "marketing-growth"
-  }, {
-    icon: Workflow,
-    name: t('categories.automation'),
-    count: t('categories.count', { count: '52+' }),
-    slug: "automatisation-nocode"
-  }, {
-    icon: Palette,
-    name: t('categories.design'),
-    count: t('categories.count', { count: '29+' }),
-    slug: "creation-design"
-  }, {
-    icon: ShoppingCart,
-    name: t('categories.sales'),
-    count: t('categories.count', { count: '41+' }),
-    slug: "ventes-ecommerce"
-  }, {
-    icon: Briefcase,
-    name: t('categories.project_management'),
-    count: t('categories.count', { count: '33+' }),
-    slug: "gestion-projet"
-  }, {
-    icon: FileText,
-    name: t('categories.productivity'),
-    count: t('categories.count', { count: '47+' }),
-    slug: "productivite"
-  }, {
-    icon: Shield,
-    name: t('categories.security'),
-    count: t('categories.count', { count: '22+' }),
-    slug: "securite-conformite"
-  }, {
-    icon: Calculator,
-    name: t('categories.finance'),
-    count: t('categories.count', { count: '36+' }),
-    slug: "finance-comptabilite"
-  }, {
-    icon: UserCheck,
-    name: t('categories.hr'),
-    count: t('categories.count', { count: '27+' }),
-    slug: "ressources-humaines"
-  }, {
-    icon: GraduationCap,
-    name: t('categories.education'),
-    count: t('categories.count', { count: '21+' }),
-    slug: "education-formation"
-  }, {
-    icon: Headphones,
-    name: t('categories.customer_service'),
-    count: t('categories.count', { count: '16+' }),
-    slug: "service-client"
-  }, {
-    icon: Heart,
-    name: t('categories.health'),
-    count: t('categories.count', { count: '15+' }),
-    slug: "sante-bienetre"
-  }, {
-    icon: Package,
-    name: t('categories.industry'),
-    count: t('categories.count', { count: '22+' }),
-    slug: "industrie-logistique"
-  }, {
-    icon: Code,
-    name: t('categories.development'),
-    count: t('categories.count', { count: '56+' }),
-    slug: "developpement-it"
-  }, {
-    icon: Scale,
-    name: t('categories.legal'),
-    count: t('categories.count', { count: '18+' }),
-    slug: "legaltech-juridique"
-  }];
-  return <div className="min-h-screen bg-gradient-subtle">
-      <MetaTags 
+
+  const services = [
+    {
+      icon: Brain,
+      title: t('services.diagnostic.title'),
+      description: t('services.diagnostic.description'),
+      cta: t('services.diagnostic.cta'),
+      link: '/diagnostic',
+    },
+    {
+      icon: MapPin,
+      title: t('services.cartographie.title'),
+      description: t('services.cartographie.description'),
+      cta: t('services.cartographie.cta'),
+      link: '/cartographie',
+    },
+    {
+      icon: Compass,
+      title: t('services.conseil.title'),
+      description: t('services.conseil.description'),
+      cta: t('services.conseil.cta'),
+      link: '/contact',
+    },
+    {
+      icon: Handshake,
+      title: t('services.accompagnement.title'),
+      description: t('services.accompagnement.description'),
+      cta: t('services.accompagnement.cta'),
+      link: '/contact',
+    },
+  ];
+
+  const methodSteps = [
+    {
+      icon: Brain,
+      title: t('method.step1.title'),
+      description: t('method.step1.description'),
+      color: 'text-foreground',
+    },
+    {
+      icon: Search,
+      title: t('method.step2.title'),
+      description: t('method.step2.description'),
+      color: 'text-foreground',
+    },
+    {
+      icon: Zap,
+      title: t('method.step3.title'),
+      description: t('method.step3.description'),
+      color: 'text-foreground',
+    },
+  ];
+
+  const benefits = [
+    {
+      icon: Clock,
+      title: t('benefits.time.title'),
+      description: t('benefits.time.description'),
+    },
+    {
+      icon: DollarSign,
+      title: t('benefits.costs.title'),
+      description: t('benefits.costs.description'),
+    },
+    {
+      icon: Target,
+      title: t('benefits.clarity.title'),
+      description: t('benefits.clarity.description'),
+    },
+    {
+      icon: Users,
+      title: t('benefits.expert.title'),
+      description: t('benefits.expert.description'),
+    },
+  ];
+
+  const testimonials = [
+    {
+      quote: t('testimonial.1.quote'),
+      author: t('testimonial.1.author'),
+      role: t('testimonial.1.role'),
+      company: t('testimonial.1.company'),
+    },
+    {
+      quote: t('testimonial.2.quote'),
+      author: t('testimonial.2.author'),
+      role: t('testimonial.2.role'),
+      company: t('testimonial.2.company'),
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <MetaTags
         title={t('hero.title')}
         description={t('hero.description')}
         type="website"
-        keywords="SaaS, diagnostic, comparateur, PME, automatisation, solutions logicielles, outils entreprise, no-code, productivité"
+        keywords="transformation digitale, conseil, diagnostic IA, cartographie organisationnelle, maturité digitale, accompagnement, optimisation processus"
       />
-      
-      <StructuredData 
+
+      <StructuredData
         type="Organization"
         data={{
-          name: "Solutio",
-          description: "Plateforme de recommandation de solutions SaaS pour entreprises avec diagnostic intelligent et catalogue personnalisé",
+          name: 'Solutio',
+          description: 'Cabinet de conseil en transformation digitale. Diagnostic IA, cartographie organisationnelle et accompagnement sur mesure.',
           service: [
             {
-              "@type": "Service",
-              "name": "Diagnostic SaaS",
-              "description": "Diagnostic intelligent pour identifier les besoins en solutions SaaS"
+              '@type': 'Service',
+              name: 'Diagnostic de maturité digitale',
+              description: 'Évaluation rapide par IA de la maturité digitale de votre organisation',
             },
             {
-              "@type": "Service", 
-              "name": "Catalogue SaaS",
-              "description": "Catalogue personnalisé de plus de 500 solutions SaaS"
-            }
-          ]
+              '@type': 'Service',
+              name: 'Cartographie organisationnelle',
+              description: 'Analyse approfondie de vos processus en 10 packs thématiques',
+            },
+            {
+              '@type': 'Service',
+              name: 'Conseil en transformation digitale',
+              description: 'Accompagnement stratégique et opérationnel pour réussir votre transformation',
+            },
+          ],
         }}
       />
-      
-      <StructuredData 
+
+      <StructuredData
         type="WebSite"
         data={{
-          name: "Solutio",
-          url: "https://solutio.work"
+          name: 'Solutio',
+          url: 'https://solutio.work',
         }}
       />
-      
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 lg:py-48">
-        {/* Background with overlay */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(/lovable-uploads/c8143545-6b97-49dd-85ba-65b954b9e501.png)`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-        
-        {/* Modern gradient overlay - Reduced opacity for better image visibility */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-700/65 z-10" />
-        
-        {/* Subtle geometric pattern overlay */}
-        <div className="absolute inset-0 opacity-10 z-20" style={{
-          backgroundImage: `radial-gradient(circle at 25% 25%, hsl(var(--primary)) 0%, transparent 50%), 
-                           radial-gradient(circle at 75% 75%, hsl(var(--secondary)) 0%, transparent 50%)`
+      <section className="relative overflow-hidden py-32 lg:py-44">
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-950 to-gray-900 z-0" />
+        <div className="absolute inset-0 opacity-[0.03] z-10" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+          backgroundSize: '40px 40px',
         }} />
-        
-        <div className="container mx-auto px-4 relative z-30">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <Badge variant="secondary" className="mb-8 px-4 py-2 text-sm font-medium bg-white/10 text-white border-white/20 backdrop-blur-sm">
+
+        <div className="container mx-auto px-4 relative z-20">
+          <div className="max-w-3xl mx-auto text-center">
+            <Badge variant="secondary" className="mb-8 px-4 py-2 text-sm font-medium bg-white/10 text-white/80 border-white/10">
               {t('hero.badge')}
             </Badge>
-            
-            {/* Main heading */}
-            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-8 leading-tight tracking-tight">
+
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
               {t('hero.h1_title')}
             </h1>
-            
-            {/* Subtitle */}
-            <p className="text-2xl lg:text-3xl text-white/90 mb-6 font-medium">
+
+            <p className="text-lg lg:text-xl text-white/70 mb-6 font-normal leading-relaxed">
               {t('hero.subtitle')}
             </p>
-            
-            {/* Additional info */}
-            <p className="text-lg text-white/70 mb-12 max-w-2xl mx-auto">
+
+            <p className="text-base text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed">
               {t('hero.description')}
             </p>
-            
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12">
-              <Link to="/diagnostic" className="w-full sm:w-auto">
-                <Button 
-                  variant="hero" 
-                  size="xl" 
-                  className="w-full px-8 py-4 text-lg font-semibold bg-white text-slate-900 hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:scale-105 border-0"
-                >
-                  <Brain className="h-6 w-6 mr-3" />
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link to="/diagnostic">
+                <Button size="lg" className="px-8 py-3 text-base font-medium bg-white text-gray-900 hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]">
+                  <Brain className="h-5 w-5 mr-2" />
                   {t('hero.cta_diagnostic')}
                 </Button>
               </Link>
-              <Link to="/contact" className="w-full sm:w-auto">
-                <Button 
-                  variant="outline" 
-                  size="xl" 
-                  className="w-full px-8 py-4 text-lg font-semibold border-2 border-white/30 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm shadow-xl hover:shadow-white/10 transition-all duration-300 hover:scale-105"
-                >
-                  <Users className="h-6 w-6 mr-3" />
-                  {t('hero.cta_expert')}
+              <Link to="/cartographie">
+                <Button variant="outline" size="lg" className="px-8 py-3 text-base font-medium border border-white/20 text-white bg-white/5 hover:bg-white/10 transition-all duration-200 hover:scale-[1.02]">
+                  <MapPin className="h-5 w-5 mr-2" />
+                  {t('hero.cta_cartographie')}
                 </Button>
               </Link>
             </div>
 
-            {/* Trust indicators */}
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-white/70">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">{t('home.free')}</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-white/50">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-400/70" />
+                <span className="text-sm">{t('home.free')}</span>
               </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">{t('home.minutes')}</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-400/70" />
+                <span className="text-sm">{t('home.minutes')}</span>
               </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                <span className="text-sm font-medium">{t('home.no_commitment')}</span>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-4 w-4 text-green-400/70" />
+                <span className="text-sm">{t('home.no_commitment')}</span>
               </div>
             </div>
           </div>
@@ -261,107 +203,72 @@ const Index = () => {
       </section>
 
       {/* Problem Section */}
-      <section className="py-24 bg-background shadow-lg relative z-10 -mt-8 rounded-t-3xl">
+      <section className="py-32 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
               {t('problem.title')}
             </h2>
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
-                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
-                <p className="text-foreground font-medium">{t('problem.pain1')}</p>
-              </div>
-              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
-                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
-                <p className="text-foreground font-medium">{t('problem.pain2')}</p>
-              </div>
-              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
-                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
-                <p className="text-foreground font-medium">{t('problem.pain3')}</p>
-              </div>
-              <div className="flex items-start bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg">
-                <X className="h-6 w-6 text-destructive flex-shrink-0 mr-4 mt-1" />
-                <p className="text-foreground font-medium">{t('problem.pain4')}</p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-16">
+              {[t('problem.pain1'), t('problem.pain2'), t('problem.pain3'), t('problem.pain4')].map((pain, idx) => (
+                <div key={idx} className="flex items-start gap-4 p-5 rounded-lg border border-border bg-card">
+                  <X className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <p className="text-foreground text-sm font-medium leading-relaxed">{pain}</p>
+                </div>
+              ))}
             </div>
 
-            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 shadow-xl">
-              <CardContent className="p-8 text-center">
-                <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
-                <p className="text-2xl font-bold text-foreground mb-2">{t('problem.stat')}</p>
-                <p className="text-muted-foreground italic mb-6">{t('problem.stat_source')}</p>
-                <p className="text-lg text-primary font-semibold">{t('problem.transition')}</p>
-              </CardContent>
-            </Card>
+            <div className="text-center p-8 rounded-lg border border-border bg-card">
+              <AlertCircle className="h-10 w-10 text-orange-500 mx-auto mb-4" />
+              <p className="text-xl font-bold text-foreground mb-2">{t('problem.stat')}</p>
+              <p className="text-muted-foreground text-sm italic mb-4">{t('problem.stat_source')}</p>
+              <p className="text-primary font-semibold">{t('problem.transition')}</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Transformation Section */}
-      <section className="py-24 bg-gradient-subtle shadow-inner relative">
+      {/* Services Section */}
+      <section className="py-32 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
-              {t('transformation.title')}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              {t('services.title')}
             </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {t('services.subtitle')}
+            </p>
           </div>
 
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
-                <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <Sparkles className="h-8 w-8 text-green-500" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {services.map((service, idx) => (
+              <Card key={idx} className="group border border-border hover:border-primary/30 transition-all duration-200 hover:shadow-md bg-card">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <service.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Matin</h3>
-                  <p className="text-lg font-semibold text-foreground">{t('transformation.morning')}</p>
+                  <CardTitle className="text-lg">{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm mb-6 leading-relaxed">{service.description}</p>
+                  <Link to={service.link}>
+                    <Button variant="ghost" size="sm" className="px-0 text-primary hover:text-primary/80 group-hover:translate-x-1 transition-transform">
+                      {service.cta}
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
-              
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
-                <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <TrendingUp className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Après-midi</h3>
-                  <p className="text-lg font-semibold text-foreground">{t('transformation.afternoon')}</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md group">
-                <CardContent className="p-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                    <Heart className="h-8 w-8 text-purple-500" />
-                  </div>
-                  <h3 className="text-sm text-muted-foreground mb-2 uppercase tracking-wide">Soir</h3>
-                  <p className="text-lg font-semibold text-foreground">{t('transformation.evening')}</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="bg-primary/5 border-primary/20 shadow-xl">
-              <CardContent className="p-8 text-center">
-                <p className="text-xl md:text-2xl font-bold text-foreground mb-6">
-                  {t('transformation.message')}
-                </p>
-                <Link to="/diagnostic">
-                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    {t('transformation.cta')}
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Method Section */}
-      <section className="py-24 bg-background shadow-lg relative z-10">
+      <section className="py-32 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -372,108 +279,108 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {methodSteps.map((step, idx) => <Card key={idx} className="group hover:shadow-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 border-0 shadow-md relative">
-                <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
-                  {idx + 1}
-                </div>
-                <CardHeader className="text-center pt-8">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-300">
-                    <step.icon className={`h-8 w-8 ${step.color} group-hover:scale-110 transition-transform`} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {methodSteps.map((step, idx) => (
+              <div key={idx} className="relative">
+                <div className="text-center">
+                  <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm mx-auto mb-6">
+                    {idx + 1}
                   </div>
-                  <CardTitle className="text-xl">{step.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-center">{step.description}</p>
-                </CardContent>
-              </Card>)}
+                  <div className="w-14 h-14 bg-muted rounded-xl flex items-center justify-center mx-auto mb-6">
+                    <step.icon className="h-7 w-7 text-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-3">{step.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Proof Section */}
-      <section className="py-24 bg-gradient-subtle shadow-inner relative">
+      <section className="py-32 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground">
               {t('proof.title')}
             </h2>
           </div>
 
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <Card className="text-center border border-border bg-card">
                 <CardContent className="p-8">
-                  <TrendingDown className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                  <TrendingDown className="h-10 w-10 text-green-500 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat1')}</div>
-                  <p className="text-muted-foreground mb-2">{t('proof.stat1_detail')}</p>
-                  <p className="text-sm text-muted-foreground italic">{t('proof.stat1_source')}</p>
+                  <p className="text-muted-foreground text-sm mb-2">{t('proof.stat1_detail')}</p>
+                  <p className="text-xs text-muted-foreground italic">{t('proof.stat1_source')}</p>
                 </CardContent>
               </Card>
 
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+              <Card className="text-center border border-border bg-card">
                 <CardContent className="p-8">
-                  <Clock className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                  <TrendingUp className="h-10 w-10 text-blue-500 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat2')}</div>
-                  <p className="text-muted-foreground mb-2">{t('proof.stat2_detail')}</p>
-                  <p className="text-sm text-muted-foreground italic">{t('proof.stat2_source')}</p>
+                  <p className="text-muted-foreground text-sm mb-2">{t('proof.stat2_detail')}</p>
+                  <p className="text-xs text-muted-foreground italic">{t('proof.stat2_source')}</p>
                 </CardContent>
               </Card>
 
-              <Card className="text-center hover:shadow-xl transition-all duration-300 border-0 shadow-md">
+              <Card className="text-center border border-border bg-card">
                 <CardContent className="p-8">
-                  <BarChart3 className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                  <BarChart3 className="h-10 w-10 text-orange-500 mx-auto mb-4" />
                   <div className="text-4xl font-bold text-foreground mb-2">{t('proof.stat3')}</div>
-                  <p className="text-muted-foreground mb-2">{t('proof.stat3_detail')}</p>
+                  <p className="text-muted-foreground text-sm mb-2">{t('proof.stat3_detail')}</p>
                   <p className="text-sm font-semibold text-primary">{t('proof.stat3_message')}</p>
                 </CardContent>
               </Card>
             </div>
 
-            <Card className="bg-gradient-to-br from-destructive/10 to-orange-500/10 border-orange-500/20 shadow-xl">
-              <CardContent className="p-8 text-center">
-                <p className="text-xl font-bold text-foreground mb-6">
-                  {t('proof.urgency')}
-                </p>
-                <Link to="/diagnostic">
-                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <Brain className="h-5 w-5 mr-2" />
-                    {t('proof.cta')}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+            <div className="text-center p-8 rounded-lg border border-border bg-card">
+              <p className="text-lg font-semibold text-foreground mb-6">
+                {t('proof.urgency')}
+              </p>
+              <Link to="/diagnostic">
+                <Button size="lg" className="transition-all duration-200 hover:scale-[1.02]">
+                  <Brain className="h-5 w-5 mr-2" />
+                  {t('proof.cta')}
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Benefits Section */}
-      <section className="py-24 bg-background shadow-lg relative z-10">
+      <section className="py-32 bg-background">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
                 {t('benefits.title')}
               </h2>
-              <p className="text-muted-foreground text-lg mb-8">
+              <p className="text-muted-foreground text-lg mb-10">
                 {t('benefits.subtitle')}
               </p>
-              
+
               <div className="space-y-6">
-                {benefits.map((benefit, idx) => <div key={idx} className="flex items-start">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mr-4">
-                      <benefit.icon className="h-6 w-6 text-primary" />
+                {benefits.map((benefit, idx) => (
+                  <div key={idx} className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <benefit.icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">{benefit.title}</h3>
-                      <p className="text-muted-foreground">{benefit.description}</p>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{benefit.description}</p>
                     </div>
-                  </div>)}
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-8">
+              <div className="mt-10">
                 <Link to="/contact">
-                  <Button variant="premium" size="lg" className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <Button variant="outline" size="lg" className="transition-all duration-200 hover:scale-[1.02]">
                     <Users className="h-5 w-5 mr-2" />
                     {t('hero.cta_expert')}
                     <ArrowRight className="h-4 w-4 ml-2" />
@@ -482,106 +389,76 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="space-y-6">
-              {testimonials.map((testimonial, idx) => <Card key={idx} className="shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0">
+            <div className="space-y-4">
+              {testimonials.map((testimonial, idx) => (
+                <Card key={idx} className="border border-border bg-card">
                   <CardContent className="p-6">
-                    <p className="text-foreground italic mb-4">"{testimonial.quote}"</p>
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold mr-3 shadow-md">
+                    <p className="text-foreground italic mb-4 text-sm leading-relaxed">"{testimonial.quote}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-sm">
                         {testimonial.author.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{testimonial.author}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role} • {testimonial.company}</p>
+                        <p className="font-medium text-foreground text-sm">{testimonial.author}</p>
+                        <p className="text-xs text-muted-foreground">{testimonial.role} — {testimonial.company}</p>
                       </div>
                     </div>
                   </CardContent>
-                </Card>)}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section className="py-24 bg-background shadow-lg relative z-10">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              {t('categories.title')}
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {t('categories.subtitle')}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.map((category, idx) => <Link key={idx} to={`/catalogue?category=${encodeURIComponent(category.name)}`} className="group">
-                <Card className="h-full text-center hover:shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2 border-0 shadow-md">
-                  <CardContent className="p-6">
-                    <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-gradient-to-br group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300">
-                      <category.icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    <h3 className="font-semibold text-foreground mb-2 text-sm leading-tight">
-                      {category.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {category.count}
-                    </p>
-                  </CardContent>
                 </Card>
-              </Link>)}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-primary text-white relative overflow-hidden shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-hero opacity-90"></div>
-        <div className="container mx-auto px-4 relative z-10">
+      <section className="py-32 bg-gray-950 text-white">
+        <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
               {t('home.cta_title')}
             </h2>
-            <p className="text-xl text-white/90 mb-4">
+            <p className="text-lg text-white/70 mb-3">
               {t('home.cta_subtitle')}
             </p>
-            <p className="text-lg text-white/80 mb-8">
+            <p className="text-base text-white/50 mb-10">
               {t('home.cta_additional')}
             </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/diagnostic" className="w-full sm:w-auto">
-                <Button variant="secondary" size="xl" className="w-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+              <Link to="/diagnostic">
+                <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]">
                   <Brain className="h-5 w-5 mr-2" />
                   {t('home.diagnostic_5min')}
                 </Button>
               </Link>
-              <Link to="/contact" className="w-full sm:w-auto">
-                <Button variant="outline" size="xl" className="w-full border-white hover:bg-white text-neutral-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <Users className="h-5 w-5 mr-2" />
+              <Link to="/cartographie">
+                <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 transition-all duration-200 hover:scale-[1.02]">
+                  <MapPin className="h-5 w-5 mr-2" />
                   {t('home.expert_cta')}
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
               <div>
-                <div className="text-3xl font-bold">500+</div>
-                <div className="text-white/80 text-sm">{t('home.solutions_count')}</div>
+                <div className="text-3xl font-bold">50+</div>
+                <div className="text-white/50 text-sm">{t('home.solutions_count')}</div>
               </div>
               <div>
                 <div className="text-3xl font-bold">95%</div>
-                <div className="text-white/80 text-sm">{t('home.satisfaction')}</div>
+                <div className="text-white/50 text-sm">{t('home.satisfaction')}</div>
               </div>
               <div>
-                <div className="text-3xl font-bold">24h</div>
-                <div className="text-white/80 text-sm">{t('home.response_time')}</div>
+                <div className="text-3xl font-bold">5 min</div>
+                <div className="text-white/50 text-sm">{t('home.response_time')}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

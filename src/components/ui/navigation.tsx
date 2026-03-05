@@ -13,7 +13,7 @@ const Navigation = () => {
   const navItems = [
     { name: t('nav.home'), path: '/' },
     { name: t('nav.diagnostic'), path: '/diagnostic' },
-    { name: t('nav.catalogue'), path: '/catalogue' },
+    { name: t('nav.cartographie'), path: '/cartographie' },
     { name: t('nav.contact'), path: '/contact' },
   ];
 

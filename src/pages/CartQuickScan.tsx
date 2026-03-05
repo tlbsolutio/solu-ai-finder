@@ -1,0 +1,313 @@
+import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuickScan } from "@/hooks/useQuickScan";
+import { MiniRadarChart } from "@/components/cartographie/MiniRadarChart";
+import { QuickWinCard } from "@/components/cartographie/QuickWinCard";
+import { SECTORS, detectSectorByKeywords, detectSectorByNAF, getSectorById } from "@/data/sectors";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock, Network, CheckCircle2 } from "lucide-react";
+
+const QUICK_QUESTIONS = [
+  { id: "q1", bloc: "1", question: "Quelle est la taille de votre entreprise ?", type: "choice", options: ["1-10", "11-50", "51-200", "200+"] },
+  { id: "q2", bloc: "1", question: "Depuis combien d'annees votre entreprise existe-t-elle ?", type: "choice", options: ["< 2 ans", "2-5 ans", "5-10 ans", "10+ ans"] },
+  { id: "q3", bloc: "2", question: "Quel est votre niveau de satisfaction clients actuel ? (1-5)", type: "scale" },
+  { id: "q4", bloc: "3", question: "Vos processus de decision sont-ils clairement definis ?", type: "yesno" },
+  { id: "q5", bloc: "4", question: "Avez-vous des difficultes de recrutement ou de retention ?", type: "yesno" },
+  { id: "q6", bloc: "5", question: "Quel est votre taux de conversion prospect → client ?", type: "choice", options: ["< 10%", "10-25%", "25-50%", "50%+", "Je ne sais pas"] },
+  { id: "q7", bloc: "6", question: "Avez-vous des processus operationnels documentes ?", type: "yesno" },
+  { id: "q8", bloc: "7", question: "Combien d'outils numeriques utilisez-vous au quotidien ?", type: "choice", options: ["1-3", "4-7", "8-12", "13+"] },
+  { id: "q9", bloc: "7", question: "Vos outils sont-ils bien integres entre eux ?", type: "scale" },
+  { id: "q10", bloc: "8", question: "Comment evaluez-vous votre communication interne ? (1-5)", type: "scale" },
+  { id: "q11", bloc: "9", question: "Avez-vous des procedures qualite en place ?", type: "yesno" },
+  { id: "q12", bloc: "10", question: "Suivez-vous des KPIs de performance regulierement ?", type: "yesno" },
+];
+
+const CartQuickScan = () => {
+  const { runScan, loading, result, error } = useQuickScan();
+  const [step, setStep] = useState<"form" | "results">("form");
+  const [description, setDescription] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [selectedSector, setSelectedSector] = useState("");
+  const [nafCode, setNafCode] = useState("");
+  const [effectif, setEffectif] = useState("");
+  const [confirmedTerms, setConfirmedTerms] = useState<string[]>([]);
+
+  const detectedSector = useMemo(() => {
+    if (selectedSector) return getSectorById(selectedSector);
+    if (nafCode) {
+      const byNaf = detectSectorByNAF(nafCode);
+      if (byNaf) return byNaf;
+    }
+    if (description.length > 10) {
+      const byKw = detectSectorByKeywords(description);
+      if (byKw && byKw.confidence >= 0.3) return byKw.sector;
+    }
+    return null;
+  }, [description, selectedSector, nafCode]);
+
+  const answered = Object.keys(answers).length;
+  const progress = Math.round((answered / QUICK_QUESTIONS.length) * 100);
+
+  const handleSubmit = async () => {
+    const reponsesRapides: Record<string, string> = {};
+    QUICK_QUESTIONS.forEach(q => {
+      if (answers[q.id]) reponsesRapides[q.question] = answers[q.id];
+    });
+    if (detectedSector) {
+      reponsesRapides["__sector_id"] = detectedSector.id;
+      reponsesRapides["__sector_nom"] = detectedSector.nom;
+    }
+    if (effectif) reponsesRapides["Effectif"] = effectif;
+    if (confirmedTerms.length > 0) reponsesRapides["__confirmed_terms"] = confirmedTerms.join(", ");
+    await runScan(description, reponsesRapides);
+    setStep("results");
+  };
+
+  const updateAnswer = (id: string, value: string) => {
+    setAnswers(prev => ({ ...prev, [id]: value }));
+  };
+
+  if (step === "results" && result) {
+    return (
+      <div className="min-h-screen py-8 px-4">
+        <div className="container mx-auto max-w-3xl space-y-6">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setStep("form")}><ArrowLeft className="w-5 h-5" /></Button>
+            <div>
+              <h1 className="text-xl font-bold">Resultats du scan rapide</h1>
+              <p className="text-sm text-muted-foreground">Apercu de votre maturite organisationnelle</p>
+            </div>
+          </div>
+
+          {/* Radar */}
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-base">Radar de maturite (estime)</CardTitle></CardHeader>
+            <CardContent className="flex justify-center py-4">
+              <MiniRadarChart scores={result.scores} size={240} />
+            </CardContent>
+          </Card>
+
+          {/* Resume */}
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-base">Resume</CardTitle></CardHeader>
+            <CardContent><p className="text-sm leading-relaxed">{result.resume}</p></CardContent>
+          </Card>
+
+          {/* Dysfonctionnements */}
+          {result.dysfonctionnements.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-base">Dysfonctionnements detectes</CardTitle></CardHeader>
+              <CardContent className="space-y-2">
+                {result.dysfonctionnements.map((d, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
+                    <p className="text-sm">{d}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Quick wins */}
+          {result.quick_wins.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="font-semibold flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-500" />Quick wins</h3>
+              {result.quick_wins.map((qw, i) => (
+                <QuickWinCard key={i} action={qw.action} impact={qw.impact} effort={qw.effort} categorie={qw.categorie} />
+              ))}
+            </div>
+          )}
+
+          {/* CTA Upgrade */}
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-6 text-center space-y-4">
+              <Lock className="w-8 h-8 text-primary mx-auto" />
+              <h3 className="text-lg font-bold">Debloquer l'analyse complete</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                Ce scan rapide donne un apercu. La version complete inclut 150 questions, une analyse IA
+                par pack, un plan d'action priorise et un export PPTX professionnel.
+              </p>
+              <Link to="/cartographie/sessions">
+                <Button className="bg-gradient-primary hover:opacity-90">
+                  <Network className="w-4 h-4 mr-2" />
+                  Commencer la cartographie complete
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen py-8 px-4">
+      <div className="container mx-auto max-w-2xl space-y-6">
+        <div className="flex items-center gap-3">
+          <Link to="/cartographie"><Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button></Link>
+          <div>
+            <h1 className="text-xl font-bold">Scan rapide</h1>
+            <p className="text-sm text-muted-foreground">Obtenez un apercu de la maturite de votre organisation en 3 minutes</p>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-muted-foreground">{answered}/{QUICK_QUESTIONS.length} questions</span>
+              <Badge variant="secondary">{progress}%</Badge>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </CardContent>
+        </Card>
+
+        {/* Sector Detection */}
+        <Card className="border-primary/20">
+          <CardHeader className="pb-2"><CardTitle className="text-base">Votre entreprise</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label className="text-sm mb-1.5 block">Decrivez votre activite</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Decrivez en quelques phrases votre activite, vos principaux defis et ce que vous aimeriez ameliorer..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm mb-1.5 block">Secteur d'activite</Label>
+                <Select value={selectedSector} onValueChange={setSelectedSector}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selectionnez un secteur" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SECTORS.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm mb-1.5 block">Code NAF (optionnel)</Label>
+                <Input value={nafCode} onChange={(e) => setNafCode(e.target.value)} placeholder="Ex: 62.01Z" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm mb-1.5 block">Effectif</Label>
+              <RadioGroup value={effectif} onValueChange={setEffectif} className="flex flex-wrap gap-3">
+                {["1-10", "11-50", "51-200", "200+"].map((opt) => (
+                  <div key={opt} className="flex items-center space-x-1.5">
+                    <RadioGroupItem value={opt} id={`eff-${opt}`} />
+                    <Label htmlFor={`eff-${opt}`}>{opt}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            {detectedSector && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium">Secteur detecte : {detectedSector.nom}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">Confirmez les termes qui correspondent a votre activite :</p>
+                <div className="flex flex-wrap gap-2">
+                  {detectedSector.vocabulaireConfirmation.map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => setConfirmedTerms((prev) =>
+                        prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]
+                      )}
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                        confirmedTerms.includes(term)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-white border-muted-foreground/20 hover:border-primary/50"
+                      }`}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Questions */}
+        <div className="space-y-4">
+          {QUICK_QUESTIONS.map((q) => (
+            <Card key={q.id}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${answers[q.id] ? "bg-green-500" : "bg-muted-foreground/30"}`} />
+                  <Label className="text-sm font-medium leading-relaxed">{q.question}</Label>
+                </div>
+                <div className="ml-4">
+                  {q.type === "yesno" && (
+                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => updateAnswer(q.id, v)} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="Oui" id={`${q.id}-oui`} /><Label htmlFor={`${q.id}-oui`}>Oui</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="Non" id={`${q.id}-non`} /><Label htmlFor={`${q.id}-non`}>Non</Label></div>
+                    </RadioGroup>
+                  )}
+                  {q.type === "scale" && (
+                    <div className="space-y-2">
+                      <Slider value={[parseInt(answers[q.id] || "3")]} onValueChange={([v]) => updateAnswer(q.id, String(v))} min={1} max={5} step={1} />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>1 - Faible</span>
+                        <span className="font-medium text-foreground">{answers[q.id] || "3"}/5</span>
+                        <span>5 - Excellent</span>
+                      </div>
+                    </div>
+                  )}
+                  {q.type === "choice" && q.options && (
+                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => updateAnswer(q.id, v)} className="flex flex-wrap gap-3">
+                      {q.options.map((opt, i) => (
+                        <div key={i} className="flex items-center space-x-2">
+                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} />
+                          <Label htmlFor={`${q.id}-${i}`}>{opt}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Submit */}
+        <div className="flex justify-center pb-8">
+          <Button
+            size="lg"
+            onClick={handleSubmit}
+            disabled={loading || answered < 5}
+            className="bg-gradient-primary hover:opacity-90"
+          >
+            {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Sparkles className="w-5 h-5 mr-2" />}
+            {loading ? "Analyse en cours..." : "Obtenir mes resultats"}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
+
+        {error && (
+          <Card className="border-destructive"><CardContent className="p-4 text-destructive text-sm">{error}</CardContent></Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CartQuickScan;

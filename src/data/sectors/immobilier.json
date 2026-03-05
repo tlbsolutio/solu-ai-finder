@@ -1,0 +1,21 @@
+{
+  "id": "immobilier",
+  "nom": "Immobilier",
+  "codesNAF": ["68"],
+  "motsCles": ["agence", "mandat", "bien", "location", "gestion locative", "syndic", "copropriete", "transaction", "estimation"],
+  "vocabulaireConfirmation": ["mandat", "compromis", "gestion locative", "syndic"],
+  "questionsDiscriminantes": [
+    "Quelle est la repartition entre transaction et gestion locative ?",
+    "Comment gerez-vous les mandats et le suivi acquereurs ?",
+    "Utilisez-vous des outils d'estimation automatisee ?"
+  ],
+  "kpis": [
+    { "nom": "Nombre de mandats exclusifs", "benchmark": "> 40% du portefeuille", "unite": "%" },
+    { "nom": "Delai moyen de vente", "benchmark": "< 90 jours", "unite": "jours" },
+    { "nom": "Taux de vacance locative", "benchmark": "< 5%", "unite": "%" },
+    { "nom": "CA par negociateur", "benchmark": "> 80k EUR/an", "unite": "EUR/an" }
+  ],
+  "outilsMetiers": ["Apimo", "Hektor", "Netty", "AC3", "Pericles", "Ublo"],
+  "reglementations": ["Loi Hoguet", "Loi ALUR", "Diagnostic immobilier obligatoire", "RGPD", "Loi Climat Resilience"],
+  "risquesSpecifiques": ["Fluctuation marche", "Reglementation energetique (DPE)", "Concurrence portails", "Litige locataire"]
+}

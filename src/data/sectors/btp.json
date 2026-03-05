@@ -1,0 +1,21 @@
+{
+  "id": "btp",
+  "nom": "BTP & Construction",
+  "codesNAF": ["41", "42", "43"],
+  "motsCles": ["chantier", "construction", "batiment", "gros oeuvre", "second oeuvre", "maitre d'ouvrage", "sous-traitant", "conducteur de travaux", "BIM"],
+  "vocabulaireConfirmation": ["chantier", "conducteur de travaux", "appel d'offres", "BIM"],
+  "questionsDiscriminantes": [
+    "Utilisez-vous un logiciel de planification de chantier (type MS Project, Primavera) ?",
+    "Comment gerez-vous la coordination entre sous-traitants sur un chantier ?",
+    "Avez-vous mis en place le BIM sur vos projets ?"
+  ],
+  "kpis": [
+    { "nom": "Taux de sinistralite", "benchmark": "< 25 AT/million heures", "unite": "AT/Mh" },
+    { "nom": "Respect delais chantier", "benchmark": "> 85%", "unite": "%" },
+    { "nom": "Taux de marge brute", "benchmark": "15-25%", "unite": "%" },
+    { "nom": "Taux de reclamation client", "benchmark": "< 5%", "unite": "%" }
+  ],
+  "outilsMetiers": ["Autocad", "Revit/BIM", "MS Project", "Batigest", "Sage Batigest", "EBP Batiment"],
+  "reglementations": ["RE2020", "DTU", "Code du travail (securite chantier)", "Loi ELAN", "Qualibat/RGE"],
+  "risquesSpecifiques": ["Accidents du travail", "Retards chantier", "Defaillance sous-traitants", "Non-conformite technique"]
+}

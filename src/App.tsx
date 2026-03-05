@@ -4,13 +4,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CartSessionProvider } from "@/contexts/CartSessionContext";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ui/error-boundary";
 import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
 import Diagnostic from "./pages/Diagnostic";
-import Catalogue from "./pages/Catalogue";
-import SaasDetail from "./pages/SaasDetail";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import PrivacyEn from "./pages/PrivacyEn";
@@ -20,6 +19,12 @@ import Legal from "./pages/Legal";
 import LegalEn from "./pages/LegalEn";
 import TestConnections from "./pages/TestConnections";
 import SeoManager from "./pages/SeoManager";
+import CartHome from "./pages/CartHome";
+import CartQuickScan from "./pages/CartQuickScan";
+import CartSessions from "./pages/CartSessions";
+import CartSessionDashboard from "./pages/CartSessionDashboard";
+import CartPackWizard from "./pages/CartPackWizard";
+import CartPackResults from "./pages/CartPackResults";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,23 +38,31 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-                <Route path="/diagnostic" element={<MainLayout><Diagnostic /></MainLayout>} />
-                <Route path="/catalogue" element={<MainLayout><Catalogue /></MainLayout>} />
-                <Route path="/saas/:id" element={<MainLayout><SaasDetail /></MainLayout>} />
-                <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
-                <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
-                <Route path="/privacy-en" element={<MainLayout><PrivacyEn /></MainLayout>} />
-                <Route path="/cookies" element={<MainLayout><Cookies /></MainLayout>} />
-                <Route path="/cookies-en" element={<MainLayout><CookiesEn /></MainLayout>} />
-                <Route path="/legal" element={<MainLayout><Legal /></MainLayout>} />
-                <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
-                <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
-                <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-              </Routes>
+              <CartSessionProvider>
+                <Routes>
+                  <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+                  <Route path="/diagnostic" element={<MainLayout><Diagnostic /></MainLayout>} />
+                  <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
+                  <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
+                  <Route path="/privacy-en" element={<MainLayout><PrivacyEn /></MainLayout>} />
+                  <Route path="/cookies" element={<MainLayout><Cookies /></MainLayout>} />
+                  <Route path="/cookies-en" element={<MainLayout><CookiesEn /></MainLayout>} />
+                  <Route path="/legal" element={<MainLayout><Legal /></MainLayout>} />
+                  <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
+                  <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
+                  <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
+                  {/* Cartographie routes */}
+                  <Route path="/cartographie" element={<MainLayout><CartHome /></MainLayout>} />
+                  <Route path="/cartographie/scan" element={<MainLayout><CartQuickScan /></MainLayout>} />
+                  <Route path="/cartographie/sessions" element={<CartSessions />} />
+                  <Route path="/cartographie/sessions/new" element={<CartSessions />} />
+                  <Route path="/cartographie/sessions/:id" element={<CartSessionDashboard />} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<CartPackWizard />} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<CartPackResults />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+                </Routes>
+              </CartSessionProvider>
             </BrowserRouter>
           </TooltipProvider>
         </LanguageProvider>

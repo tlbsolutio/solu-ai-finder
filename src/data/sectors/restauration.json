@@ -1,0 +1,21 @@
+{
+  "id": "restauration",
+  "nom": "Restauration & Hotellerie",
+  "codesNAF": ["55", "56"],
+  "motsCles": ["restaurant", "hotel", "cuisine", "service", "salle", "menu", "reservation", "traiteur", "chef", "commis"],
+  "vocabulaireConfirmation": ["service", "ticket moyen", "food cost", "taux de remplissage"],
+  "questionsDiscriminantes": [
+    "Quel est votre food cost moyen ?",
+    "Comment gerez-vous les reservations et le no-show ?",
+    "Avez-vous des difficultes de recrutement en salle ou en cuisine ?"
+  ],
+  "kpis": [
+    { "nom": "Food cost", "benchmark": "25-35%", "unite": "%" },
+    { "nom": "RevPAR (hotellerie)", "benchmark": "Variable par categorie", "unite": "EUR" },
+    { "nom": "Ticket moyen", "benchmark": "Variable par type", "unite": "EUR" },
+    { "nom": "Taux de remplissage", "benchmark": "> 70%", "unite": "%" }
+  ],
+  "outilsMetiers": ["TheFork", "Lightspeed Restaurant", "Zelty", "Mews", "Tiller", "Zenchef"],
+  "reglementations": ["HACCP", "Reglement CE 852/2004", "Licence debit boissons", "Affichage allergenes", "Convention HCR"],
+  "risquesSpecifiques": ["Turnover eleve", "Saisonnalite", "Hygiene alimentaire", "Avis clients negatifs"]
+}

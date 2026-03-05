@@ -1,0 +1,21 @@
+{
+  "id": "tech",
+  "nom": "Tech & Digital",
+  "codesNAF": ["58", "59", "60", "61", "62", "63"],
+  "motsCles": ["logiciel", "SaaS", "developpement", "startup", "agile", "cloud", "API", "devops", "product", "sprint"],
+  "vocabulaireConfirmation": ["sprint", "backlog", "SaaS", "ARR/MRR"],
+  "questionsDiscriminantes": [
+    "Quel est votre modele de revenus (SaaS, licence, service) ?",
+    "Utilisez-vous des methodologies agiles (Scrum, Kanban) ?",
+    "Comment gerez-vous le cycle de deploiement (CI/CD) ?"
+  ],
+  "kpis": [
+    { "nom": "MRR/ARR", "benchmark": "Croissance > 20%/an", "unite": "EUR" },
+    { "nom": "Churn rate", "benchmark": "< 5%/mois", "unite": "%/mois" },
+    { "nom": "Velocity sprint", "benchmark": "Stable ou croissante", "unite": "points" },
+    { "nom": "Lead time deploiement", "benchmark": "< 1 semaine", "unite": "jours" }
+  ],
+  "outilsMetiers": ["Jira", "GitHub/GitLab", "Slack", "Figma", "AWS/GCP/Azure", "Datadog"],
+  "reglementations": ["RGPD", "Directive NIS2", "AI Act", "Accessibilite numerique (RGAA)", "Open source compliance"],
+  "risquesSpecifiques": ["Dette technique", "Cybersecurite", "Retention talents tech", "Scalabilite"]
+}

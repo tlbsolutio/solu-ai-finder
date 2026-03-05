@@ -1,0 +1,21 @@
+{
+  "id": "sante",
+  "nom": "Sante & Medico-social",
+  "codesNAF": ["86", "87", "88"],
+  "motsCles": ["patient", "soin", "medical", "clinique", "hopital", "EHPAD", "cabinet", "pharmacie", "medecin", "infirmier"],
+  "vocabulaireConfirmation": ["patient", "parcours de soin", "DMP", "ARS"],
+  "questionsDiscriminantes": [
+    "Comment gerez-vous le dossier patient informatise ?",
+    "Etes-vous conforme aux exigences de certification HAS ?",
+    "Comment assurez-vous la continuite des soins entre equipes ?"
+  ],
+  "kpis": [
+    { "nom": "Taux d'occupation lits", "benchmark": "> 85%", "unite": "%" },
+    { "nom": "Duree moyenne de sejour", "benchmark": "Variable par service", "unite": "jours" },
+    { "nom": "Taux de satisfaction patient", "benchmark": "> 80%", "unite": "%" },
+    { "nom": "Taux d'evenements indesirables", "benchmark": "< 5%", "unite": "%" }
+  ],
+  "outilsMetiers": ["Doctolib", "Mediboard", "Hopital Manager", "Crossway", "Easily", "NetSoins"],
+  "reglementations": ["Code de la sante publique", "RGPD sante (HDS)", "Certification HAS", "Loi Rist", "Espace numerique de sante"],
+  "risquesSpecifiques": ["Penuries de personnel", "Non-conformite reglementaire", "Cybersecurite donnees sante", "Burnout soignants"]
+}

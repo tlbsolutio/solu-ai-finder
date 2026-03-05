@@ -1,0 +1,21 @@
+{
+  "id": "industrie",
+  "nom": "Industrie & Manufacturing",
+  "codesNAF": ["10", "11", "13", "14", "15", "16", "17", "18", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33"],
+  "motsCles": ["usine", "production", "fabrication", "atelier", "machine", "qualite", "lean", "supply chain", "maintenance", "TRS"],
+  "vocabulaireConfirmation": ["ligne de production", "TRS", "lean manufacturing", "supply chain"],
+  "questionsDiscriminantes": [
+    "Quel est votre TRS (Taux de Rendement Synthetique) actuel ?",
+    "Avez-vous mis en place une demarche lean ou amelioration continue ?",
+    "Comment gerez-vous la maintenance de vos equipements (preventive, curative, predictive) ?"
+  ],
+  "kpis": [
+    { "nom": "TRS", "benchmark": "> 85%", "unite": "%" },
+    { "nom": "Taux de rebut", "benchmark": "< 2%", "unite": "%" },
+    { "nom": "OTD (On Time Delivery)", "benchmark": "> 95%", "unite": "%" },
+    { "nom": "Taux de disponibilite machines", "benchmark": "> 90%", "unite": "%" }
+  ],
+  "outilsMetiers": ["SAP", "Sage X3", "GPAO", "MES", "Clipper", "TopSolid"],
+  "reglementations": ["ISO 9001", "ISO 14001", "ICPE", "REACH", "Directive machines", "RSE/CSRD"],
+  "risquesSpecifiques": ["Arrets de production", "Obsolescence equipements", "Dependance fournisseurs", "Accidents industriels"]
+}

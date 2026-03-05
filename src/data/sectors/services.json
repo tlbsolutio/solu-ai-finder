@@ -1,0 +1,21 @@
+{
+  "id": "services",
+  "nom": "Services aux entreprises",
+  "codesNAF": ["62", "63", "69", "70", "71", "73", "74", "78", "80", "82"],
+  "motsCles": ["conseil", "prestation", "mission", "client", "facturation", "consulting", "audit", "expertise", "TJM"],
+  "vocabulaireConfirmation": ["mission", "prestation", "TJM", "taux d'occupation"],
+  "questionsDiscriminantes": [
+    "Quel est votre taux d'occupation moyen des consultants ?",
+    "Comment gerez-vous le pipeline commercial et les propositions ?",
+    "Avez-vous des processus de capitalisation des connaissances ?"
+  ],
+  "kpis": [
+    { "nom": "Taux d'occupation", "benchmark": "> 75%", "unite": "%" },
+    { "nom": "TJM moyen", "benchmark": "Variable selon expertise", "unite": "EUR/jour" },
+    { "nom": "Taux de renouvellement client", "benchmark": "> 60%", "unite": "%" },
+    { "nom": "Delai moyen de paiement", "benchmark": "< 45 jours", "unite": "jours" }
+  ],
+  "outilsMetiers": ["Salesforce", "HubSpot", "Boondmanager", "Staffing tools", "Monday.com", "Notion"],
+  "reglementations": ["RGPD", "Convention collective Syntec", "Portage salarial", "Devoir de conseil"],
+  "risquesSpecifiques": ["Dependance clients majeurs", "Turnover consultants", "Sous-traitance non maitrisee", "Pression tarifaire"]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "transport",
+  "nom": "Transport & Logistique",
+  "codesNAF": ["49", "50", "51", "52", "53"],
+  "motsCles": ["livraison", "camion", "flotte", "logistique", "entrepot", "expedition", "fret", "chauffeur", "tournee", "TMS"],
+  "vocabulaireConfirmation": ["tournee", "flotte", "TMS", "taux de remplissage"],
+  "questionsDiscriminantes": [
+    "Comment optimisez-vous vos tournees de livraison ?",
+    "Quel est votre taux de remplissage moyen des vehicules ?",
+    "Avez-vous un TMS (Transport Management System) en place ?"
+  ],
+  "kpis": [
+    { "nom": "Taux de remplissage vehicules", "benchmark": "> 80%", "unite": "%" },
+    { "nom": "Cout au km", "benchmark": "Variable par type", "unite": "EUR/km" },
+    { "nom": "Taux de livraison a l'heure", "benchmark": "> 95%", "unite": "%" },
+    { "nom": "Taux de litige transport", "benchmark": "< 1%", "unite": "%" }
+  ],
+  "outilsMetiers": ["TMS (DDS, Alpega)", "WMS (Reflex, Manhattan)", "PTV Route Optimizer", "Trimble", "Shippeo", "Dashdoc"],
+  "reglementations": ["Reglementation sociale transport (RSE)", "ADR matieres dangereuses", "Chronotachygraphe", "Loi climat (ZFE)", "Eco-contribution"],
+  "risquesSpecifiques": ["Cout carburant", "Penuries chauffeurs", "Reglementation ZFE", "Sinistralite flotte"]
+}
