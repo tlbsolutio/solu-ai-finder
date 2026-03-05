@@ -21,10 +21,16 @@ const BLOC_NAMES: Record<number, string> = {
   10: "KPIs & Pilotage",
 };
 
-async function callClaude(prompt: string, maxTokens = 4096): Promise<string | null> {
+async function callClaude(prompt: string, maxTokens = 4096, systemPrompt?: string): Promise<string | null> {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return null;
   try {
+    const body: Record<string, unknown> = {
+      model: CLAUDE_MODEL,
+      max_tokens: maxTokens,
+      messages: [{ role: "user", content: prompt }],
+    };
+    if (systemPrompt) body.system = systemPrompt;
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -32,11 +38,7 @@ async function callClaude(prompt: string, maxTokens = 4096): Promise<string | nu
         "anthropic-version": "2023-06-01",
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: maxTokens,
-        messages: [{ role: "user", content: prompt }],
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       console.error(`Claude error: ${res.status} ${await res.text()}`);
@@ -69,8 +71,8 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
   }
 }
 
-async function generate(prompt: string, geminiApiKey: string, maxTokens = 4096): Promise<string> {
-  const claudeResult = await callClaude(prompt, maxTokens);
+async function generate(prompt: string, geminiApiKey: string, maxTokens = 4096, systemPrompt?: string): Promise<string> {
+  const claudeResult = await callClaude(prompt, maxTokens, systemPrompt);
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
@@ -231,24 +233,27 @@ Reponds en texte structure, pas de JSON.`;
     const { data: tachesData } = await supabase.from("cart_taches").select("*").eq("session_id", sessionId);
     const taches = tachesData || [];
 
-    const step2Prompt = `Genere un JSON de cartographie organisationnelle. Chaque objet = 1 noeud, avec des liens logiques entre eux.
+    // Select top items to keep prompt compact and JSON small
+    const topEquipes = equipes.slice(0, 8);
+    const topProcessus = processus.slice(0, 12);
+    const topOutils = outils.slice(0, 6);
+    const topIrritants = irritants.sort((a: any, b: any) => (b.gravite || 0) - (a.gravite || 0)).slice(0, 8);
 
-Equipes: ${JSON.stringify(equipes.map((e: any) => ({ id: `eq-${e.id}`, nom: e.nom })))}
-Processus: ${JSON.stringify(processus.map((p: any) => ({ id: `pr-${p.id}`, nom: p.nom, type: p.type })))}
-Outils: ${JSON.stringify(outils.map((o: any) => ({ id: `ou-${o.id}`, nom: o.nom })))}
-Irritants: ${JSON.stringify(irritants.map((i: any) => ({ id: `ir-${i.id}`, intitule: i.intitule, gravite: i.gravite })))}
-Taches: ${JSON.stringify(taches.map((t: any) => ({ id: `ta-${t.id}`, nom: t.nom })))}
+    const step2Prompt = `Donnees:
+Equipes: ${topEquipes.map((e: any) => `${e.nom}(eq-${e.id})`).join(", ")}
+Processus: ${topProcessus.map((p: any) => `${p.nom}(pr-${p.id})`).join(", ")}
+Outils: ${topOutils.map((o: any) => `${o.nom}(ou-${o.id})`).join(", ")}
+Irritants: ${topIrritants.map((i: any) => `${i.intitule}(ir-${i.id},g=${i.gravite})`).join(", ")}
 
-Liens: Equipe→Processus (feeds_into), Processus→Outil (uses), Irritant→Processus (blocks, animated:true), Processus→Processus (feeds_into).
+Genere exactement 20-30 noeuds et 25-40 edges. Utilise les IDs fournis (eq-X, pr-X, ou-X, ir-X).
+Types noeud: equipe, processus, outil, irritant
+Types edge: feeds_into (equipe→processus), uses (processus→outil), blocks (irritant→processus, animated:true), causes (irritant→irritant)
+Chaque noeud a min 1 edge. Description courte (max 10 mots).`;
 
-JSON exact :
-{"nodes":[{"id":"string","type":"equipe|processus|outil|irritant|tache","label":"string","maturityScore":3,"gravite":0,"description":"string","packOrigin":"Pack X"}],"edges":[{"id":"string","source":"id","target":"id","type":"uses|feeds_into|blocks|causes","label":"string","animated":false}]}
+    const step2System = `Tu es un generateur JSON. Reponds UNIQUEMENT avec du JSON valide, sans markdown, sans texte avant/apres.
+Format: {"nodes":[{"id":"str","type":"equipe|processus|outil|irritant","label":"str","maturityScore":3,"gravite":0,"description":"str"}],"edges":[{"id":"e1","source":"id","target":"id","type":"str","label":"str","animated":false}]}`;
 
-Si <30 noeuds, ajoute des processus/equipes implicites. Chaque noeud doit avoir min 1 lien. JSON valide uniquement.
-
-IMPORTANT: Complete le JSON entierement. Si le nombre de noeuds est trop grand, reduis a 20-25 noeuds maximum mais termine TOUJOURS le JSON correctement avec toutes les accolades fermees.`;
-
-    const step2Result = await generate(step2Prompt, geminiApiKey, 12000);
+    const step2Result = await generate(step2Prompt, geminiApiKey, 8000, step2System);
     const cartographyJson = extractJson(step2Result);
 
     // Save results

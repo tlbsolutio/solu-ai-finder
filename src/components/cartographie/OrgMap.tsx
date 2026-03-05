@@ -60,7 +60,7 @@ async function getElk() {
   return elkInstance;
 }
 
-async function elkLayout(nodes: Node[], edges: Edge[], direction = "DOWN"): Promise<Node[]> {
+async function elkLayout(nodes: Node[], edges: Edge[], direction = "RIGHT"): Promise<Node[]> {
   if (nodes.length === 0) return nodes;
 
   const graph = {
@@ -68,12 +68,13 @@ async function elkLayout(nodes: Node[], edges: Edge[], direction = "DOWN"): Prom
     layoutOptions: {
       "elk.algorithm": "layered",
       "elk.direction": direction,
-      "elk.spacing.nodeNode": "50",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "80",
-      "elk.layered.spacing.edgeNodeBetweenLayers": "40",
+      "elk.spacing.nodeNode": "60",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+      "elk.layered.spacing.edgeNodeBetweenLayers": "50",
       "elk.layered.nodePlacement.strategy": "NETWORK_SIMPLEX",
       "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
-      "elk.padding": "[top=50,left=50,bottom=50,right=50]",
+      "elk.padding": "[top=60,left=60,bottom=60,right=60]",
+      "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
     },
     children: nodes.map((n) => ({
       id: n.id,
@@ -295,6 +296,7 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
   const [nodes, setNodes, onNodesChange] = useNodesState(rawNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rawEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
   const [layoutDone, setLayoutDone] = useState(false);
 
@@ -309,8 +311,51 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     });
   }, [rawNodes, rawEdges]);
 
+  // Hover highlighting: dim non-connected nodes/edges
+  const connectedNodeIds = useMemo(() => {
+    if (!hoveredNode) return null;
+    const ids = new Set<string>([hoveredNode]);
+    for (const e of edges) {
+      if (e.source === hoveredNode) ids.add(e.target);
+      if (e.target === hoveredNode) ids.add(e.source);
+    }
+    return ids;
+  }, [hoveredNode, edges]);
+
+  const displayNodes = useMemo(() => {
+    if (!connectedNodeIds) return nodes;
+    return nodes.map((n) => ({
+      ...n,
+      style: {
+        ...n.style,
+        opacity: connectedNodeIds.has(n.id) ? 1 : 0.2,
+        transition: "opacity 0.2s ease",
+      },
+    }));
+  }, [nodes, connectedNodeIds]);
+
+  const displayEdges = useMemo(() => {
+    if (!connectedNodeIds) return edges;
+    return edges.map((e) => ({
+      ...e,
+      style: {
+        ...e.style,
+        opacity: connectedNodeIds.has(e.source) && connectedNodeIds.has(e.target) ? 1 : 0.1,
+        transition: "opacity 0.2s ease",
+      },
+    }));
+  }, [edges, connectedNodeIds]);
+
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+  }, []);
+
+  const onNodeMouseEnter = useCallback((_: React.MouseEvent, node: Node) => {
+    setHoveredNode(node.id);
+  }, []);
+
+  const onNodeMouseLeave = useCallback(() => {
+    setHoveredNode(null);
   }, []);
 
   const toggleType = (type: string) => {
@@ -322,9 +367,9 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     });
   };
 
-  const filteredNodes = nodes.filter((n) => !hiddenTypes.has(n.type || ""));
+  const filteredNodes = displayNodes.filter((n) => !hiddenTypes.has(n.type || ""));
   const filteredNodeIds = new Set(filteredNodes.map((n) => n.id));
-  const filteredEdges = edges.filter((e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target));
+  const filteredEdges = displayEdges.filter((e) => filteredNodeIds.has(e.source) && filteredNodeIds.has(e.target));
 
   const handleExportPng = useCallback(() => {
     const el = document.querySelector(".react-flow") as HTMLElement;
@@ -361,8 +406,11 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     { type: "painpoint", color: "bg-red-500", label: "Irritants", count: irritants.length },
   ];
 
+  // Dynamic height based on node count
+  const mapHeight = Math.max(500, Math.min(800, 400 + filteredNodes.length * 8));
+
   return (
-    <div className="relative rounded-lg overflow-hidden" style={{ height: 600 }}>
+    <div className="relative rounded-lg overflow-hidden" style={{ height: mapHeight }}>
       {!layoutDone && (
         <div className="absolute inset-0 z-50 bg-slate-950 flex items-center justify-center">
           <div className="text-center space-y-3">
@@ -377,6 +425,8 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
+        onNodeMouseEnter={onNodeMouseEnter}
+        onNodeMouseLeave={onNodeMouseLeave}
         nodeTypes={nodeTypes}
         connectionLineType={ConnectionLineType.SmoothStep}
         snapToGrid
