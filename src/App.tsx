@@ -20,7 +20,6 @@ import Legal from "./pages/Legal";
 import LegalEn from "./pages/LegalEn";
 import TestConnections from "./pages/TestConnections";
 import SeoManager from "./pages/SeoManager";
-import CartHome from "./pages/CartHome";
 import CartSessions from "./pages/CartSessions";
 import CartLogin from "./pages/CartLogin";
 import { AuthGuard } from "./components/cartographie/AuthGuard";
@@ -59,11 +58,11 @@ const App = () => (
                   <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
                   <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
                   <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
-                  {/* Cartographie routes - public */}
-                  <Route path="/cartographie" element={<MainLayout><CartHome /></MainLayout>} />
-                  <Route path="/cartographie/scan" element={<MainLayout><CartQuickScan /></MainLayout>} />
-                  <Route path="/cartographie/login" element={<MainLayout><CartLogin /></MainLayout>} />
+                  {/* Cartographie routes - public (tool subdomain feel) */}
+                  <Route path="/cartographie" element={<Navigate to="/cartographie/login" replace />} />
+                  <Route path="/cartographie/login" element={<CartLogin />} />
                   {/* Cartographie routes - protected (CartLayout provides header + breadcrumbs) */}
+                  <Route path="/cartographie/scan" element={<AuthGuard><CartLayout><CartQuickScan /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/new" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/:id" element={<AuthGuard><CartLayout><CartSessionDashboard /></CartLayout></AuthGuard>} />

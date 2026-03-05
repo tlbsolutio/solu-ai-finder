@@ -11,11 +11,16 @@ const MobileNav = () => {
   const location = useLocation();
   const { language, setLanguage, t } = useLanguage();
 
-  const navItems = [
-    { name: t('nav.home'), path: '/' },
-    { name: t('nav.cartographie'), path: '/cartographie' },
-    { name: t('nav.contact'), path: '/contact' },
-  ];
+  const scrollTo = (id: string) => {
+    setOpen(false);
+    if (location.pathname !== '/') {
+      window.location.href = `/#${id}`;
+      return;
+    }
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -32,31 +37,55 @@ const MobileNav = () => {
       <SheetContent side="right" className="w-[300px] sm:w-[400px]">
         <SheetHeader>
           <SheetTitle className="text-left">
-            <img 
-              src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png" 
-              alt="Solutio" 
+            <img
+              src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+              alt="Solutio"
               className="h-8 w-auto"
             />
           </SheetTitle>
         </SheetHeader>
-        
+
         <div className="flex flex-col space-y-4 mt-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => setOpen(false)}
-              className={cn(
-                "text-sm font-medium transition-colors hover:text-primary p-3 rounded-lg",
-                location.pathname === item.path
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:bg-accent"
-              )}
+          <Link
+            to="/"
+            onClick={() => setOpen(false)}
+            className={cn(
+              'text-sm font-medium transition-colors hover:text-primary p-3 rounded-lg',
+              location.pathname === '/'
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground hover:bg-accent',
+            )}
+          >
+            {t('nav.home')}
+          </Link>
+
+          {[
+            { name: t('nav.outils'), id: 'outils' },
+            { name: t('nav.realisations'), id: 'realisations' },
+            { name: t('nav.accompagnement'), id: 'accompagnement' },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => scrollTo(item.id)}
+              className="text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent p-3 rounded-lg text-left transition-colors"
             >
               {item.name}
-            </Link>
+            </button>
           ))}
-          
+
+          <Link
+            to="/contact"
+            onClick={() => setOpen(false)}
+            className={cn(
+              'text-sm font-medium transition-colors hover:text-primary p-3 rounded-lg',
+              location.pathname === '/contact'
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground hover:bg-accent',
+            )}
+          >
+            {t('nav.contact')}
+          </Link>
+
           <div className="border-t pt-4 space-y-4">
             <Button
               variant="outline"
@@ -68,11 +97,11 @@ const MobileNav = () => {
               className="w-full justify-start"
             >
               <Languages className="h-4 w-4 mr-2" />
-              {language === 'fr' ? 'English' : 'Français'}
+              {language === 'fr' ? 'English' : 'Francais'}
             </Button>
-            
-            <Link to="/cartographie/scan" onClick={() => setOpen(false)}>
-              <Button variant="default" className="w-full bg-gradient-primary hover:opacity-90">
+
+            <Link to="/cartographie/login" onClick={() => setOpen(false)}>
+              <Button variant="default" className="w-full">
                 <Network className="h-4 w-4 mr-2" />
                 {t('nav.start_scan')}
               </Button>

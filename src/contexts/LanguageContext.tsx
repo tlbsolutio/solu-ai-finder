@@ -19,6 +19,9 @@ const translations = {
     'nav.contact': 'Contact',
     'nav.start_diagnostic': 'Scanner gratuitement',
     'nav.start_scan': 'Scanner gratuitement',
+    'nav.outils': 'Outils',
+    'nav.realisations': 'Realisations',
+    'nav.accompagnement': 'Accompagnement',
 
     // Hero section
     'hero.badge': 'Conseil & Transformation Digitale',
@@ -259,6 +262,9 @@ const translations = {
     'nav.contact': 'Contact',
     'nav.start_diagnostic': 'Free scan',
     'nav.start_scan': 'Free scan',
+    'nav.outils': 'Tools',
+    'nav.realisations': 'Work',
+    'nav.accompagnement': 'Consulting',
 
     // Hero section
     'hero.badge': 'Digital Transformation Consulting',

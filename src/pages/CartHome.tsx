@@ -54,14 +54,14 @@ const CartHome = () => {
             et generez un plan d'optimisation actionnable grace a l'IA.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-            <Link to="/cartographie/scan">
+            <Link to="/cartographie/login">
               <Button size="lg" className="bg-gradient-primary hover:opacity-90 w-full sm:w-auto h-12 px-8 shadow-md shadow-primary/20">
                 <Network className="w-5 h-5 mr-2" />
                 Scanner gratuitement
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <Link to={sessionsLink}>
+            <Link to="/cartographie/login">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-12">
                 <ClipboardList className="w-5 h-5 mr-2" />
                 {isAuthenticated ? "Mes sessions" : "Se connecter"}
@@ -157,7 +157,7 @@ const CartHome = () => {
           <p className="text-white/60 leading-relaxed">
             Commencez par un scan rapide gratuit et decouvrez vos axes d'amelioration.
           </p>
-          <Link to="/cartographie/scan">
+          <Link to="/cartographie/login">
             <Button size="lg" className="bg-gradient-primary hover:opacity-90 h-12 px-8 shadow-lg shadow-primary/30 mt-2">
               <Sparkles className="w-5 h-5 mr-2" />
               Commencer le scan gratuit
