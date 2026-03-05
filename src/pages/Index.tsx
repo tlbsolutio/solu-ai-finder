@@ -7,9 +7,7 @@ import { Network, Search, Zap, Brain, TrendingUp, Users, CheckCircle, ArrowRight
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
-import heroBg from '@/assets/hero-bg.jpg';
-import heroBusiness from '@/assets/hero-business.jpg';
-import heroModern from '@/assets/hero-modern.jpg';
+// Images not currently used but available: hero-bg.jpg, hero-business.jpg, hero-modern.jpg
 
 const Index = () => {
   const { t } = useLanguage();
@@ -140,18 +138,23 @@ const Index = () => {
       />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-32 lg:py-44">
-        <div className="absolute inset-0 z-0">
-          <img src={heroBg} alt="" className="w-full h-full object-cover" aria-hidden="true" />
-          <div className="absolute inset-0 bg-gray-950/80" />
-        </div>
-        <div className="absolute inset-0 opacity-[0.03] z-10" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-          backgroundSize: '40px 40px',
+      <section className="relative overflow-hidden py-32 lg:py-48">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage: 'url(/lovable-uploads/c8143545-6b97-49dd-85ba-65b954b9e501.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/60 to-slate-700/65 z-10" />
+        <div className="absolute inset-0 opacity-10 z-20" style={{
+          backgroundImage: 'radial-gradient(circle at 25% 25%, hsl(var(--primary)) 0%, transparent 50%), radial-gradient(circle at 75% 75%, hsl(var(--secondary)) 0%, transparent 50%)',
         }} />
 
-        <div className="container mx-auto px-4 relative z-20">
-          <div className="max-w-3xl mx-auto text-center">
+        <div className="container mx-auto px-4 relative z-30">
+          <div className="max-w-4xl mx-auto text-center">
             <Badge variant="secondary" className="mb-8 px-4 py-2 text-sm font-medium bg-white/10 text-white/80 border-white/10">
               {t('hero.badge')}
             </Badge>
@@ -240,12 +243,6 @@ const Index = () => {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               {t('services.subtitle')}
             </p>
-          </div>
-
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="rounded-2xl overflow-hidden shadow-lg">
-              <img src={heroModern} alt="Espace de travail moderne et optimise" className="w-full h-48 sm:h-64 object-cover" />
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -395,9 +392,6 @@ const Index = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden shadow-lg mb-4">
-                <img src={heroBusiness} alt="Equipe en reunion de travail collaboratif" className="w-full h-48 object-cover" />
-              </div>
               {testimonials.map((testimonial, idx) => (
                 <Card key={idx} className="border border-border bg-card">
                   <CardContent className="p-6">
