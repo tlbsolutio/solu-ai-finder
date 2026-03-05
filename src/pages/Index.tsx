@@ -435,9 +435,9 @@ const Index = () => {
                     Parler de mon projet
                   </Button>
                 </a>
-                <Link to="/cartographie/login">
-                  <Button variant="outline">Commencer par le diagnostic</Button>
-                </Link>
+                <Button variant="outline" onClick={() => scrollTo('outils')}>
+                  Decouvrir nos outils
+                </Button>
               </div>
               <p className="text-xs text-muted-foreground italic">
                 Disponibilite limitee -- quelques entreprises par mois.
