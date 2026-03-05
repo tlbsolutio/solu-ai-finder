@@ -77,16 +77,78 @@ async function generate(prompt: string, geminiApiKey: string, maxTokens = 4096):
   return geminiResult || "Analyse non disponible";
 }
 
-function extractJson(raw: string): unknown | null {
-  try { return JSON.parse(raw); } catch {}
-  const match = raw.match(/```(?:json)?\s*\n?([\s\S]*?)(?:\n?\s*```|$)/);
-  if (match) {
-    try { return JSON.parse(match[1].trim()); } catch {}
+function repairJson(text: string): unknown | null {
+  if (!text) return null;
+  let s = text.trim();
+
+  // Remove trailing commas before } or ]
+  s = s.replace(/,\s*([}\]])/g, '$1');
+
+  // Count open/close braces and brackets
+  let openBraces = 0, openBrackets = 0;
+  for (const ch of s) {
+    if (ch === '{') openBraces++;
+    else if (ch === '}') openBraces--;
+    else if (ch === '[') openBrackets++;
+    else if (ch === ']') openBrackets--;
   }
+
+  // Close unclosed brackets then braces
+  while (openBrackets > 0) { s += ']'; openBrackets--; }
+  while (openBraces > 0) { s += '}'; openBraces--; }
+
+  // Try to parse repaired
+  try { return JSON.parse(s); } catch {}
+
+  // Try truncating to last valid entry
+  const lastBrace = s.lastIndexOf('}');
+  if (lastBrace > 0) {
+    let truncated = s.substring(0, lastBrace + 1);
+    let ob = 0, oB = 0;
+    for (const ch of truncated) {
+      if (ch === '{') ob++;
+      else if (ch === '}') ob--;
+      else if (ch === '[') oB++;
+      else if (ch === ']') oB--;
+    }
+    while (oB > 0) { truncated += ']'; oB--; }
+    while (ob > 0) { truncated += '}'; ob--; }
+    try { return JSON.parse(truncated); } catch {}
+  }
+
+  return null;
+}
+
+function extractJson(raw: string): unknown | null {
+  if (!raw) return null;
+
+  // 1. Try direct parse
+  try { return JSON.parse(raw); } catch {}
+
+  // 2. Try extracting from markdown code block
+  const mdMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)(?:\n?\s*```)/);
+  if (mdMatch) {
+    try { return JSON.parse(mdMatch[1].trim()); } catch {}
+    // Try repairing truncated JSON from code block
+    const repaired = repairJson(mdMatch[1].trim());
+    if (repaired) return repaired;
+  }
+
+  // 3. Try extracting largest JSON object
   const objMatch = raw.match(/\{[\s\S]*\}/);
   if (objMatch) {
     try { return JSON.parse(objMatch[0]); } catch {}
+    const repaired = repairJson(objMatch[0]);
+    if (repaired) return repaired;
   }
+
+  // 4. Try extracting from open markdown block (no closing ```)
+  const mdOpenMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)$/);
+  if (mdOpenMatch) {
+    const repaired = repairJson(mdOpenMatch[1].trim());
+    if (repaired) return repaired;
+  }
+
   return null;
 }
 
@@ -182,9 +244,11 @@ Liens: Equipe→Processus (feeds_into), Processus→Outil (uses), Irritant→Pro
 JSON exact :
 {"nodes":[{"id":"string","type":"equipe|processus|outil|irritant|tache","label":"string","maturityScore":3,"gravite":0,"description":"string","packOrigin":"Pack X"}],"edges":[{"id":"string","source":"id","target":"id","type":"uses|feeds_into|blocks|causes","label":"string","animated":false}]}
 
-Si <30 noeuds, ajoute des processus/equipes implicites. Chaque noeud doit avoir min 1 lien. JSON valide uniquement.`;
+Si <30 noeuds, ajoute des processus/equipes implicites. Chaque noeud doit avoir min 1 lien. JSON valide uniquement.
 
-    const step2Result = await generate(step2Prompt, geminiApiKey, 8192);
+IMPORTANT: Complete le JSON entierement. Si le nombre de noeuds est trop grand, reduis a 20-25 noeuds maximum mais termine TOUJOURS le JSON correctement avec toutes les accolades fermees.`;
+
+    const step2Result = await generate(step2Prompt, geminiApiKey, 12000);
     const cartographyJson = extractJson(step2Result);
 
     // Save results

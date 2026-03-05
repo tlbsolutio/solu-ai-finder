@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,16 +21,18 @@ import LegalEn from "./pages/LegalEn";
 import TestConnections from "./pages/TestConnections";
 import SeoManager from "./pages/SeoManager";
 import CartHome from "./pages/CartHome";
-import CartQuickScan from "./pages/CartQuickScan";
 import CartSessions from "./pages/CartSessions";
-import CartSessionDashboard from "./pages/CartSessionDashboard";
-import CartPackWizard from "./pages/CartPackWizard";
-import CartPackResults from "./pages/CartPackResults";
 import CartLogin from "./pages/CartLogin";
-import CartAdmin from "./pages/CartAdmin";
 import { AuthGuard } from "./components/cartographie/AuthGuard";
 import CartLayout from "./components/layout/CartLayout";
 import NotFound from "./pages/NotFound";
+
+// Lazy-loaded heavy pages
+const CartSessionDashboard = React.lazy(() => import("./pages/CartSessionDashboard"));
+const CartPackWizard = React.lazy(() => import("./pages/CartPackWizard"));
+const CartPackResults = React.lazy(() => import("./pages/CartPackResults"));
+const CartAdmin = React.lazy(() => import("./pages/CartAdmin"));
+const CartQuickScan = React.lazy(() => import("./pages/CartQuickScan"));
 
 const queryClient = new QueryClient();
 
@@ -43,6 +46,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <CartSessionProvider>
+                <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
                 <Routes>
                   <Route path="/" element={<MainLayout><Index /></MainLayout>} />
                   <Route path="/diagnostic" element={<Navigate to="/cartographie" replace />} />
@@ -69,6 +73,7 @@ const App = () => (
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>
+                </React.Suspense>
               </CartSessionProvider>
             </BrowserRouter>
           </TooltipProvider>
