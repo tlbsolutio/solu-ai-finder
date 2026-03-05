@@ -101,12 +101,29 @@ function ensureSpace(doc: jsPDF, y: number, needed: number): number {
   return y;
 }
 
+function normalizeAiText(raw: unknown): string {
+  if (!raw) return "";
+  if (typeof raw === "string") return raw;
+  if (typeof raw === "object") {
+    // Handle {content: "..."} wrapper from edge functions
+    const obj = raw as Record<string, unknown>;
+    if (typeof obj.content === "string") return obj.content;
+    return JSON.stringify(raw, null, 2);
+  }
+  return String(raw);
+}
+
 function drawWrappedText(doc: jsPDF, text: string, x: number, y: number, maxW: number, lineH: number = 4.5): number {
   if (!text) return y;
-  const clean = text.replace(/[*#]/g, "").replace(/\n{3,}/g, "\n\n");
+  // Clean markdown but preserve numbers and punctuation
+  const clean = text
+    .replace(/\*\*/g, "")       // bold markers
+    .replace(/^#{1,6}\s*/gm, "") // heading markers
+    .replace(/\n{3,}/g, "\n\n"); // excessive newlines
   const lines = doc.splitTextToSize(clean, maxW);
   for (const line of lines) {
-    if (y > PAGE_H - 20) return y;
+    y = ensureSpace(doc, y, lineH + 2);
+    if (y < 30) y = 24;
     doc.text(line, x, y);
     y += lineH;
   }
@@ -316,7 +333,8 @@ export function useCartPdfExport() {
         .sort((a, b) => a.bloc - b.bloc)
         .map((pr) => {
           const score = pr.score_maturite ?? 0;
-          const bar = "█".repeat(Math.round(score)) + "░".repeat(5 - Math.round(score));
+          const filled = Math.round(score);
+          const bar = "|".repeat(filled) + ".".repeat(5 - filled);
           return [
             `Pack ${pr.bloc}`,
             PACK_NAMES[pr.bloc] || "",
@@ -346,38 +364,41 @@ export function useCartPdfExport() {
       y = (doc as any).lastAutoTable?.finalY + 8 || y + 60;
 
       // ==================== RESUME EXECUTIF ====================
-      if (session.ai_resume_executif) {
+      const resumeText = normalizeAiText(session.ai_resume_executif);
+      if (resumeText) {
         y = ensureSpace(doc, y, 40);
         if (y < 30) y = 24;
         y = drawSectionHeader(doc, y, "Resume Executif");
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_resume_executif, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, resumeText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
       // ==================== FORCES ====================
-      if (session.ai_forces) {
+      const forcesText = normalizeAiText(session.ai_forces);
+      if (forcesText) {
         y = ensureSpace(doc, y, 40);
         if (y < 30) y = 24;
         y = drawSectionHeader(doc, y, "Forces Identifiees", C.green);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_forces, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, forcesText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
       // ==================== DYSFONCTIONNEMENTS ====================
-      if (session.ai_dysfonctionnements) {
+      const dysText = normalizeAiText(session.ai_dysfonctionnements);
+      if (dysText) {
         y = ensureSpace(doc, y, 40);
         if (y < 30) y = 24;
         y = drawSectionHeader(doc, y, "Dysfonctionnements Majeurs", C.red);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_dysfonctionnements, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, dysText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
@@ -424,7 +445,7 @@ export function useCartPdfExport() {
         const outilRows = outils.map((o) => [
           o.nom,
           o.type_outil || "-",
-          o.niveau_usage ? `${"★".repeat(o.niveau_usage)}${"☆".repeat(5 - o.niveau_usage)}` : "-",
+          o.niveau_usage ? `${o.niveau_usage}/5` : "-",
           o.problemes || "-",
         ]);
 
@@ -544,7 +565,8 @@ export function useCartPdfExport() {
       }
 
       // ==================== ANALYSE TRANSVERSALE ====================
-      if (session.ai_analyse_transversale) {
+      const analyseTransText = normalizeAiText(session.ai_analyse_transversale);
+      if (analyseTransText) {
         doc.addPage();
         pages.push(pages.length + 1);
         y = 24;
@@ -552,75 +574,74 @@ export function useCartPdfExport() {
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_analyse_transversale, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, analyseTransText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
       // ==================== PLAN D'OPTIMISATION ====================
-      if (session.ai_plan_optimisation) {
+      const planText = normalizeAiText(session.ai_plan_optimisation);
+      if (planText) {
         y = ensureSpace(doc, y, 40);
         if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
         y = drawSectionHeader(doc, y, "Plan d'Optimisation", C.primaryDark);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_plan_optimisation, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, planText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
       // ==================== VISION CIBLE ====================
-      if (session.ai_vision_cible) {
+      const visionText = normalizeAiText(session.ai_vision_cible);
+      if (visionText) {
         y = ensureSpace(doc, y, 40);
         if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
         y = drawSectionHeader(doc, y, "Vision Cible a 18 Mois", C.blue);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, session.ai_vision_cible, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, visionText, MARGIN + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== ENRICHED ANALYSIS (Ollama) ====================
-      const crossPack = (session as any).ai_cross_pack_analysis;
-      const impactQuant = (session as any).ai_impact_quantification;
-      const targetVision = (session as any).ai_target_vision;
+      // ==================== ENRICHED ANALYSIS ====================
+      const crossPackText = normalizeAiText((session as any).ai_cross_pack_analysis);
+      const impactQuantText = normalizeAiText((session as any).ai_impact_quantification);
+      const targetVisionText = normalizeAiText((session as any).ai_target_vision);
 
-      if (crossPack || impactQuant || targetVision) {
+      if (crossPackText || impactQuantText || targetVisionText) {
         doc.addPage();
         pages.push(pages.length + 1);
         y = 24;
 
-        if (crossPack) {
+        if (crossPackText) {
           y = drawSectionHeader(doc, y, "Analyse Causale Inter-Packs", C.purple);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          const crossText = typeof crossPack === "string" ? crossPack : JSON.stringify(crossPack, null, 2);
-          y = drawWrappedText(doc, crossText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, crossPackText, MARGIN + 2, y + 2, CONTENT_W - 4);
           y += 8;
         }
 
-        if (impactQuant) {
+        if (impactQuantText) {
           y = ensureSpace(doc, y, 40);
           if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
           y = drawSectionHeader(doc, y, "Quantification d'Impact Financier", C.green);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          const impText = typeof impactQuant === "string" ? impactQuant : JSON.stringify(impactQuant, null, 2);
-          y = drawWrappedText(doc, impText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, impactQuantText, MARGIN + 2, y + 2, CONTENT_W - 4);
           y += 8;
         }
 
-        if (targetVision) {
+        if (targetVisionText) {
           y = ensureSpace(doc, y, 40);
           if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
           y = drawSectionHeader(doc, y, "Vision Cible Detaillee 18 Mois", C.blue);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          const visText = typeof targetVision === "string" ? targetVision : JSON.stringify(targetVision, null, 2);
-          y = drawWrappedText(doc, visText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, targetVisionText, MARGIN + 2, y + 2, CONTENT_W - 4);
         }
       }
 

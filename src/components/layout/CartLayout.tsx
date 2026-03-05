@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Network } from "lucide-react";
+import { ChevronRight, LogOut, User, Network, Shield } from "lucide-react";
 
 interface Crumb {
   label: string;
@@ -31,6 +31,8 @@ function useBreadcrumbs(): Crumb[] {
   } else if (pathname.match(/\/cartographie\/sessions\/[^/]+/)) {
     crumbs.push({ label: "Sessions", path: "/cartographie/sessions" });
     crumbs.push({ label: "Dashboard" });
+  } else if (pathname === "/cartographie/admin") {
+    crumbs.push({ label: "Admin" });
   }
 
   return crumbs;
@@ -109,6 +111,11 @@ export default function CartLayout({ children }: CartLayoutProps) {
             <DropdownMenuItem onClick={() => navigate("/cartographie/sessions")}>
               <Network className="w-3.5 h-3.5 mr-2" /> Mes sessions
             </DropdownMenuItem>
+            {userEmail === "tlb@solutio.work" && (
+              <DropdownMenuItem onClick={() => navigate("/cartographie/admin")}>
+                <Shield className="w-3.5 h-3.5 mr-2" /> Administration
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
               <LogOut className="w-3.5 h-3.5 mr-2" /> Se deconnecter

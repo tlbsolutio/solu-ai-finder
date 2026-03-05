@@ -226,11 +226,20 @@ const CartLogin = () => {
           </Tabs>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
-          En vous connectant, vous acceptez nos{" "}
-          <Link to="/legal" className="underline">mentions legales</Link> et notre{" "}
-          <Link to="/privacy" className="underline">politique de confidentialite</Link>.
-        </p>
+        <div className="text-center space-y-3">
+          <p className="text-xs text-muted-foreground">
+            En vous connectant, vous acceptez nos{" "}
+            <Link to="/legal" className="underline">mentions legales</Link> et notre{" "}
+            <Link to="/privacy" className="underline">politique de confidentialite</Link>.
+          </p>
+          <Link
+            to="/cartographie"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Retour
+          </Link>
+        </div>
       </div>
     </div>
   );
