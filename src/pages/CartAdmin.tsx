@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { Users, FileText, BarChart3, CreditCard, ShieldCheck, RefreshCw } from "lucide-react";
+import { Users, FileText, BarChart3, CreditCard, ShieldCheck, RefreshCw, Mail, Eye, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ADMIN_EMAIL = "tlb@solutio.work";
@@ -21,8 +21,10 @@ interface SessionRow {
   analyse_status: string | null;
   packs_completed: number;
   tier: string;
+  secteur: string | null;
   created_at: string;
   updated_at: string;
+  final_generation_done: boolean;
 }
 
 interface UserAgg {
@@ -31,6 +33,7 @@ interface UserAgg {
   session_count: number;
   last_activity: string;
   has_paid: boolean;
+  has_analysis: boolean;
 }
 
 interface SubscriptionRow {
@@ -60,7 +63,6 @@ const CartAdmin = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch all sessions
       const { data: sessData, error: sessErr } = await supabase
         .from("cart_sessions")
         .select("*")
@@ -69,7 +71,6 @@ const CartAdmin = () => {
       const allSessions = (sessData || []) as SessionRow[];
       setSessions(allSessions);
 
-      // Fetch all active subscriptions
       const { data: subData } = await supabase
         .from("cart_subscriptions")
         .select("*")
@@ -77,28 +78,29 @@ const CartAdmin = () => {
       const allSubs = (subData || []) as SubscriptionRow[];
       setSubscriptions(allSubs);
 
-      // Build user aggregation from sessions
+      // Build user aggregation
       const paidOwnerIds = new Set(allSubs.map(s => s.owner_id));
       const userMap = new Map<string, UserAgg>();
       for (const s of allSessions) {
         const existing = userMap.get(s.owner_id);
+        const hasAnalysis = s.final_generation_done || s.analyse_status === "done" || s.status === "analyse_validee";
         if (existing) {
           existing.session_count++;
-          if (s.updated_at > existing.last_activity) {
-            existing.last_activity = s.updated_at;
-          }
+          if (s.updated_at > existing.last_activity) existing.last_activity = s.updated_at;
+          if (hasAnalysis) existing.has_analysis = true;
         } else {
           userMap.set(s.owner_id, {
             owner_id: s.owner_id,
-            email: null, // will try to resolve below
+            email: null,
             session_count: 1,
             last_activity: s.updated_at,
             has_paid: paidOwnerIds.has(s.owner_id),
+            has_analysis: hasAnalysis,
           });
         }
       }
 
-      // Try to get emails via admin_user_emails RPC (if it exists), otherwise fallback
+      // Resolve emails via RPC
       try {
         const { data: emailData } = await supabase.rpc("admin_get_user_emails") as { data: Array<{ id: string; email: string }> | null };
         if (emailData) {
@@ -108,7 +110,7 @@ const CartAdmin = () => {
           }
         }
       } catch {
-        // RPC not available, emails will show as owner_id
+        // RPC not available
       }
 
       setUsers(Array.from(userMap.values()).sort((a, b) => b.session_count - a.session_count));
@@ -127,7 +129,6 @@ const CartAdmin = () => {
     setTogglingUser(ownerId);
     try {
       if (currentlyPaid) {
-        // Revoke: delete active subscription
         const { error } = await supabase
           .from("cart_subscriptions")
           .delete()
@@ -136,7 +137,6 @@ const CartAdmin = () => {
         if (error) throw error;
         toast({ title: "Acces revoque" });
       } else {
-        // Grant: insert active subscription
         const { error } = await supabase
           .from("cart_subscriptions")
           .insert({ owner_id: ownerId, status: "active" });
@@ -155,7 +155,7 @@ const CartAdmin = () => {
     switch (s) {
       case "brouillon": return "Brouillon";
       case "en_cours": return "En cours";
-      case "analyse_validee": return "Analyse validee";
+      case "analyse_validee": return "Validee";
       default: return s || "Brouillon";
     }
   };
@@ -169,28 +169,23 @@ const CartAdmin = () => {
     }
   };
 
-  const hasFinalAnalysis = (s: SessionRow) =>
-    s.analyse_status === "done" || s.status === "analyse_validee";
-
   if (ctxLoading || (userEmail === ADMIN_EMAIL && loading)) return <ContentLoader />;
   if (userEmail !== ADMIN_EMAIL) return null;
 
-  // Stats
   const totalUsers = users.length;
   const totalSessions = sessions.length;
-  const sessionsWithFinal = sessions.filter(hasFinalAnalysis).length;
+  const sessionsWithFinal = sessions.filter(s => s.final_generation_done || s.analyse_status === "done").length;
   const activeSubscriptions = subscriptions.length;
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Header */}
       <div className="px-4 sm:px-6 pt-5 pb-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-primary" />
             <div>
               <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Administration</h1>
-              <p className="text-sm text-muted-foreground">Panneau d'administration Cartographie</p>
+              <p className="text-sm text-muted-foreground">Vue globale de tous les utilisateurs et sessions</p>
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
@@ -201,171 +196,183 @@ const CartAdmin = () => {
       </div>
 
       <div className="flex-1 px-4 sm:px-6 pb-6 space-y-6">
-        {/* Stats cards */}
+        {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <Card>
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5" />
-                Utilisateurs
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-2xl font-bold">{totalUsers}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" />
-                Sessions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-2xl font-bold">{totalSessions}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <BarChart3 className="w-3.5 h-3.5" />
-                Analyses finales
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-2xl font-bold">{sessionsWithFinal}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2 pt-4 px-4">
-              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5" />
-                Abonnements actifs
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <p className="text-2xl font-bold">{activeSubscriptions}</p>
-            </CardContent>
-          </Card>
+          {[
+            { icon: Users, label: "Utilisateurs", value: totalUsers, color: "text-blue-500" },
+            { icon: FileText, label: "Sessions", value: totalSessions, color: "text-cyan-500" },
+            { icon: BarChart3, label: "Analyses finales", value: sessionsWithFinal, color: "text-green-500" },
+            { icon: CreditCard, label: "Abonnements actifs", value: activeSubscriptions, color: "text-amber-500" },
+          ].map(({ icon: Icon, label, value, color }) => (
+            <Card key={label}>
+              <CardHeader className="pb-2 pt-4 px-4">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Icon className={`w-3.5 h-3.5 ${color}`} />
+                  {label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4">
+                <p className="text-2xl font-bold">{value}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Users table */}
+        {/* Users */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <Users className="w-4 h-4" />
-              Utilisateurs
+              Utilisateurs ({users.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Utilisateur</TableHead>
-                  <TableHead className="text-center">Sessions</TableHead>
-                  <TableHead>Derniere activite</TableHead>
-                  <TableHead className="text-center">Acces paye</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.length === 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      Aucun utilisateur
-                    </TableCell>
+                    <TableHead>Utilisateur</TableHead>
+                    <TableHead className="text-center">Sessions</TableHead>
+                    <TableHead>Derniere activite</TableHead>
+                    <TableHead className="text-center">Analyse</TableHead>
+                    <TableHead className="text-center">Acces</TableHead>
+                    <TableHead className="text-center">Contact</TableHead>
                   </TableRow>
-                ) : (
-                  users.map(u => (
-                    <TableRow key={u.owner_id}>
-                      <TableCell className="font-medium">
-                        <span className="text-sm">{u.email || u.owner_id.slice(0, 12) + "..."}</span>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge variant="secondary">{u.session_count}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {new Date(u.last_activity).toLocaleDateString("fr-FR", {
-                          day: "numeric", month: "short", year: "numeric",
-                        })}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Switch
-                            checked={u.has_paid}
-                            disabled={togglingUser === u.owner_id}
-                            onCheckedChange={() => togglePaidAccess(u.owner_id, u.has_paid)}
-                          />
-                          <Badge variant={u.has_paid ? "default" : "outline"} className="text-[10px]">
-                            {u.has_paid ? "Paye" : "Gratuit"}
-                          </Badge>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {users.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        Aucun utilisateur
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    users.map(u => (
+                      <TableRow key={u.owner_id}>
+                        <TableCell className="font-medium">
+                          <span className="text-sm">{u.email || u.owner_id.slice(0, 12) + "..."}</span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="secondary">{u.session_count}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(u.last_activity).toLocaleDateString("fr-FR", {
+                            day: "numeric", month: "short", year: "numeric",
+                          })}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {u.has_analysis ? (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px]">Oui</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px]">Non</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Switch
+                              checked={u.has_paid}
+                              disabled={togglingUser === u.owner_id}
+                              onCheckedChange={() => togglePaidAccess(u.owner_id, u.has_paid)}
+                            />
+                            <Badge variant={u.has_paid ? "default" : "outline"} className="text-[10px]">
+                              {u.has_paid ? "Paye" : "Gratuit"}
+                            </Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {u.email && u.email !== ADMIN_EMAIL ? (
+                            <a
+                              href={`mailto:${u.email}?subject=Votre%20cartographie%20Solutio&body=Bonjour%2C%0A%0AJ%27ai%20pu%20consulter%20votre%20cartographie%20organisationnelle%20et%20j%27aimerais%20vous%20proposer%20un%20accompagnement%20personnalis%C3%A9.%0A%0ACordialement%2C%0ASolutio`}
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            >
+                              <Mail className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">Contacter</span>
+                            </a>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Sessions table */}
+        {/* Sessions */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base font-semibold flex items-center gap-2">
               <FileText className="w-4 h-4" />
-              Toutes les sessions
+              Toutes les sessions ({sessions.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Proprietaire</TableHead>
-                  <TableHead className="text-center">Packs</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Cree le</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sessions.length === 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      Aucune session
-                    </TableCell>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Proprietaire</TableHead>
+                    <TableHead className="text-center">Packs</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Secteur</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
-                ) : (
-                  sessions.map(s => {
-                    const ownerUser = users.find(u => u.owner_id === s.owner_id);
-                    return (
-                      <TableRow
-                        key={s.id}
-                        className="cursor-pointer"
-                        onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
-                      >
-                        <TableCell className="font-medium text-sm">{s.nom}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {ownerUser?.email || s.owner_id.slice(0, 12) + "..."}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="text-sm font-medium">{s.packs_completed}/10</span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
-                            {getStatusLabel(s.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(s.created_at).toLocaleDateString("fr-FR", {
-                            day: "numeric", month: "short", year: "numeric",
-                          })}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {sessions.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        Aucune session
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    sessions.map(s => {
+                      const ownerUser = users.find(u => u.owner_id === s.owner_id);
+                      return (
+                        <TableRow key={s.id}>
+                          <TableCell className="font-medium text-sm">{s.nom}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {ownerUser?.email || s.owner_id.slice(0, 12) + "..."}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-sm font-medium">{s.packs_completed}/10</span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
+                              {getStatusLabel(s.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {s.secteur || "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(s.created_at).toLocaleDateString("fr-FR", {
+                              day: "numeric", month: "short",
+                            })}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 text-xs gap-1"
+                              onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Voir
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
-  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock,
+  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
 } from "lucide-react";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
@@ -74,7 +74,7 @@ const LockedTabContent = ({ onUnlock }: { onUnlock: () => void }) => (
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isPaid } = useCartContext();
+  const { isPaid, isAdmin, ownerId } = useCartContext();
   const { toast } = useToast();
 
   const {
@@ -252,11 +252,22 @@ const CartSessionDashboard = () => {
     </header>
   );
 
+  const isAdminViewing = isAdmin && session.owner_id !== ownerId;
+
   // POST-GENERATION: Full tabs mode
   if (isFinalGenerated) {
     return (
       <div className="flex-1 bg-background">
         <Header />
+
+        {isAdminViewing && (
+          <div className="px-4 sm:px-6 pt-2">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>Vue admin — Session de <strong>{session.owner_id?.slice(0, 8)}...</strong></span>
+            </div>
+          </div>
+        )}
 
         <div className="px-4 sm:px-6 pt-4">
           {generatingOllama && (
@@ -702,6 +713,12 @@ const CartSessionDashboard = () => {
       <Header />
 
       <main className="p-4 sm:p-6 space-y-6">
+        {isAdminViewing && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span>Vue admin — Session de <strong>{session.owner_id?.slice(0, 8)}...</strong></span>
+          </div>
+        )}
         {!isPaid && (
           <div className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50/60 px-4 py-2.5">
             <p className="text-sm text-amber-800">

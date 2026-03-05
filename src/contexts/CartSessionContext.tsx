@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+const ADMIN_EMAIL = "tlb@solutio.work";
+
 interface CartSessionContextType {
   ownerId: string | null;
   userEmail: string | null;
   userName: string | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   tier: "free" | "paid";
   isPaid: boolean;
   loading: boolean;
@@ -51,6 +54,11 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
 
   const checkTier = useCallback(async () => {
     if (!ownerId) return;
+    // Admin always has paid access
+    if (userEmail === ADMIN_EMAIL) {
+      setTier("paid");
+      return;
+    }
     const { data } = await supabase
       .from("cart_subscriptions")
       .select("status")
@@ -59,7 +67,7 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
       .limit(1)
       .single();
     setTier(data ? "paid" : "free");
-  }, [ownerId]);
+  }, [ownerId, userEmail]);
 
   useEffect(() => {
     const init = async () => {
@@ -82,7 +90,7 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
   useEffect(() => { if (ownerId) checkTier(); }, [ownerId, checkTier]);
 
   return (
-    <CartSessionContext.Provider value={{ ownerId, userEmail, userName, isAuthenticated, tier, isPaid: tier === "paid", loading, ensureSession, checkTier, signOut }}>
+    <CartSessionContext.Provider value={{ ownerId, userEmail, userName, isAuthenticated, isAdmin: userEmail === ADMIN_EMAIL, tier, isPaid: tier === "paid", loading, ensureSession, checkTier, signOut }}>
       {children}
     </CartSessionContext.Provider>
   );
