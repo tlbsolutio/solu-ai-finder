@@ -32,7 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div>
               <h4 className="font-semibold text-foreground mb-4">{t('footer.solutions')}</h4>
               <div className="space-y-2 text-sm">
-                <Link to="/diagnostic" className="block text-muted-foreground hover:text-primary">{t('nav.diagnostic')}</Link>
+                <Link to="/cartographie/scan" className="block text-muted-foreground hover:text-primary">{t('nav.start_scan')}</Link>
                 <Link to="/cartographie" className="block text-muted-foreground hover:text-primary">{t('nav.cartographie')}</Link>
                 <Link to="/contact" className="block text-muted-foreground hover:text-primary">{t('nav.contact')}</Link>
               </div>

@@ -92,10 +92,6 @@ const CartLogin = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-muted/30">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <Link to="/cartographie" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Retour
-          </Link>
           <div className="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto">
             <Network className="w-8 h-8 text-cyan-500" />
           </div>

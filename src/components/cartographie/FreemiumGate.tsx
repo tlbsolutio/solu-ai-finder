@@ -13,10 +13,10 @@ const REVOLUT_PAYMENT_LINK = "https://pay.revolut.com/payment-link/solutio-carto
 const FEATURES = [
   "10 packs de questionnaires complets (~150 questions)",
   "Analyse IA par pack (resume, score, objets detectes)",
-  "Analyse strategique croisee (6 rapports IA)",
-  "Radar de maturite complet",
-  "Carte organisationnelle D3",
-  "Plan d'actions priorise",
+  "Analyse causale inter-packs et quantification d'impact",
+  "Radar de maturite precis par pack",
+  "Carte interactive React Flow (equipes, outils, processus)",
+  "Plan d'actions priorise P1/P2/P3",
   "Export PPTX professionnel",
 ];
 
@@ -30,7 +30,7 @@ export function FreemiumGate({ open, onOpenChange }: FreemiumGateProps) {
             Debloquer la cartographie complete
           </DialogTitle>
           <DialogDescription>
-            Vous avez explore le diagnostic rapide. Passez a la version complete pour une analyse approfondie de votre organisation.
+            Passez a la version complete pour une analyse approfondie de votre organisation avec l'IA.
           </DialogDescription>
         </DialogHeader>
 

@@ -4,7 +4,7 @@ import { Button } from './button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './sheet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Menu, Languages, Brain } from 'lucide-react';
+import { Menu, Languages, Network } from 'lucide-react';
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
@@ -13,7 +13,6 @@ const MobileNav = () => {
 
   const navItems = [
     { name: t('nav.home'), path: '/' },
-    { name: t('nav.diagnostic'), path: '/diagnostic' },
     { name: t('nav.cartographie'), path: '/cartographie' },
     { name: t('nav.contact'), path: '/contact' },
   ];
@@ -72,10 +71,10 @@ const MobileNav = () => {
               {language === 'fr' ? 'English' : 'Français'}
             </Button>
             
-            <Link to="/diagnostic" onClick={() => setOpen(false)}>
+            <Link to="/cartographie/scan" onClick={() => setOpen(false)}>
               <Button variant="default" className="w-full bg-gradient-primary hover:opacity-90">
-                <Brain className="h-4 w-4 mr-2" />
-                {t('nav.start_diagnostic')}
+                <Network className="h-4 w-4 mr-2" />
+                {t('nav.start_scan')}
               </Button>
             </Link>
           </div>

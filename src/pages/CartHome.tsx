@@ -27,8 +27,17 @@ const CartHome = () => {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="py-16 sm:py-24 px-4">
-        <div className="container mx-auto max-w-4xl text-center space-y-6">
+      <section className="relative py-16 sm:py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/lovable-uploads/c8143545-6b97-49dd-85ba-65b954b9e501.png"
+            alt=""
+            className="w-full h-full object-cover"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-background/90 dark:bg-background/95" />
+        </div>
+        <div className="container mx-auto max-w-4xl text-center space-y-6 relative z-10">
           <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1">
             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
             Nouveau
@@ -64,9 +73,9 @@ const CartHome = () => {
           <h2 className="text-2xl font-bold text-center mb-8">Comment ca marche ?</h2>
           <div className="grid sm:grid-cols-3 gap-6">
             {[
-              { step: "1", title: "Scan rapide", desc: "Decrivez votre activite et repondez a 10-15 questions cles. Resultats instantanes." },
-              { step: "2", title: "Analyse complete", desc: "Repondez aux 10 packs thematiques (~150 questions). L'IA analyse chaque pack." },
-              { step: "3", title: "Plan d'action", desc: "Recevez votre radar de maturite, quick wins et plan d'optimisation priorise." },
+              { step: "1", title: "Scan gratuit (3 min)", desc: "12 questions rapides, detection sectorielle, radar estime et quick wins instantanes." },
+              { step: "2", title: "Cartographie complete", desc: "150 questions en 10 packs thematiques. L'IA analyse chaque dimension en profondeur." },
+              { step: "3", title: "Plan d'action priorise", desc: "Carte interactive, analyse causale, estimation d'impact et export PPTX professionnel." },
             ].map(({ step, title, desc }) => (
               <Card key={step} className="text-center">
                 <CardContent className="p-6 space-y-3">
@@ -107,7 +116,7 @@ const CartHome = () => {
         <div className="container mx-auto max-w-2xl text-center space-y-6">
           <h2 className="text-2xl font-bold">Pret a cartographier votre organisation ?</h2>
           <p className="text-muted-foreground">
-            Commencez par un diagnostic rapide gratuit et decouvrez vos axes d'amelioration.
+            Commencez par un scan rapide gratuit et decouvrez vos axes d'amelioration.
           </p>
           <Link to="/cartographie/scan">
             <Button size="lg" className="bg-gradient-primary hover:opacity-90">

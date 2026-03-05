@@ -12,7 +12,6 @@ const Navigation = () => {
 
   const navItems = [
     { name: t('nav.home'), path: '/' },
-    { name: t('nav.diagnostic'), path: '/diagnostic' },
     { name: t('nav.cartographie'), path: '/cartographie' },
     { name: t('nav.contact'), path: '/contact' },
   ];
@@ -56,9 +55,9 @@ const Navigation = () => {
               <Languages className="h-4 w-4 mr-2" />
               {language === 'fr' ? 'EN' : 'FR'}
             </Button>
-            <Link to="/diagnostic">
+            <Link to="/cartographie/scan">
               <Button variant="default" className="bg-gradient-primary hover:opacity-90">
-                {t('nav.start_diagnostic')}
+                {t('nav.start_scan')}
               </Button>
             </Link>
           </div>

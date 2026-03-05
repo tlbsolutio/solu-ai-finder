@@ -79,7 +79,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
             "@type": "SearchAction",
             target: {
               "@type": "EntryPoint",
-              urlTemplate: `${data.url || "https://solutio.work"}/diagnostic`
+              urlTemplate: `${data.url || "https://solutio.work"}/cartographie/scan`
             }
           }
         };

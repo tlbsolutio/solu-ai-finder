@@ -17,21 +17,24 @@ const translations = {
     'nav.diagnostic': 'Diagnostic',
     'nav.cartographie': 'Cartographie',
     'nav.contact': 'Contact',
-    'nav.start_diagnostic': 'Diagnostic gratuit',
+    'nav.start_diagnostic': 'Scanner gratuitement',
+    'nav.start_scan': 'Scanner gratuitement',
 
     // Hero section
     'hero.badge': 'Conseil & Transformation Digitale',
     'hero.title': 'Solutio | Conseil en transformation digitale & cartographie organisationnelle',
     'hero.h1_title': 'Transformez votre organisation avec l\'IA',
-    'hero.subtitle': 'Diagnostic intelligent, cartographie organisationnelle et accompagnement sur mesure',
-    'hero.description': 'Solutio vous accompagne dans votre transformation digitale : diagnostic IA en 5 minutes, cartographie complète de vos processus et plan d\'action concret pour gagner en efficacité.',
-    'hero.cta_diagnostic': 'Diagnostic gratuit',
+    'hero.subtitle': 'Cartographie organisationnelle, analyse IA et accompagnement sur mesure',
+    'hero.description': 'Solutio vous accompagne dans votre transformation digitale : scan gratuit en 3 minutes, cartographie complète de vos processus et plan d\'action concret pour gagner en efficacité.',
+    'hero.cta_diagnostic': 'Scanner mon organisation',
+    'hero.cta_scan': 'Scanner mon organisation',
     'hero.cta_cartographie': 'Cartographie complète',
     'hero.cta_expert': 'Parler à un expert',
+    'home.scan_free_3min': 'Scan gratuit en 3 min',
 
     // Trust indicators
     'home.free': 'Gratuit',
-    'home.minutes': '5 minutes',
+    'home.minutes': '3 minutes',
     'home.no_commitment': 'Sans engagement',
 
     // Problem section
@@ -254,21 +257,24 @@ const translations = {
     'nav.diagnostic': 'Diagnostic',
     'nav.cartographie': 'Mapping',
     'nav.contact': 'Contact',
-    'nav.start_diagnostic': 'Free diagnostic',
+    'nav.start_diagnostic': 'Free scan',
+    'nav.start_scan': 'Free scan',
 
     // Hero section
     'hero.badge': 'Digital Transformation Consulting',
     'hero.title': 'Solutio | Digital transformation consulting & organizational mapping',
     'hero.h1_title': 'Transform your organization with AI',
-    'hero.subtitle': 'Smart diagnostic, organizational mapping and tailored support',
-    'hero.description': 'Solutio supports your digital transformation: AI diagnostic in 5 minutes, comprehensive process mapping and a concrete action plan to boost efficiency.',
-    'hero.cta_diagnostic': 'Free diagnostic',
+    'hero.subtitle': 'Organizational mapping, AI analysis and tailored support',
+    'hero.description': 'Solutio supports your digital transformation: free 3-minute scan, comprehensive process mapping and a concrete action plan to boost efficiency.',
+    'hero.cta_diagnostic': 'Scan my organization',
+    'hero.cta_scan': 'Scan my organization',
     'hero.cta_cartographie': 'Full mapping',
     'hero.cta_expert': 'Talk to an expert',
+    'home.scan_free_3min': 'Free 3-min scan',
 
     // Trust indicators
     'home.free': 'Free',
-    'home.minutes': '5 minutes',
+    'home.minutes': '3 minutes',
     'home.no_commitment': 'No commitment',
 
     // Problem section

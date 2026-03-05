@@ -3,24 +3,20 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Search, Zap, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, X, AlertCircle, TrendingDown, BarChart3, MapPin, Compass, Handshake } from 'lucide-react';
+import { Network, Search, Zap, Brain, TrendingUp, Users, CheckCircle, ArrowRight, Clock, DollarSign, Target, X, AlertCircle, TrendingDown, BarChart3, MapPin, Compass, Handshake } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
+import heroBg from '@/assets/hero-bg.jpg';
+import heroBusiness from '@/assets/hero-business.jpg';
+import heroModern from '@/assets/hero-modern.jpg';
 
 const Index = () => {
   const { t } = useLanguage();
 
   const services = [
     {
-      icon: Brain,
-      title: t('services.diagnostic.title'),
-      description: t('services.diagnostic.description'),
-      cta: t('services.diagnostic.cta'),
-      link: '/diagnostic',
-    },
-    {
-      icon: MapPin,
+      icon: Network,
       title: t('services.cartographie.title'),
       description: t('services.cartographie.description'),
       cta: t('services.cartographie.cta'),
@@ -114,12 +110,12 @@ const Index = () => {
         type="Organization"
         data={{
           name: 'Solutio',
-          description: 'Cabinet de conseil en transformation digitale. Diagnostic IA, cartographie organisationnelle et accompagnement sur mesure.',
+          description: 'Cabinet de conseil en transformation digitale. Cartographie organisationnelle IA et accompagnement sur mesure.',
           service: [
             {
               '@type': 'Service',
-              name: 'Diagnostic de maturité digitale',
-              description: 'Évaluation rapide par IA de la maturité digitale de votre organisation',
+              name: 'Scan de maturité organisationnelle',
+              description: 'Évaluation rapide gratuite par IA de la maturité de votre organisation',
             },
             {
               '@type': 'Service',
@@ -145,7 +141,10 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-32 lg:py-44">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-950 to-gray-900 z-0" />
+        <div className="absolute inset-0 z-0">
+          <img src={heroBg} alt="" className="w-full h-full object-cover" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gray-950/80" />
+        </div>
         <div className="absolute inset-0 opacity-[0.03] z-10" style={{
           backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
           backgroundSize: '40px 40px',
@@ -170,10 +169,10 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/diagnostic">
+              <Link to="/cartographie/scan">
                 <Button size="lg" className="px-8 py-3 text-base font-medium bg-white text-gray-900 hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]">
-                  <Brain className="h-5 w-5 mr-2" />
-                  {t('hero.cta_diagnostic')}
+                  <Network className="h-5 w-5 mr-2" />
+                  {t('hero.cta_scan')}
                 </Button>
               </Link>
               <Link to="/cartographie">
@@ -243,7 +242,13 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto mb-12">
+            <div className="rounded-2xl overflow-hidden shadow-lg">
+              <img src={heroModern} alt="Espace de travail moderne et optimise" className="w-full h-48 sm:h-64 object-cover" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {services.map((service, idx) => (
               <Card key={idx} className="group border border-border hover:border-primary/30 transition-all duration-200 hover:shadow-md bg-card">
                 <CardHeader>
@@ -341,10 +346,10 @@ const Index = () => {
               <p className="text-lg font-semibold text-foreground mb-6">
                 {t('proof.urgency')}
               </p>
-              <Link to="/diagnostic">
+              <Link to="/cartographie/scan">
                 <Button size="lg" className="transition-all duration-200 hover:scale-[1.02]">
-                  <Brain className="h-5 w-5 mr-2" />
-                  {t('proof.cta')}
+                  <Network className="h-5 w-5 mr-2" />
+                  {t('hero.cta_scan')}
                 </Button>
               </Link>
             </div>
@@ -390,6 +395,9 @@ const Index = () => {
             </div>
 
             <div className="space-y-4">
+              <div className="rounded-2xl overflow-hidden shadow-lg mb-4">
+                <img src={heroBusiness} alt="Equipe en reunion de travail collaboratif" className="w-full h-48 object-cover" />
+              </div>
               {testimonials.map((testimonial, idx) => (
                 <Card key={idx} className="border border-border bg-card">
                   <CardContent className="p-6">
@@ -426,10 +434,10 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-              <Link to="/diagnostic">
+              <Link to="/cartographie/scan">
                 <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 transition-all duration-200 hover:scale-[1.02]">
-                  <Brain className="h-5 w-5 mr-2" />
-                  {t('home.diagnostic_5min')}
+                  <Network className="h-5 w-5 mr-2" />
+                  {t('home.scan_free_3min')}
                 </Button>
               </Link>
               <Link to="/cartographie">

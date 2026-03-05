@@ -127,21 +127,96 @@ const CartQuickScan = () => {
             </div>
           )}
 
-          {/* CTA Upgrade */}
-          <Card className="border-primary/30 bg-primary/5">
+          {/* Teasing: Locked previews */}
+          <div className="space-y-3">
+            <h3 className="font-semibold flex items-center gap-2">
+              <Lock className="w-4 h-4 text-muted-foreground" />
+              Disponible avec la cartographie complete
+            </h3>
+            {[
+              { title: "Analyse causale inter-packs", preview: "Les dysfonctionnements RH impactent directement la productivite operationnelle. La cause racine identifiee remonte a un deficit de gouvernance sur les processus de decision..." },
+              { title: "Plan d'actions priorise (P1/P2/P3)", preview: "P1 — Mettre en place un outil de gestion de projet centralise (impact: eleve, effort: moyen). P2 — Former les managers aux rituels d'equipe agiles..." },
+              { title: "Estimation d'impact financier", preview: "Gain potentiel estime : 45 000 a 78 000 EUR/an. Principaux leviers : reduction des taches manuelles (-30%), amelioration du taux de conversion (+15%)..." },
+            ].map(({ title, preview }) => (
+              <Card key={title} className="border-muted relative overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium">{title}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground blur-[5px] select-none" aria-hidden="true">
+                    {preview}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Comparison table */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Scan gratuit vs Cartographie complete</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Fonctionnalite</th>
+                      <th className="text-center py-2 px-3 font-medium">Scan gratuit</th>
+                      <th className="text-center py-2 px-3 font-medium text-primary">Carto complete</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {[
+                      ["Questions", "12 rapides", "150 approfondies"],
+                      ["Radar maturite", "Estime", "Precis par pack"],
+                      ["Analyse IA", "Resume global", "Par pack + causale"],
+                      ["Quick wins", "3-5", "Kanban complet"],
+                      ["Carte interactive", "—", "\u2713"],
+                      ["Plan d'actions priorise", "—", "\u2713"],
+                      ["Export PPTX", "—", "\u2713"],
+                    ].map(([feature, free, paid]) => (
+                      <tr key={feature}>
+                        <td className="py-2 pr-4">{feature}</td>
+                        <td className="py-2 px-3 text-center text-muted-foreground">{free}</td>
+                        <td className="py-2 px-3 text-center font-medium">{paid}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA Conversion */}
+          <Card className="border-2 border-primary/30 bg-primary/5">
             <CardContent className="p-6 text-center space-y-4">
-              <Lock className="w-8 h-8 text-primary mx-auto" />
-              <h3 className="text-lg font-bold">Debloquer l'analyse complete</h3>
+              <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                Offre de lancement
+              </Badge>
+              <h3 className="text-lg font-bold">Passez a la cartographie complete</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Ce scan rapide donne un apercu. La version complete inclut 150 questions, une analyse IA
-                par pack, un plan d'action priorise et un export PPTX professionnel.
+                150 questions, analyse IA approfondie, carte interactive, plan d'actions priorise et export PPTX professionnel.
               </p>
-              <Link to="/cartographie/sessions">
-                <Button className="bg-gradient-primary hover:opacity-90">
-                  <Network className="w-4 h-4 mr-2" />
-                  Commencer la cartographie complete
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  className="bg-gradient-primary hover:opacity-90"
+                  onClick={() => window.open("https://pay.revolut.com/payment-link/solutio-cartographie", "_blank")}
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Debloquer la version complete
                 </Button>
-              </Link>
+                <Link to="/cartographie/login">
+                  <Button variant="outline">
+                    <Network className="w-4 h-4 mr-2" />
+                    Se connecter
+                  </Button>
+                </Link>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Vos reponses au scan seront conservees pour enrichir votre cartographie complete.
+              </p>
             </CardContent>
           </Card>
         </div>

@@ -2,14 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartSessionProvider } from "@/contexts/CartSessionContext";
 import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ui/error-boundary";
 import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
-import Diagnostic from "./pages/Diagnostic";
+// Diagnostic page removed from tunnel — kept as file but not routed
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import PrivacyEn from "./pages/PrivacyEn";
@@ -43,7 +43,7 @@ const App = () => (
               <CartSessionProvider>
                 <Routes>
                   <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-                  <Route path="/diagnostic" element={<MainLayout><Diagnostic /></MainLayout>} />
+                  <Route path="/diagnostic" element={<Navigate to="/cartographie" replace />} />
                   <Route path="/contact" element={<MainLayout><Contact /></MainLayout>} />
                   <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
                   <Route path="/privacy-en" element={<MainLayout><PrivacyEn /></MainLayout>} />
@@ -56,7 +56,7 @@ const App = () => (
                   {/* Cartographie routes - public */}
                   <Route path="/cartographie" element={<MainLayout><CartHome /></MainLayout>} />
                   <Route path="/cartographie/scan" element={<MainLayout><CartQuickScan /></MainLayout>} />
-                  <Route path="/cartographie/login" element={<CartLogin />} />
+                  <Route path="/cartographie/login" element={<MainLayout><CartLogin /></MainLayout>} />
                   {/* Cartographie routes - protected */}
                   <Route path="/cartographie/sessions" element={<AuthGuard><CartSessions /></AuthGuard>} />
                   <Route path="/cartographie/sessions/new" element={<AuthGuard><CartSessions /></AuthGuard>} />
