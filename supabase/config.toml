@@ -17,3 +17,15 @@ verify_jwt = false
 
 [functions.get-ai-recommendations]
 verify_jwt = false
+
+[functions.cart-pack-analyze]
+verify_jwt = true
+
+[functions.cart-generate-analysis]
+verify_jwt = true
+
+[functions.cart-quick-scan]
+verify_jwt = false
+
+[functions.cart-analyze-ollama]
+verify_jwt = true

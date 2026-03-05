@@ -1,8 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCartContext } from "@/contexts/CartSessionContext";
 import {
   Network, Sparkles, Target, BarChart3, Users, Zap, ArrowRight,
   CheckCircle, ClipboardList, Brain, Laptop,
@@ -10,6 +11,9 @@ import {
 
 const CartHome = () => {
   const { t } = useLanguage();
+  const { isAuthenticated } = useCartContext();
+  const navigate = useNavigate();
+  const sessionsLink = isAuthenticated ? "/cartographie/sessions" : "/cartographie/login";
 
   const benefits = [
     { icon: Target, title: "10 axes d'analyse", desc: "Evaluez la maturite de votre organisation sur 10 dimensions cles" },
@@ -44,10 +48,10 @@ const CartHome = () => {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
-            <Link to="/cartographie/sessions">
+            <Link to={sessionsLink}>
               <Button size="lg" variant="outline" className="w-full sm:w-auto">
                 <ClipboardList className="w-5 h-5 mr-2" />
-                Mes sessions
+                {isAuthenticated ? "Mes sessions" : "Se connecter"}
               </Button>
             </Link>
           </div>

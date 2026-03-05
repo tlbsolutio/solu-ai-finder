@@ -25,6 +25,8 @@ import CartSessions from "./pages/CartSessions";
 import CartSessionDashboard from "./pages/CartSessionDashboard";
 import CartPackWizard from "./pages/CartPackWizard";
 import CartPackResults from "./pages/CartPackResults";
+import CartLogin from "./pages/CartLogin";
+import { AuthGuard } from "./components/cartographie/AuthGuard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,14 +53,16 @@ const App = () => (
                   <Route path="/legal-en" element={<MainLayout><LegalEn /></MainLayout>} />
                   <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
                   <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
-                  {/* Cartographie routes */}
+                  {/* Cartographie routes - public */}
                   <Route path="/cartographie" element={<MainLayout><CartHome /></MainLayout>} />
                   <Route path="/cartographie/scan" element={<MainLayout><CartQuickScan /></MainLayout>} />
-                  <Route path="/cartographie/sessions" element={<CartSessions />} />
-                  <Route path="/cartographie/sessions/new" element={<CartSessions />} />
-                  <Route path="/cartographie/sessions/:id" element={<CartSessionDashboard />} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<CartPackWizard />} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<CartPackResults />} />
+                  <Route path="/cartographie/login" element={<CartLogin />} />
+                  {/* Cartographie routes - protected */}
+                  <Route path="/cartographie/sessions" element={<AuthGuard><CartSessions /></AuthGuard>} />
+                  <Route path="/cartographie/sessions/new" element={<AuthGuard><CartSessions /></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id" element={<AuthGuard><CartSessionDashboard /></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><CartPackWizard /></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><CartPackResults /></AuthGuard>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>

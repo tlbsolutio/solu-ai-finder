@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { ArrowLeft, Plus, Network } from "lucide-react";
+import { ArrowLeft, Plus, Network, LogOut, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CartSession {
@@ -27,7 +27,7 @@ interface CartSession {
 const CartSessions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ownerId, ensureSession, isPaid } = useCartContext();
+  const { ownerId, ensureSession, isPaid, userEmail, userName, signOut } = useCartContext();
   const { toast } = useToast();
 
   const [sessions, setSessions] = useState<CartSession[]>([]);
@@ -111,7 +111,18 @@ const CartSessions = () => {
               </div>
             </div>
           </div>
-          <Button onClick={() => setShowNewDialog(true)} className="w-full sm:w-auto"><Plus className="w-4 h-4 mr-2" />Nouvelle session</Button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button onClick={() => setShowNewDialog(true)} className="flex-1 sm:flex-initial"><Plus className="w-4 h-4 mr-2" />Nouvelle session</Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-muted px-2 py-1.5 rounded-md">
+                <User className="w-3 h-3" />
+                <span className="max-w-[120px] truncate">{userName || userEmail || "Utilisateur"}</span>
+              </div>
+              <Button variant="ghost" size="icon" onClick={async () => { await signOut(); navigate("/cartographie/login"); }} title="Se deconnecter">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </header>
 
