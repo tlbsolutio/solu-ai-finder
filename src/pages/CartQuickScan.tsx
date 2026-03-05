@@ -14,7 +14,7 @@ import { useQuickScan } from "@/hooks/useQuickScan";
 import { MiniRadarChart } from "@/components/cartographie/MiniRadarChart";
 import { QuickWinCard } from "@/components/cartographie/QuickWinCard";
 import { SECTORS, detectSectorByKeywords, detectSectorByNAF, getSectorById } from "@/data/sectors";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock, Network, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Sparkles, Lock, Network, CheckCircle2, BarChart3 } from "lucide-react";
 
 const QUICK_QUESTIONS = [
   { id: "q1", bloc: "1", question: "Quelle est la taille de votre entreprise ?", type: "choice", options: ["1-10", "11-50", "51-200", "200+"] },
@@ -78,10 +78,13 @@ const CartQuickScan = () => {
 
   if (step === "results" && result) {
     return (
-      <div className="min-h-screen py-8 px-4">
-        <div className="container mx-auto max-w-3xl space-y-6">
+      <div className="min-h-screen bg-background py-8 px-4">
+        <div className="container mx-auto max-w-3xl space-y-6 animate-fade-in-up">
+          {/* Results header */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => setStep("form")}><ArrowLeft className="w-5 h-5" /></Button>
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setStep("form")}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
             <div>
               <h1 className="text-xl font-bold">Resultats du scan rapide</h1>
               <p className="text-sm text-muted-foreground">Apercu de votre maturite organisationnelle</p>
@@ -89,8 +92,14 @@ const CartQuickScan = () => {
           </div>
 
           {/* Radar */}
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-base">Radar de maturite (estime)</CardTitle></CardHeader>
+          <Card className="overflow-hidden">
+            <div className="h-1 w-full bg-gradient-to-r from-primary to-primary/50" />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" />
+                Radar de maturite (estime)
+              </CardTitle>
+            </CardHeader>
             <CardContent className="flex justify-center py-4">
               <MiniRadarChart scores={result.scores} size={240} />
             </CardContent>
@@ -99,18 +108,18 @@ const CartQuickScan = () => {
           {/* Resume */}
           <Card>
             <CardHeader className="pb-2"><CardTitle className="text-base">Resume</CardTitle></CardHeader>
-            <CardContent><p className="text-sm leading-relaxed">{result.resume}</p></CardContent>
+            <CardContent><p className="text-sm leading-relaxed text-foreground/80">{result.resume}</p></CardContent>
           </Card>
 
           {/* Dysfonctionnements */}
           {result.dysfonctionnements.length > 0 && (
-            <Card>
+            <Card className="border-red-200/50">
               <CardHeader className="pb-2"><CardTitle className="text-base">Dysfonctionnements detectes</CardTitle></CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2.5">
                 {result.dysfonctionnements.map((d, i) => (
-                  <div key={i} className="flex items-start gap-2">
+                  <div key={i} className="flex items-start gap-2.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0" />
-                    <p className="text-sm">{d}</p>
+                    <p className="text-sm text-foreground/80">{d}</p>
                   </div>
                 ))}
               </CardContent>
@@ -120,7 +129,12 @@ const CartQuickScan = () => {
           {/* Quick wins */}
           {result.quick_wins.length > 0 && (
             <div className="space-y-3">
-              <h3 className="font-semibold flex items-center gap-2"><Sparkles className="w-4 h-4 text-yellow-500" />Quick wins</h3>
+              <h3 className="font-semibold flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-amber-500/10 flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                </div>
+                Quick wins
+              </h3>
               {result.quick_wins.map((qw, i) => (
                 <QuickWinCard key={i} action={qw.action} impact={qw.impact} effort={qw.effort} categorie={qw.categorie} />
               ))}
@@ -130,7 +144,9 @@ const CartQuickScan = () => {
           {/* Teasing: Locked previews */}
           <div className="space-y-3">
             <h3 className="font-semibold flex items-center gap-2">
-              <Lock className="w-4 h-4 text-muted-foreground" />
+              <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center">
+                <Lock className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
               Disponible avec la cartographie complete
             </h3>
             {[
@@ -162,9 +178,9 @@ const CartQuickScan = () => {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 pr-4 font-medium text-muted-foreground">Fonctionnalite</th>
-                      <th className="text-center py-2 px-3 font-medium">Scan gratuit</th>
-                      <th className="text-center py-2 px-3 font-medium text-primary">Carto complete</th>
+                      <th className="text-left py-2.5 pr-4 font-medium text-muted-foreground">Fonctionnalite</th>
+                      <th className="text-center py-2.5 px-3 font-medium text-muted-foreground">Gratuit</th>
+                      <th className="text-center py-2.5 px-3 font-medium text-primary">Complete</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -175,12 +191,12 @@ const CartQuickScan = () => {
                       ["Quick wins", "3-5", "Kanban complet"],
                       ["Carte interactive", "—", "\u2713"],
                       ["Plan d'actions priorise", "—", "\u2713"],
-                      ["Export PPTX", "—", "\u2713"],
+                      ["Export PDF", "—", "\u2713"],
                     ].map(([feature, free, paid]) => (
-                      <tr key={feature}>
-                        <td className="py-2 pr-4">{feature}</td>
-                        <td className="py-2 px-3 text-center text-muted-foreground">{free}</td>
-                        <td className="py-2 px-3 text-center font-medium">{paid}</td>
+                      <tr key={feature} className="hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 pr-4 text-foreground/80">{feature}</td>
+                        <td className="py-2.5 px-3 text-center text-muted-foreground">{free}</td>
+                        <td className="py-2.5 px-3 text-center font-medium text-primary">{paid}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -190,32 +206,35 @@ const CartQuickScan = () => {
           </Card>
 
           {/* CTA Conversion */}
-          <Card className="border-2 border-primary/30 bg-primary/5">
-            <CardContent className="p-6 text-center space-y-4">
+          <Card className="overflow-hidden border-0 shadow-lg" style={{
+            background: 'linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--primary) / 0.02) 100%)',
+          }}>
+            <div className="h-1 w-full bg-gradient-to-r from-primary to-primary/50" />
+            <CardContent className="p-6 sm:p-8 text-center space-y-4">
               <Badge className="bg-primary text-primary-foreground px-4 py-1">
                 Offre de lancement
               </Badge>
               <h3 className="text-lg font-bold">Passez a la cartographie complete</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                150 questions, analyse IA approfondie, carte interactive, plan d'actions priorise et export PPTX professionnel.
+                150 questions, analyse IA approfondie, carte interactive, plan d'actions priorise et export PDF professionnel.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                 <Button
-                  className="bg-gradient-primary hover:opacity-90"
+                  className="bg-gradient-primary hover:opacity-90 h-11"
                   onClick={() => window.open("https://pay.revolut.com/payment-link/solutio-cartographie", "_blank")}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
                   Debloquer la version complete
                 </Button>
                 <Link to="/cartographie/login">
-                  <Button variant="outline">
+                  <Button variant="outline" className="h-11 w-full sm:w-auto">
                     <Network className="w-4 h-4 mr-2" />
                     Se connecter
                   </Button>
                 </Link>
               </div>
               <p className="text-xs text-muted-foreground">
-                Vos reponses au scan seront conservees pour enrichir votre cartographie complete.
+                Vos reponses au scan seront conservees pour enrichir votre cartographie.
               </p>
             </CardContent>
           </Card>
@@ -225,22 +244,28 @@ const CartQuickScan = () => {
   }
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="container mx-auto max-w-2xl space-y-6">
+        {/* Header */}
         <div className="flex items-center gap-3">
-          <Link to="/cartographie"><Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button></Link>
+          <Link to="/cartographie">
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          </Link>
           <div>
             <h1 className="text-xl font-bold">Scan rapide</h1>
-            <p className="text-sm text-muted-foreground">Obtenez un apercu de la maturite de votre organisation en 3 minutes</p>
+            <p className="text-sm text-muted-foreground">Apercu de la maturite de votre organisation en 3 minutes</p>
           </div>
         </div>
 
         {/* Progress */}
-        <Card>
+        <Card className="overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-primary to-primary/50" style={{ width: `${progress}%`, transition: 'width 0.3s ease' }} />
           <CardContent className="p-4">
             <div className="flex justify-between mb-2">
               <span className="text-sm text-muted-foreground">{answered}/{QUICK_QUESTIONS.length} questions</span>
-              <Badge variant="secondary">{progress}%</Badge>
+              <Badge variant="secondary" className="font-mono">{progress}%</Badge>
             </div>
             <Progress value={progress} className="h-2" />
           </CardContent>
@@ -248,25 +273,29 @@ const CartQuickScan = () => {
 
         {/* Sector Detection */}
         <Card className="border-primary/20">
-          <CardHeader className="pb-2"><CardTitle className="text-base">Votre entreprise</CardTitle></CardHeader>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Network className="w-4 h-4 text-primary" />
+              Votre entreprise
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-sm mb-1.5 block">Decrivez votre activite</Label>
+              <Label className="text-xs font-medium mb-1.5 block">Decrivez votre activite</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Decrivez en quelques phrases votre activite, vos principaux defis et ce que vous aimeriez ameliorer..."
                 rows={3}
+                className="resize-none"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm mb-1.5 block">Secteur d'activite</Label>
+                <Label className="text-xs font-medium mb-1.5 block">Secteur d'activite</Label>
                 <Select value={selectedSector} onValueChange={setSelectedSector}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selectionnez un secteur" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Selectionnez" /></SelectTrigger>
                   <SelectContent>
                     {SECTORS.map((s) => (
                       <SelectItem key={s.id} value={s.id}>{s.nom}</SelectItem>
@@ -275,41 +304,46 @@ const CartQuickScan = () => {
                 </Select>
               </div>
               <div>
-                <Label className="text-sm mb-1.5 block">Code NAF (optionnel)</Label>
+                <Label className="text-xs font-medium mb-1.5 block">Code NAF (optionnel)</Label>
                 <Input value={nafCode} onChange={(e) => setNafCode(e.target.value)} placeholder="Ex: 62.01Z" />
               </div>
             </div>
 
             <div>
-              <Label className="text-sm mb-1.5 block">Effectif</Label>
-              <RadioGroup value={effectif} onValueChange={setEffectif} className="flex flex-wrap gap-3">
+              <Label className="text-xs font-medium mb-1.5 block">Effectif</Label>
+              <RadioGroup value={effectif} onValueChange={setEffectif} className="flex flex-wrap gap-2">
                 {["1-10", "11-50", "51-200", "200+"].map((opt) => (
-                  <div key={opt} className="flex items-center space-x-1.5">
-                    <RadioGroupItem value={opt} id={`eff-${opt}`} />
-                    <Label htmlFor={`eff-${opt}`}>{opt}</Label>
+                  <div key={opt} className="flex items-center">
+                    <RadioGroupItem value={opt} id={`eff-${opt}`} className="sr-only peer" />
+                    <Label
+                      htmlFor={`eff-${opt}`}
+                      className="px-3 py-1.5 rounded-full border text-xs cursor-pointer transition-colors peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground peer-data-[state=checked]:border-primary hover:bg-muted"
+                    >
+                      {opt}
+                    </Label>
                   </div>
                 ))}
               </RadioGroup>
             </div>
 
             {detectedSector && (
-              <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 space-y-2">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-3.5 space-y-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">Secteur detecte : {detectedSector.nom}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Confirmez les termes qui correspondent a votre activite :</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-xs text-muted-foreground">Confirmez les termes qui correspondent :</p>
+                <div className="flex flex-wrap gap-1.5">
                   {detectedSector.vocabulaireConfirmation.map((term) => (
                     <button
                       key={term}
                       onClick={() => setConfirmedTerms((prev) =>
                         prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]
                       )}
-                      className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                      className={`text-xs px-2.5 py-1 rounded-full border transition-all duration-200 ${
                         confirmedTerms.includes(term)
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-white border-muted-foreground/20 hover:border-primary/50"
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                          : "bg-background border-border hover:border-primary/50"
                       }`}
                     >
                       {term}
@@ -322,40 +356,64 @@ const CartQuickScan = () => {
         </Card>
 
         {/* Questions */}
-        <div className="space-y-4">
-          {QUICK_QUESTIONS.map((q) => (
-            <Card key={q.id}>
+        <div className="space-y-3">
+          {QUICK_QUESTIONS.map((q, idx) => (
+            <Card key={q.id} className={`transition-all duration-200 ${answers[q.id] ? "border-primary/20 bg-primary/[0.02]" : ""}`}>
               <CardContent className="p-4 space-y-3">
-                <div className="flex items-start gap-2">
-                  <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${answers[q.id] ? "bg-green-500" : "bg-muted-foreground/30"}`} />
-                  <Label className="text-sm font-medium leading-relaxed">{q.question}</Label>
+                <div className="flex items-start gap-3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-medium transition-colors ${
+                    answers[q.id]
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  <Label className="text-sm font-medium leading-relaxed pt-0.5">{q.question}</Label>
                 </div>
-                <div className="ml-4">
+                <div className="ml-9">
                   {q.type === "yesno" && (
-                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => updateAnswer(q.id, v)} className="flex gap-4">
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="Oui" id={`${q.id}-oui`} /><Label htmlFor={`${q.id}-oui`}>Oui</Label></div>
-                      <div className="flex items-center space-x-2"><RadioGroupItem value="Non" id={`${q.id}-non`} /><Label htmlFor={`${q.id}-non`}>Non</Label></div>
-                    </RadioGroup>
+                    <div className="flex gap-2">
+                      {["Oui", "Non"].map(val => (
+                        <button
+                          key={val}
+                          onClick={() => updateAnswer(q.id, val)}
+                          className={`px-4 py-1.5 rounded-lg text-sm border transition-all duration-200 ${
+                            answers[q.id] === val
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-background border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
                   )}
                   {q.type === "scale" && (
                     <div className="space-y-2">
                       <Slider value={[parseInt(answers[q.id] || "3")]} onValueChange={([v]) => updateAnswer(q.id, String(v))} min={1} max={5} step={1} />
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>1 - Faible</span>
-                        <span className="font-medium text-foreground">{answers[q.id] || "3"}/5</span>
-                        <span>5 - Excellent</span>
+                        <span>Faible</span>
+                        <span className="font-medium text-foreground bg-primary/10 px-2 py-0.5 rounded-full">{answers[q.id] || "3"}/5</span>
+                        <span>Excellent</span>
                       </div>
                     </div>
                   )}
                   {q.type === "choice" && q.options && (
-                    <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => updateAnswer(q.id, v)} className="flex flex-wrap gap-3">
-                      {q.options.map((opt, i) => (
-                        <div key={i} className="flex items-center space-x-2">
-                          <RadioGroupItem value={opt} id={`${q.id}-${i}`} />
-                          <Label htmlFor={`${q.id}-${i}`}>{opt}</Label>
-                        </div>
+                    <div className="flex flex-wrap gap-2">
+                      {q.options.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => updateAnswer(q.id, opt)}
+                          className={`px-3 py-1.5 rounded-lg text-xs border transition-all duration-200 ${
+                            answers[q.id] === opt
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-background border-border hover:border-primary/50"
+                          }`}
+                        >
+                          {opt}
+                        </button>
                       ))}
-                    </RadioGroup>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -369,7 +427,7 @@ const CartQuickScan = () => {
             size="lg"
             onClick={handleSubmit}
             disabled={loading || answered < 5}
-            className="bg-gradient-primary hover:opacity-90"
+            className="bg-gradient-primary hover:opacity-90 h-12 px-8"
           >
             {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Sparkles className="w-5 h-5 mr-2" />}
             {loading ? "Analyse en cours..." : "Obtenir mes resultats"}

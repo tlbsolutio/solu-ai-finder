@@ -29,43 +29,42 @@ import { Download } from "lucide-react";
 const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
 
 const LockedTabContent = ({ onUnlock }: { onUnlock: () => void }) => (
-  <div className="relative pb-8">
-    <div className="absolute inset-0 z-10 flex items-center justify-center">
-      <Card className="max-w-sm w-full text-center shadow-lg">
-        <CardContent className="p-6 space-y-4">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-            <Lock className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg">Contenu verrouille</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Cette section est reservee aux utilisateurs de la version complete.
-            </p>
-          </div>
-          <Button onClick={onUnlock} className="w-full bg-gradient-primary hover:opacity-90">
-            <Lock className="w-4 h-4 mr-2" />
-            Debloquez l'acces complet
-          </Button>
-        </CardContent>
-      </Card>
+  <div className="relative min-h-[300px]">
+    <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
+      <div className="max-w-sm w-full text-center space-y-4 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-6">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+          <Lock className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h3 className="font-semibold">Contenu reserve</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Debloquez cette section avec la version complete.
+          </p>
+        </div>
+        <Button onClick={onUnlock} className="w-full h-10 bg-gradient-primary hover:opacity-90 text-sm">
+          <Sparkles className="w-4 h-4 mr-2" />
+          Debloquer l'acces complet
+        </Button>
+      </div>
     </div>
-    <div className="filter blur-sm opacity-40 pointer-events-none select-none" aria-hidden="true">
-      <div className="space-y-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="h-4 bg-muted rounded w-3/4 mb-3" />
-            <div className="h-3 bg-muted rounded w-full mb-2" />
-            <div className="h-3 bg-muted rounded w-5/6 mb-2" />
-            <div className="h-3 bg-muted rounded w-2/3" />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="h-4 bg-muted rounded w-1/2 mb-3" />
-            <div className="h-3 bg-muted rounded w-full mb-2" />
-            <div className="h-3 bg-muted rounded w-4/5" />
-          </CardContent>
-        </Card>
+    <div className="filter blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
+      <div className="space-y-3">
+        <div className="rounded-xl border p-5">
+          <div className="skeleton h-4 w-3/4 mb-3" />
+          <div className="skeleton h-3 w-full mb-2" />
+          <div className="skeleton h-3 w-5/6 mb-2" />
+          <div className="skeleton h-3 w-2/3" />
+        </div>
+        <div className="rounded-xl border p-5">
+          <div className="skeleton h-4 w-1/2 mb-3" />
+          <div className="skeleton h-3 w-full mb-2" />
+          <div className="skeleton h-3 w-4/5" />
+        </div>
+        <div className="rounded-xl border p-5">
+          <div className="skeleton h-4 w-2/3 mb-3" />
+          <div className="skeleton h-3 w-full mb-2" />
+          <div className="skeleton h-3 w-3/4" />
+        </div>
       </div>
     </div>
   </div>

@@ -187,15 +187,16 @@ const Index = () => {
               {t('hero.description')}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
               <Link to="/cartographie/scan">
-                <Button size="lg" className="px-8 py-3 text-base font-semibold bg-gradient-to-r from-white to-gray-100 text-gray-900 hover:from-gray-100 hover:to-white shadow-lg shadow-white/10 transition-all duration-300 hover:shadow-xl hover:shadow-white/20 hover:scale-[1.03]">
+                <Button size="lg" className="h-12 px-8 text-base font-semibold bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 transition-all duration-300 hover:shadow-xl hover:shadow-white/20 hover:scale-[1.02]">
                   <Network className="h-5 w-5 mr-2" />
                   {t('hero.cta_scan')}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
               <Link to="/cartographie">
-                <Button variant="outline" size="lg" className="px-8 py-3 text-base font-medium border border-white/20 text-white bg-white/5 hover:bg-white/10 shadow-sm shadow-white/5 hover:shadow-md hover:shadow-white/10 transition-all duration-300 hover:scale-[1.03] backdrop-blur-sm">
+                <Button variant="outline" size="lg" className="h-12 px-8 text-base font-medium border-white/20 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02]">
                   <MapPin className="h-5 w-5 mr-2" />
                   {t('hero.cta_cartographie')}
                 </Button>
@@ -473,15 +474,16 @@ const Index = () => {
               {t('home.cta_additional')}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
               <Link to="/cartographie/scan">
-                <Button size="lg" className="bg-gradient-to-r from-white to-gray-100 text-gray-900 hover:from-gray-100 hover:to-white shadow-lg shadow-white/10 hover:shadow-xl hover:shadow-white/20 transition-all duration-300 hover:scale-[1.03] font-semibold">
+                <Button size="lg" className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 hover:shadow-xl transition-all duration-300 hover:scale-[1.02] font-semibold">
                   <Network className="h-5 w-5 mr-2" />
                   {t('home.scan_free_3min')}
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </Link>
               <Link to="/cartographie">
-                <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 shadow-sm shadow-white/5 hover:shadow-md hover:shadow-white/10 transition-all duration-300 hover:scale-[1.03] backdrop-blur-sm">
+                <Button variant="outline" size="lg" className="h-12 px-8 border-white/20 text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02]">
                   <MapPin className="h-5 w-5 mr-2" />
                   {t('home.expert_cta')}
                 </Button>

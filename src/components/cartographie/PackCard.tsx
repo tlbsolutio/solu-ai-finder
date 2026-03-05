@@ -3,8 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Star, ChevronRight, Lock } from "lucide-react";
+import {
+  Star, ChevronRight, Lock, Building2, Target, Landmark, Users, Briefcase,
+  Cog, Monitor, MessageSquare, ShieldCheck, BarChart3,
+} from "lucide-react";
 import type { CartPackResume } from "@/lib/cartTypes";
+
+const PACK_ICONS = [Building2, Target, Landmark, Users, Briefcase, Cog, Monitor, MessageSquare, ShieldCheck, BarChart3];
 
 export interface PackDef {
   bloc: number;
@@ -29,6 +34,19 @@ export const PACK_DEFINITIONS: PackDef[] = [
   { bloc: 10, icon: "📊", title: "KPIs & Pilotage", description: "Indicateurs, tableaux de bord, strategie", totalQuestions: 15, estimatedMinutes: 5, color: "bg-red-500" },
 ];
 
+const PACK_COLORS: Record<number, string> = {
+  1: "from-blue-500 to-blue-600",
+  2: "from-purple-500 to-purple-600",
+  3: "from-indigo-500 to-indigo-600",
+  4: "from-pink-500 to-pink-600",
+  5: "from-orange-500 to-orange-600",
+  6: "from-yellow-500 to-yellow-600",
+  7: "from-teal-500 to-teal-600",
+  8: "from-cyan-500 to-cyan-600",
+  9: "from-green-500 to-green-600",
+  10: "from-red-500 to-red-600",
+};
+
 interface Props {
   sessionId: string;
   packDef: PackDef;
@@ -43,12 +61,13 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
   const navigate = useNavigate();
   const totalQ = realTotalQuestions ?? packDef.totalQuestions;
   const progress = totalQ > 0 ? Math.round((answeredQuestions / totalQ) * 100) : 0;
+  const PackIcon = PACK_ICONS[packDef.bloc - 1] || Building2;
 
   const getBadge = () => {
-    if (locked) return <Badge variant="outline" className="text-muted-foreground"><Lock className="w-3 h-3 mr-1" />Verrouille</Badge>;
-    if (status === "done") return <Badge className="bg-green-500 text-white">Analyse</Badge>;
-    if (status === "in_progress") return <Badge className="bg-orange-500 text-white">En cours</Badge>;
-    return <Badge variant="outline" className="text-muted-foreground">A faire</Badge>;
+    if (locked) return <Badge variant="outline" className="text-muted-foreground text-[10px]"><Lock className="w-3 h-3 mr-1" />Verrouille</Badge>;
+    if (status === "done") return <Badge className="bg-emerald-500 text-white text-[10px]">Analyse</Badge>;
+    if (status === "in_progress") return <Badge className="bg-amber-500 text-white text-[10px]">En cours</Badge>;
+    return <Badge variant="outline" className="text-muted-foreground text-[10px]">A faire</Badge>;
   };
 
   const getButtonLabel = () => {
@@ -69,25 +88,27 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
 
   const renderStars = (score: number) => (
     Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`w-3 h-3 ${i < score ? "fill-yellow-400 text-yellow-400" : "text-muted"}`} />
+      <Star key={i} className={`w-3 h-3 ${i < score ? "fill-amber-400 text-amber-400" : "text-muted"}`} />
     ))
   );
 
   return (
     <Card
-      className={`relative overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
-        locked ? "opacity-60" : status === "done" ? "border-green-200 bg-green-50/30" : ""
+      className={`relative overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group ${
+        locked ? "opacity-60" : status === "done" ? "border-emerald-200/50" : ""
       }`}
       onClick={handleClick}
     >
-      <div className={`h-1 w-full ${packDef.color}`} />
+      <div className={`h-1 w-full bg-gradient-to-r ${PACK_COLORS[packDef.bloc] || packDef.color}`} />
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{packDef.icon}</span>
-            <div>
-              <p className="font-semibold text-sm leading-tight">{packDef.title}</p>
-              <p className="text-xs text-muted-foreground">{packDef.description}</p>
+          <div className="flex items-center gap-2.5">
+            <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${PACK_COLORS[packDef.bloc] || "from-primary to-primary"} flex items-center justify-center shrink-0`}>
+              <PackIcon className="w-4 h-4 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm leading-tight truncate">{packDef.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{packDef.description}</p>
             </div>
           </div>
           {getBadge()}
@@ -110,20 +131,25 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
               <span className="text-xs text-muted-foreground ml-1">{packResume.score_maturite}/5</span>
             </div>
             {packResume.resume && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{packResume.resume}</p>}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-1.5 flex-wrap">
               {packResume.objets_generes_count > 0 && (
-                <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{packResume.objets_generes_count} objets detectes</span>
+                <span className="text-[10px] bg-muted px-2 py-0.5 rounded-full font-medium">{packResume.objets_generes_count} objets</span>
               )}
               {(packResume.alertes || []).length > 0 && (
-                <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">{(packResume.alertes || []).length} alerte(s)</span>
+                <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">{(packResume.alertes || []).length} alerte(s)</span>
               )}
             </div>
           </div>
         )}
 
-        <Button size="sm" variant={status === "done" ? "outline" : locked ? "secondary" : "default"} className="w-full" onClick={(e) => { e.stopPropagation(); handleClick(); }}>
+        <Button
+          size="sm"
+          variant={status === "done" ? "outline" : locked ? "secondary" : "default"}
+          className={`w-full text-xs ${status !== "done" && !locked ? "bg-gradient-primary hover:opacity-90" : ""}`}
+          onClick={(e) => { e.stopPropagation(); handleClick(); }}
+        >
           {getButtonLabel()}
-          <ChevronRight className="w-3 h-3 ml-1" />
+          <ChevronRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 transition-transform" />
         </Button>
       </CardContent>
     </Card>
