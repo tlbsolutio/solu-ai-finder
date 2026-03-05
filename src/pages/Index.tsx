@@ -174,14 +174,15 @@ const Index = () => {
             >
               Voir nos outils
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => scrollTo('accompagnement')}
-              className="h-12 px-8 border-white/25 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm"
-            >
-              Travailler avec nous
-            </Button>
+            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-12 px-8 border-white/25 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+              >
+                Travailler avec nous
+              </Button>
+            </a>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -429,11 +430,11 @@ const Index = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 mb-3">
-                <Link to="/contact">
+                <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
                   <Button className="font-semibold shadow-md shadow-primary/20">
                     Parler de mon projet
                   </Button>
-                </Link>
+                </a>
                 <Link to="/cartographie/login">
                   <Button variant="outline">Commencer par le diagnostic</Button>
                 </Link>
@@ -583,12 +584,12 @@ const Index = () => {
               <p className="text-[15px] text-white/50 leading-relaxed mb-8">
                 On parle de votre organisation, vos besoins, ce qu'on peut construire ensemble.
               </p>
-              <Link to="/contact">
+              <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
                 <Button className="bg-slate-800 text-white hover:bg-slate-700 font-semibold">
                   Reserver un echange
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </div>
