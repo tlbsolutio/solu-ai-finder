@@ -104,7 +104,13 @@ const CartPackResults = () => {
         body: { session_id: id, bloc_number: bloc, reponses: formattedReponses },
       });
 
-      if (error) throw new Error(data?.error || error.message || "Erreur lors de l'analyse");
+      if (error) {
+        let msg = data?.error || error.message || "Erreur lors de l'analyse";
+        if (error?.context?.json) {
+          try { const j = await error.context.json(); msg = j?.error || msg; } catch {}
+        }
+        throw new Error(msg);
+      }
       if (data?.error) throw new Error(data.error);
 
       const [processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([

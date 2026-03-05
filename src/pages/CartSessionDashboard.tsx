@@ -82,17 +82,32 @@ const CartSessionDashboard = () => {
     .filter((p) => getPackStatus(p.bloc) !== "done")
     .reduce((acc, p) => acc + p.estimatedMinutes, 0);
 
+  const extractFnError = async (error: any, data: any): Promise<string> => {
+    if (data?.error) return data.error;
+    if (error?.context?.json) {
+      try { const j = await error.context.json(); return j?.error || error.message; } catch {}
+    }
+    if (error?.context?.text) {
+      try { return await error.context.text(); } catch {}
+    }
+    return error?.message || "Erreur inconnue";
+  };
+
   const handleGenerateFinal = async () => {
     if (!id) return;
     setGeneratingFinal(true);
     try {
-      const { error } = await supabase.functions.invoke("cart-generate-analysis", {
+      const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
         body: { sessionId: id },
       });
-      if (error) throw error;
+      if (error) {
+        const msg = await extractFnError(error, data);
+        throw new Error(msg);
+      }
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
       await reload();
     } catch (e: any) {
+      console.error("cart-generate-analysis error:", e);
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally {
       setGeneratingFinal(false);
@@ -104,14 +119,18 @@ const CartSessionDashboard = () => {
     setGeneratingOllama(true);
     setOllamaStep(1);
     try {
-      const { error } = await supabase.functions.invoke("cart-analyze-ollama", {
+      const { data, error } = await supabase.functions.invoke("cart-analyze-ollama", {
         body: { sessionId: id },
       });
-      if (error) throw error;
+      if (error) {
+        const msg = await extractFnError(error, data);
+        throw new Error(msg);
+      }
       toast({ title: "Analyse approfondie terminee", description: "Les resultats enrichis sont disponibles" });
       await reload();
     } catch (e: any) {
-      toast({ title: "Erreur analyse Ollama", description: e.message, variant: "destructive" });
+      console.error("cart-analyze-ollama error:", e);
+      toast({ title: "Erreur analyse", description: e.message, variant: "destructive" });
     } finally {
       setGeneratingOllama(false);
       setOllamaStep(0);
@@ -155,8 +174,8 @@ const CartSessionDashboard = () => {
               </Button>
               <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className="h-8 text-xs">
                 <Brain className="w-3.5 h-3.5 mr-1" />
-                <span className="hidden sm:inline">{generatingOllama ? `Analyse... (${ollamaStep}/6)` : "Approfondie"}</span>
-                <span className="sm:hidden">{generatingOllama ? `${ollamaStep}/6` : "IA"}</span>
+                <span className="hidden sm:inline">{generatingOllama ? "Analyse..." : "Approfondie"}</span>
+                <span className="sm:hidden">{generatingOllama ? "..." : "IA"}</span>
               </Button>
               <Button
                 size="sm"
@@ -545,7 +564,7 @@ const CartSessionDashboard = () => {
                     <CardHeader className="pb-2 px-4 pt-4">
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Brain className="w-4 h-4 text-purple-500" />
-                        Analyse causale inter-packs (Ollama)
+                        Analyse causale inter-packs
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="px-4 pb-4">
