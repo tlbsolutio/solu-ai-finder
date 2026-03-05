@@ -25,9 +25,6 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
-        manualChunks: {
-          elkjs: ['elkjs'],
-        },
       },
     },
     // Optimize asset inlining threshold
