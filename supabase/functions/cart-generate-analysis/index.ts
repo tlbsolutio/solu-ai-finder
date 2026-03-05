@@ -6,31 +6,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "http://76.13.50.143:11434/api/generate";
-const OLLAMA_TIMEOUT = 180000; // 3 min
-const MODEL = "qwen3:8b"; // Best general reasoning model available
+const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
 
-async function callOllama(prompt: string): Promise<string | null> {
+async function callClaude(prompt: string): Promise<string | null> {
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) return null;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT);
-
-    const res = await fetch(OLLAMA_URL, {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, prompt, stream: false }),
-      signal: controller.signal,
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
-
-    clearTimeout(timeout);
     if (!res.ok) {
-      console.error(`Ollama error: ${res.status}`);
+      console.error(`Claude error: ${res.status} ${await res.text()}`);
       return null;
     }
     const data = await res.json();
-    return data.response || null;
+    return data.content?.[0]?.text || null;
   } catch (e) {
-    console.error("Ollama failed:", e);
+    console.error("Claude failed:", e);
     return null;
   }
 }
@@ -55,9 +57,9 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
 }
 
 async function generate(prompt: string, geminiApiKey: string): Promise<string> {
-  const ollamaResult = await callOllama(prompt);
-  if (ollamaResult) return ollamaResult;
-  console.log("Ollama fallback to Gemini");
+  const claudeResult = await callClaude(prompt);
+  if (claudeResult) return claudeResult;
+  console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
   return geminiResult || "Analyse non disponible";
 }
@@ -132,50 +134,52 @@ serve(async (req) => {
         reponse: r.reponse_brute,
       }));
 
-    const prompt = `Tu es un consultant senior expert en transformation d'entreprise et optimisation des processus pour les PME francaises.
-${sectorInfo}Tu analyses les donnees completes d'une cartographie d'entreprise et produis un rapport professionnel, structure et actionnable.
+    // Build compact summaries - only pack resumes (not full Q&A)
+    const packSummaryText = context.pack_summaries.map((ps: any) =>
+      `Pack ${ps.bloc} (${ps.score_maturite}/5): ${ps.resume?.substring(0, 200) || "N/A"}`
+    ).join("\n");
 
-━━━ REGLES CRITIQUES ━━━
-1. CITATIONS VERBATIM : Cite les reponses exactes entre guillemets pour appuyer CHAQUE constat.
-2. QUANTIFICATION : Estime l'impact financier de chaque dysfonctionnement (fourchettes basses/hautes avec hypotheses).
-   - Temps perdu = (nb employes) × (h/semaine) × 46 semaines × (35-55 EUR/h)
-   - Cout turnover = (nb departs) × (6-9 mois de salaire)
-   - Manque a gagner = (opportunites perdues) × (panier moyen) × (taux conversion manque)
-3. LIENS CAUSAUX EXPLICITES : Chaque lien doit suivre le format : "[Probleme A — Pack X, score Y/5] → CAUSE/AMPLIFIE → [Probleme B — Pack Z] → CONSEQUENCE FINALE chiffree"
-4. PRIORISATION STRICTE : P1 (impact eleve + effort faible, min 3 actions), P2 (impact eleve + effort moyen, min 5 actions), P3 (max 3 actions).
-5. RECOMMANDATIONS OUTILS : Avant de recommander un remplacement, verifier si le probleme est l'usage (→ formation) ou l'integration (→ API/connecteur).
+    const topIrritants = context.irritants.slice(0, 8).map((i: any) => `${i.intitule} (${i.type}, gravite ${i.gravite}/5)`).join("; ");
+    const topQuickwins = context.quickwins.slice(0, 8).map((q: any) => `${q.intitule} [${q.impact}/${q.effort}]`).join("; ");
 
-DONNEES DE LA SESSION "${session.nom}" :
+    // Only include 10 key responses for verbatim
+    const sampleReponses = keyReponses.slice(0, 10).map((r: any) =>
+      `[Pack ${r.bloc}] "${r.reponse?.substring(0, 120)}"`
+    ).join("\n");
 
-RESUMES PAR PACK :
-${JSON.stringify(context.pack_summaries, null, 2)}
+    const prompt = `Consultant expert en transformation PME francaises. ${sectorInfo}Analyse cette cartographie et produis un rapport JSON.
 
-OBJETS DETECTES :
-- ${context.processus.length} processus : ${context.processus.map((p: any) => `${p.nom} [${p.type}]`).join(", ") || "Aucun"}
-- ${context.outils.length} outils : ${context.outils.map((o: any) => `${o.nom} [${o.type}]`).join(", ") || "Aucun"}
-- ${context.equipes.length} equipes : ${context.equipes.map((e: any) => `${e.nom} (${e.mission})`).join(", ") || "Aucune"}
-- ${context.irritants.length} irritants : ${context.irritants.map((i: any) => `${i.intitule} (gravite ${i.gravite}/5, impact: ${i.impact})`).join(", ") || "Aucun"}
-- ${context.taches_manuelles.length} taches manuelles : ${context.taches_manuelles.map((t: any) => `${t.nom} (${t.frequence}${t.double_saisie ? ", double saisie" : ""})`).join(", ") || "Aucune"}
-- ${context.quickwins.length} quick wins identifies
+SESSION "${session.nom}" — ${context.reponses_count} reponses
 
-ECHANTILLON DE REPONSES CLES (pour citations verbatim) :
-${keyReponses.slice(0, 40).map((r: any) => `[Pack ${r.bloc}] Q: ${r.question}\nR: "${r.reponse}"`).join("\n\n")}
+SCORES PAR PACK :
+${packSummaryText}
 
-Produis ce JSON EXACT (sans markdown, sans commentaires) :
+OBJETS : ${context.processus.length} processus, ${context.outils.length} outils, ${context.equipes.length} equipes, ${context.irritants.length} irritants, ${context.taches_manuelles.length} taches manuelles
+Irritants cles : ${topIrritants || "Aucun"}
+Quick wins : ${topQuickwins || "Aucun"}
+Outils : ${context.outils.map((o: any) => o.nom).join(", ") || "Aucun"}
+Equipes : ${context.equipes.map((e: any) => e.nom).join(", ") || "Aucune"}
+
+VERBATIMS :
+${sampleReponses}
+
+Produis ce JSON (sans markdown, valeurs = texte concis) :
 {
-  "ai_resume_executif": "Resume executif en 10-15 lignes. Vision globale. Cite 3-5 verbatims cles entre guillemets. Mentionne le score de maturite global et les 2 axes les plus critiques.",
-  "ai_forces": "5-10 points forts identifies avec preuves VERBATIM issues des reponses. Format : '• [Force] — Preuve : \"[citation exacte]\" (Pack X)'",
-  "ai_dysfonctionnements": "10-15 dysfonctionnements. Format STRICT pour chacun :\n'• [Dysfonctionnement] — Impact estime: [fourchette EUR/an avec hypotheses] — Pack source: [n, score X/5] — Causes probables: [liste] — Verbatim: \"[citation]\"'",
-  "ai_analyse_transversale": "4 parties OBLIGATOIRES :\n\n1) LIENS CAUSAUX INTER-PACKS (minimum 5 liens) :\nFormat : \"[Probleme A — Pack X, score Y/5] → CAUSE → [Probleme B — Pack Z, score W/5] → CONSEQUENCE FINALE chiffree\"\nExemple : \"L'absence d'outil de gestion de projet (Pack 6, 2/5) oblige l'equipe admin a coordonner manuellement (~15h/sem), contribuant a la surcharge RH (Pack 4, 2/5) et au turnover de 12%\"\n\n2) NOEUDS CRITIQUES (2 problemes qui causent le plus d'autres) :\nPour chacun, lister tous les packs impactes et l'effet domino.\n\n3) CONTRADICTIONS detectees entre packs :\nSi Pack A dit X et Pack B contredit, expliquer ce que ca revele.\n\n4) SCORE DE MATURITE GLOBAL :\nMoyenne ponderee explicite (ex: Strategie ×1.5, Operations ×1.3, RH ×1.2, autres ×1.0)",
-  "ai_plan_optimisation": "Plan priorise STRICT :\n\nP1 — Quick Wins (3-5 actions, < 3 mois, actionnable en 48h) :\nFormat : \"[Action concrete] — Impact: [EUR/an] — Effort: [jours-homme] — Outil: [nom + prix] — KPI: [indicateur mesurable]\"\n\nP2 — Chantiers structurants (3-5 actions, 3-9 mois) :\nMeme format\n\nP3 — Transformations (2-3 actions, 9-18 mois) :\nMeme format\n\nREGLE RECOMMANDATIONS OUTILS :\n- Outil mal utilise → 'Formation — [Outil] — [Fonctionnalite a activer]'\n- Outil non connecte → 'Integration — [Outil A + B] — Connecter via [API/Zapier/Make]'\n- Outil inadapte → 'Remplacement — [Actuel] → [Nouveau] — [Justification]'",
-  "ai_vision_cible": "Vision cible 18 mois en 4 milestones QUANTIFIES :\nM+3: [milestone + KPI cible + gain estime]\nM+6: [milestone + KPI cible + gain cumule]\nM+12: [milestone + KPI cible + gain cumule]\nM+18: [milestone + KPI cible + gain total]\n\nGains totaux attendus : [fourchette EUR/an] + [heures/mois recuperees]"
-}`;
+  "ai_resume_executif": "Resume 8-10 lignes, scores, axes critiques, verbatims cles",
+  "ai_forces": "5 forces avec preuves. Format: • Force — Preuve (Pack X)",
+  "ai_dysfonctionnements": "8 dysfonctionnements. Format: • Probleme — Impact EUR — Pack — Cause",
+  "ai_analyse_transversale": "3 liens causaux inter-packs + 2 noeuds critiques + score global pondere",
+  "ai_plan_optimisation": "P1: 3 quick wins (<3 mois). P2: 3 chantiers (3-9 mois). P3: 2 transformations. Format: Action — Impact — Effort — Outil — KPI",
+  "ai_vision_cible": "4 milestones M+3/M+6/M+12/M+18 avec KPIs et gains cumules"
+}
+IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
 
     const rawContent = await generate(prompt, geminiApiKey);
 
     // Robust JSON extraction
     let jsonStr = rawContent;
-    const jsonMatch = rawContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+    // Try greedy match first (handles incomplete closing ```)
+    const jsonMatch = rawContent.match(/```(?:json)?\s*\n?([\s\S]*?)(?:\n?\s*```|$)/);
     if (jsonMatch) {
       jsonStr = jsonMatch[1].trim();
     } else {
@@ -186,13 +190,44 @@ Produis ce JSON EXACT (sans markdown, sans commentaires) :
     try {
       parsed = JSON.parse(jsonStr);
     } catch {
-      // Try to find JSON in text
+      // Try to find the outermost JSON object
       const objMatch = jsonStr.match(/\{[\s\S]*\}/);
       if (objMatch) {
         try { parsed = JSON.parse(objMatch[0]); } catch {}
       }
+      // If still failing, try to repair truncated JSON by closing open strings/objects
       if (!parsed) {
-        throw new Error("Failed to parse AI response as JSON: " + rawContent.substring(0, 300));
+        try {
+          let repaired = jsonStr;
+          // Remove trailing incomplete string values
+          repaired = repaired.replace(/,\s*"[^"]*":\s*"[^"]*$/, "");
+          // Close any open strings and objects
+          const openBraces = (repaired.match(/{/g) || []).length;
+          const closeBraces = (repaired.match(/}/g) || []).length;
+          if (openBraces > closeBraces) {
+            // Ensure last value is closed
+            if (!repaired.trimEnd().endsWith('"') && !repaired.trimEnd().endsWith('}')) {
+              repaired += '"';
+            }
+            repaired += "}".repeat(openBraces - closeBraces);
+          }
+          parsed = JSON.parse(repaired);
+        } catch {}
+      }
+      if (!parsed) {
+        // Last resort: extract whatever fields we can find
+        console.error("Failed to parse JSON, extracting fields manually");
+        parsed = {};
+        const fields = ["ai_resume_executif", "ai_forces", "ai_dysfonctionnements", "ai_analyse_transversale", "ai_plan_optimisation", "ai_vision_cible"];
+        for (const field of fields) {
+          const fieldMatch = jsonStr.match(new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+          if (fieldMatch) {
+            parsed[field] = fieldMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"');
+          }
+        }
+        if (Object.keys(parsed).length === 0) {
+          throw new Error("Failed to parse AI response as JSON: " + rawContent.substring(0, 300));
+        }
       }
     }
 

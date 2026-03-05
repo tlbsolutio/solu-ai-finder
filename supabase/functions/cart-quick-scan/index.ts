@@ -6,31 +6,33 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "http://76.13.50.143:11434/api/generate";
-const OLLAMA_TIMEOUT = 90000; // 90 sec
-const MODEL = "mistral-nemo:12b";
+const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
 
-async function callOllama(prompt: string): Promise<string | null> {
+async function callClaude(prompt: string): Promise<string | null> {
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) return null;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT);
-
-    const res = await fetch(OLLAMA_URL, {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, prompt, stream: false, format: "json" }),
-      signal: controller.signal,
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 4096,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
-
-    clearTimeout(timeout);
     if (!res.ok) {
-      console.error(`Ollama error: ${res.status}`);
+      console.error(`Claude error: ${res.status} ${await res.text()}`);
       return null;
     }
     const data = await res.json();
-    return data.response || null;
+    return data.content?.[0]?.text || null;
   } catch (e) {
-    console.error("Ollama failed:", e);
+    console.error("Claude failed:", e);
     return null;
   }
 }
@@ -115,10 +117,10 @@ Reponds UNIQUEMENT en JSON valide.`;
 
     let rawContent: string | null = null;
 
-    // Try Ollama first
-    rawContent = await callOllama(prompt);
+    // Try Claude first
+    rawContent = await callClaude(prompt);
 
-    // Fallback chain: Gemini
+    // Fallback: Gemini
     if (!rawContent) {
       const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
       if (GEMINI_API_KEY) {
@@ -126,28 +128,8 @@ Reponds UNIQUEMENT en JSON valide.`;
       }
     }
 
-    // Last resort: Lovable gateway
     if (!rawContent) {
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      if (LOVABLE_API_KEY) {
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.3,
-          }),
-        });
-        if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
-          rawContent = aiData.choices?.[0]?.message?.content || null;
-        }
-      }
-    }
-
-    if (!rawContent) {
-      throw new Error("No AI provider available (Ollama, Gemini, Lovable all failed)");
+      throw new Error("No AI provider available (Claude and Gemini both failed)");
     }
 
     // Robust JSON extraction

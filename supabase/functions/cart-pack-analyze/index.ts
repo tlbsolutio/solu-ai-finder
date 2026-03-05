@@ -6,9 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "http://76.13.50.143:11434/api/generate";
-const OLLAMA_TIMEOUT = 120000;
-const MODEL = "mistral-nemo:12b";
+const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
 
 const BLOC_NAMES: Record<number, string> = {
   1: "Contexte & Organisation",
@@ -23,30 +21,31 @@ const BLOC_NAMES: Record<number, string> = {
   10: "KPIs & Pilotage",
 };
 
-async function callOllama(prompt: string, format?: string): Promise<string | null> {
+async function callClaude(prompt: string): Promise<string | null> {
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) return null;
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT);
-
-    const body: Record<string, unknown> = { model: MODEL, prompt, stream: false };
-    if (format) body.format = format;
-
-    const res = await fetch(OLLAMA_URL, {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal,
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 8192,
+        messages: [{ role: "user", content: prompt }],
+      }),
     });
-
-    clearTimeout(timeout);
     if (!res.ok) {
-      console.error(`Ollama error: ${res.status}`);
+      console.error(`Claude error: ${res.status} ${await res.text()}`);
       return null;
     }
     const data = await res.json();
-    return data.response || null;
+    return data.content?.[0]?.text || null;
   } catch (e) {
-    console.error("Ollama failed:", e);
+    console.error("Claude failed:", e);
     return null;
   }
 }
@@ -70,10 +69,10 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
   }
 }
 
-async function generate(prompt: string, geminiApiKey: string, format?: string): Promise<string> {
-  const ollamaResult = await callOllama(prompt, format);
-  if (ollamaResult) return ollamaResult;
-  console.log("Ollama fallback to Gemini");
+async function generate(prompt: string, geminiApiKey: string): Promise<string> {
+  const claudeResult = await callClaude(prompt);
+  if (claudeResult) return claudeResult;
+  console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
   return geminiResult || "{}";
 }
@@ -273,7 +272,7 @@ Genere SEULEMENT les objets clairement detectables dans les reponses de CE pack.
 Ne JAMAIS inventer de donnees absentes des reponses.
 Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citation verbatim des reponses CI-DESSUS qui le justifie.`;
 
-    let rawContent = await generate(prompt, geminiApiKey, "json");
+    let rawContent = await generate(prompt, geminiApiKey);
 
     // Robust JSON extraction
     const jsonMatch = rawContent.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
@@ -287,7 +286,6 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
     try {
       analysis = JSON.parse(rawContent);
     } catch {
-      // Try to extract JSON from response
       const objMatch = rawContent.match(/\{[\s\S]*\}/);
       if (objMatch) {
         try { analysis = JSON.parse(objMatch[0]); } catch {}
@@ -308,7 +306,6 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
       const hasP1 = analysis.quickwins.some((q: any) => q.priorite === "P1");
       const hasP2 = analysis.quickwins.some((q: any) => q.priorite === "P2");
       if (!hasP1 || !hasP2) {
-        // Sort by impact desc, effort asc to reassign priorities
         const sorted = [...analysis.quickwins].sort((a: any, b: any) => {
           const impactOrder: Record<string, number> = { "Fort": 0, "Moyen": 1, "Faible": 2 };
           const effortOrder: Record<string, number> = { "Faible": 0, "Moyen": 1, "Eleve": 2 };
@@ -316,7 +313,6 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
           const scoreB = (impactOrder[b.impact] ?? 1) * 3 + (effortOrder[b.effort] ?? 1);
           return scoreA - scoreB;
         });
-        // Assign at least 1 P1, 1 P2, rest keep original or P3
         if (sorted.length >= 1) sorted[0].priorite = "P1";
         if (sorted.length >= 2) sorted[1].priorite = "P2";
         analysis.quickwins = sorted;
