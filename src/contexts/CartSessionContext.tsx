@@ -72,7 +72,15 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await ensureSession();
+      // Only read existing session — don't create anonymous session on every page load
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const user = session.user;
+        setOwnerId(user.id);
+        setUserEmail(user.email || null);
+        setUserName(user.user_metadata?.full_name || null);
+        setIsAuthenticated(!user.is_anonymous);
+      }
       setLoading(false);
     };
     init();
