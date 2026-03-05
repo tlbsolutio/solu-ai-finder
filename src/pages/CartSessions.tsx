@@ -19,6 +19,7 @@ interface CartSession {
   analyse_status: string;
   packs_completed: number;
   tier: string;
+  owner_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -26,7 +27,7 @@ interface CartSession {
 const CartSessions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ownerId, ensureSession, isPaid } = useCartContext();
+  const { ownerId, ensureSession, isPaid, isAdmin } = useCartContext();
   const { toast } = useToast();
 
   const [sessions, setSessions] = useState<CartSession[]>([]);
@@ -41,11 +42,15 @@ const CartSessions = () => {
     if (!ownerId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("cart_sessions")
         .select("*")
-        .eq("owner_id", ownerId)
         .order("updated_at", { ascending: false });
+      // Admin sees all sessions, normal users only their own
+      if (!isAdmin) {
+        query = query.eq("owner_id", ownerId);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       setSessions((data || []) as CartSession[]);
     } catch (e: any) {
@@ -101,7 +106,7 @@ const CartSessions = () => {
       <div className="px-4 sm:px-6 pt-5 pb-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold tracking-tight">Mes sessions</h1>
+            <h1 className="text-lg sm:text-xl font-semibold tracking-tight">{isAdmin ? "Toutes les sessions" : "Mes sessions"}</h1>
             <p className="text-sm text-muted-foreground">{sessions.length} cartographie{sessions.length !== 1 ? "s" : ""}</p>
           </div>
           <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-primary hover:opacity-90">
@@ -166,9 +171,16 @@ const CartSessions = () => {
                     </div>
 
                     <div className="flex items-center justify-between gap-2">
-                      <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
-                        {getStatusLabel(s.status)}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
+                          {getStatusLabel(s.status)}
+                        </Badge>
+                        {isAdmin && s.owner_id !== ownerId && (
+                          <Badge variant="outline" className="text-[9px] bg-purple-50 text-purple-600 border-purple-200">
+                            {s.owner_id.slice(0, 6)}...
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Calendar className="w-3 h-3" />
                         {new Date(s.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
