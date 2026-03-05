@@ -262,10 +262,15 @@ Format: {"nodes":[{"id":"str","type":"equipe|processus|outil|irritant","label":"
       return { content: text };
     };
 
+    // Parse structured sections from step 1 analysis
+    const sections = analysisResult.split(/\n(?=\d\.)/);
+    const crossPack = sections.slice(0, 3).join("\n") || analysisResult;
+    const planAndVision = sections.slice(3).join("\n") || "";
+
     const updateData: Record<string, unknown> = {
-      ai_cross_pack_analysis: wrapText(analysisResult),
-      ai_impact_quantification: wrapText(analysisResult),
-      ai_target_vision: wrapText(analysisResult),
+      ai_cross_pack_analysis: wrapText(crossPack),
+      ai_impact_quantification: wrapText(planAndVision || crossPack),
+      ai_target_vision: wrapText(sections[sections.length - 1] || analysisResult),
       updated_at: new Date().toISOString(),
     };
     if (cartographyJson) {

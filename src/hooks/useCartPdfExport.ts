@@ -103,14 +103,28 @@ function ensureSpace(doc: jsPDF, y: number, needed: number): number {
 
 function normalizeAiText(raw: unknown): string {
   if (!raw) return "";
-  if (typeof raw === "string") return raw;
-  if (typeof raw === "object") {
-    // Handle {content: "..."} wrapper from edge functions
+  let text = "";
+  if (typeof raw === "string") {
+    text = raw;
+  } else if (typeof raw === "object") {
     const obj = raw as Record<string, unknown>;
-    if (typeof obj.content === "string") return obj.content;
-    return JSON.stringify(raw, null, 2);
+    if (typeof obj.content === "string") text = obj.content;
+    else text = JSON.stringify(raw, null, 2);
+  } else {
+    text = String(raw);
   }
-  return String(raw);
+  // Replace chars that jsPDF Helvetica can't render
+  return text
+    .replace(/[\u2018\u2019]/g, "'")  // smart quotes
+    .replace(/[\u201C\u201D]/g, '"')  // smart double quotes
+    .replace(/\u2026/g, "...")         // ellipsis
+    .replace(/\u2013/g, "-")          // en-dash
+    .replace(/\u2014/g, " - ")        // em-dash
+    .replace(/\u2022/g, "- ")         // bullet
+    .replace(/\u00A0/g, " ")          // nbsp
+    .replace(/[\u2192\u2794\u27A1]/g, "->")  // arrows
+    .replace(/[\u2713\u2714]/g, "[x]")       // checkmarks
+    .replace(/[\u2717\u2718]/g, "[ ]");      // crossmarks
 }
 
 function drawWrappedText(doc: jsPDF, text: string, x: number, y: number, maxW: number, lineH: number = 4.5): number {
@@ -120,12 +134,33 @@ function drawWrappedText(doc: jsPDF, text: string, x: number, y: number, maxW: n
     .replace(/\*\*/g, "")       // bold markers
     .replace(/^#{1,6}\s*/gm, "") // heading markers
     .replace(/\n{3,}/g, "\n\n"); // excessive newlines
-  const lines = doc.splitTextToSize(clean, maxW);
-  for (const line of lines) {
-    y = ensureSpace(doc, y, lineH + 2);
-    if (y < 30) y = 24;
-    doc.text(line, x, y);
-    y += lineH;
+
+  // Split by paragraphs for better spacing
+  const paragraphs = clean.split(/\n\n+/);
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed) continue;
+
+    // Check if paragraph starts with a numbered item (e.g. "1." "2.")
+    const isNumbered = /^\d+[.)]\s/.test(trimmed);
+    const isBullet = /^[-*]\s/.test(trimmed);
+
+    if (isNumbered || isBullet) {
+      // Bold the first line of numbered/bullet items
+      doc.setFont("helvetica", "bold");
+    }
+
+    const lines = doc.splitTextToSize(trimmed, maxW);
+    for (let i = 0; i < lines.length; i++) {
+      y = ensureSpace(doc, y, lineH + 2);
+      if (y < 30) y = 24;
+      doc.text(lines[i], x, y);
+      y += lineH;
+      if (i === 0 && (isNumbered || isBullet)) {
+        doc.setFont("helvetica", "normal");
+      }
+    }
+    y += 1.5; // paragraph spacing
   }
   return y;
 }
