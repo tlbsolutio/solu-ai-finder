@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
-  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop,
+  AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2,
 } from "lucide-react";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
@@ -168,14 +168,20 @@ const CartSessionDashboard = () => {
           )}
           {isFinalGenerated && (
             <>
-              <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} variant="outline" className="h-8 text-xs hidden sm:flex">
-                <Sparkles className="w-3.5 h-3.5 mr-1" />
-                Regenerer
-              </Button>
-              <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className="h-8 text-xs">
-                <Brain className="w-3.5 h-3.5 mr-1" />
-                <span className="hidden sm:inline">{generatingOllama ? "Analyse..." : "Approfondie"}</span>
-                <span className="sm:hidden">{generatingOllama ? "..." : "IA"}</span>
+              <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className={`h-8 text-xs ${generatingOllama ? "opacity-80" : ""}`}>
+                {generatingOllama ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                    <span className="hidden sm:inline">Analyse en cours...</span>
+                    <span className="sm:hidden">...</span>
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-3.5 h-3.5 mr-1" />
+                    <span className="hidden sm:inline">Approfondie</span>
+                    <span className="sm:hidden">IA</span>
+                  </>
+                )}
               </Button>
               <Button
                 size="sm"
@@ -208,6 +214,19 @@ const CartSessionDashboard = () => {
         <Header />
 
         <div className="px-4 sm:px-6 pt-4">
+          {generatingOllama && (
+            <Card className="mb-4 border-purple-200 bg-purple-50/50">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-purple-500 animate-pulse shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-purple-800">Analyse approfondie en cours... Cette operation peut prendre 1-2 minutes.</p>
+                  <div className="mt-2 w-full bg-purple-200/50 rounded-full h-1.5 overflow-hidden">
+                    <div className="h-full bg-purple-500 rounded-full animate-pulse" style={{ width: "60%" }} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <Tabs defaultValue="overview" className="space-y-4">
             <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none">
               <TabsList className="inline-flex gap-0.5 h-auto bg-muted p-1 w-max">
