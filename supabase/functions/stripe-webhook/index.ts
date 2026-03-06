@@ -97,27 +97,41 @@ serve(async (req: Request): Promise<Response> => {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  // Find owner_id by email from auth.users
-  const { data: users, error: userError } = await supabase.auth.admin.listUsers();
-  if (userError) {
-    console.error("Error listing users:", userError);
-    return new Response(JSON.stringify({ error: "Failed to find user" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Get the session's owner_id from cart_sessions (the actual user who owns the diagnostic)
+  const { data: cartSession, error: sessionError } = await supabase
+    .from("cart_sessions")
+    .select("owner_id")
+    .eq("id", cartSessionId)
+    .single();
 
-  const user = users.users.find(
-    (u) => u.email?.toLowerCase() === customerEmail.toLowerCase(),
-  );
+  let ownerId: string;
 
-  if (!user) {
-    console.error(`No user found for email: ${customerEmail}`);
-    // Still return 200 so Stripe doesn't retry — log for manual handling
-    return new Response(JSON.stringify({ warning: "User not found, manual activation needed", email: customerEmail }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (cartSession?.owner_id) {
+    // Use the session owner (correct: whoever created the diagnostic)
+    ownerId = cartSession.owner_id;
+    console.log(`Session owner: ${ownerId} (from cart_sessions)`);
+  } else {
+    // Fallback: find user by Stripe email
+    console.warn(`Session ${cartSessionId} not found or no owner, falling back to email lookup`);
+    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+    if (userError) {
+      console.error("Error listing users:", userError);
+      return new Response(JSON.stringify({ error: "Failed to find user" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const user = users.users.find(
+      (u) => u.email?.toLowerCase() === customerEmail.toLowerCase(),
+    );
+    if (!user) {
+      console.error(`No user found for email: ${customerEmail}`);
+      return new Response(JSON.stringify({ warning: "User not found, manual activation needed", email: customerEmail }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    ownerId = user.id;
   }
 
   // Check if subscription already exists for this session
@@ -132,14 +146,14 @@ serve(async (req: Request): Promise<Response> => {
   if (existing) {
     const res = await supabase
       .from("cart_subscriptions")
-      .update({ status: "active", payment_ref: paymentRef })
+      .update({ status: "active", payment_ref: paymentRef, owner_id: ownerId })
       .eq("id", existing.id);
     subError = res.error;
   } else {
     const res = await supabase
       .from("cart_subscriptions")
       .insert({
-        owner_id: user.id,
+        owner_id: ownerId,
         session_id: cartSessionId,
         status: "active",
         payment_ref: paymentRef,
@@ -155,10 +169,10 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  console.log(`Subscription activated for user ${user.id} (${customerEmail}), session: ${cartSessionId}, plan: ${planType}`);
+  console.log(`Subscription activated for owner ${ownerId}, session: ${cartSessionId}, plan: ${planType}`);
 
   return new Response(
-    JSON.stringify({ success: true, userId: user.id, sessionId: cartSessionId, plan: planType }),
+    JSON.stringify({ success: true, ownerId, sessionId: cartSessionId, plan: planType }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
 });

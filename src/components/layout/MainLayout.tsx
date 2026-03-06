@@ -38,7 +38,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Linkedin className="w-3.5 h-3.5 text-white/50" />
               </a>
               <a
-                href="mailto:tlb@solutio.work"
+                href="mailto:contact@solutio.work"
                 className="w-7 h-7 rounded-md bg-white/5 hover:bg-white/15 flex items-center justify-center transition-colors"
                 aria-label="Email"
               >

@@ -21,7 +21,7 @@ const Privacy = () => {
             <p><strong>Adresse :</strong> 1 bis Côte de la Maison Brûlée</p>
             <p><strong>SIREN :</strong> 853 851 335</p>
             <p><strong>Hébergeur :</strong> Hostinger</p>
-            <p><strong>Contact :</strong> tlb@solutio.work</p>
+            <p><strong>Contact :</strong> contact@solutio.work</p>
             <p><strong>DPO / Responsable du traitement :</strong> Théo Le Breton</p>
           </div>
 
@@ -79,7 +79,7 @@ const Privacy = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">6) Vos droits</h2>
             <p>Accès, rectification, effacement, opposition, limitation, portabilité.</p>
-            <p>Exercez vos droits à : <a href="mailto:tlb@solutio.work" className="text-primary underline">tlb@solutio.work</a></p>
+            <p>Exercez vos droits à : <a href="mailto:contact@solutio.work" className="text-primary underline">contact@solutio.work</a></p>
             <p>Vous pouvez aussi définir vos préférences cookies à tout moment via 
               <a href="#" onClick={() => (window as any).openCookieSettings?.()} className="text-primary underline ml-1">
                 « Paramètres des cookies »

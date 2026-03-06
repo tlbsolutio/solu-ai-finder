@@ -417,7 +417,7 @@ const CartSessions = () => {
         {/* Support & Contact section */}
         <div className="border-t pt-5 mt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Card className="hover:border-cyan-200 transition-colors cursor-pointer" onClick={() => window.open("mailto:tlb@solutio.work?subject=Support%20Solutio%20Carto", "_blank")}>
+            <Card className="hover:border-cyan-200 transition-colors cursor-pointer" onClick={() => window.open("mailto:contact@solutio.work?subject=Support%20Solutio%20Carto", "_blank")}>
               <CardContent className="p-4 flex items-start gap-3">
                 <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
                   <MessageSquare className="w-4 h-4 text-cyan-600" />
@@ -429,7 +429,7 @@ const CartSessions = () => {
                   </p>
                   <p className="text-[11px] text-cyan-600 mt-1 flex items-center gap-1">
                     <Mail className="w-3 h-3" />
-                    tlb@solutio.work
+                    contact@solutio.work
                   </p>
                 </div>
               </CardContent>

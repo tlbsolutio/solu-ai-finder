@@ -294,7 +294,7 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <p className="font-medium">{t('contact.email_label_info')}</p>
-                    <a href="mailto:tlb@solutio.work" className="text-primary hover:underline">tlb@solutio.work</a>
+                    <a href="mailto:contact@solutio.work" className="text-primary hover:underline">contact@solutio.work</a>
                   </div>
                 </div>
 

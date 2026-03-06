@@ -88,8 +88,8 @@ export default function CartPaymentSuccess() {
           <p className="text-xs text-muted-foreground">
             <Mail className="w-3 h-3 inline mr-1" />
             Un probleme ? Contactez-nous a{" "}
-            <a href="mailto:tlb@solutio.work" className="text-primary hover:underline">
-              tlb@solutio.work
+            <a href="mailto:contact@solutio.work" className="text-primary hover:underline">
+              contact@solutio.work
             </a>
           </p>
         </div>

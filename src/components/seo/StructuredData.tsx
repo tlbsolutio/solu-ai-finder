@@ -22,7 +22,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
           logo: "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
           contactPoint: {
             "@type": "ContactPoint",
-            email: "tlb@solutio.work",
+            email: "contact@solutio.work",
             contactType: "customer service",
             availableLanguage: ["French", "English"]
           },

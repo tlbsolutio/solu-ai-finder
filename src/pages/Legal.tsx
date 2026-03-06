@@ -35,7 +35,7 @@ const Legal = () => {
               
               <div>
                 <h3 className="font-semibold mb-2">Email</h3>
-                <p><a href="mailto:tlb@solutio.work" className="text-primary underline">tlb@solutio.work</a></p>
+                <p><a href="mailto:contact@solutio.work" className="text-primary underline">contact@solutio.work</a></p>
               </div>
               
               <div>
@@ -58,7 +58,7 @@ const Legal = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">Propriété intellectuelle</h2>
             <p>L'ensemble des contenus du site est protégé.</p>
-            <p>Contact : <a href="mailto:tlb@solutio.work" className="text-primary underline">tlb@solutio.work</a></p>
+            <p>Contact : <a href="mailto:contact@solutio.work" className="text-primary underline">contact@solutio.work</a></p>
           </section>
 
           <div className="mt-12 text-sm text-muted-foreground">

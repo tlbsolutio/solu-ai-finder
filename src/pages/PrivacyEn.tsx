@@ -21,7 +21,7 @@ const PrivacyEn = () => {
             <p><strong>Address:</strong> 1 bis Côte de la Maison Brûlée</p>
             <p><strong>SIREN (France):</strong> 853 851 335</p>
             <p><strong>Host:</strong> Hostinger</p>
-            <p><strong>Contact:</strong> tlb@solutio.work</p>
+            <p><strong>Contact:</strong> contact@solutio.work</p>
             <p><strong>DPO / Data Controller:</strong> Théo Le Breton</p>
           </div>
 
@@ -73,7 +73,7 @@ const PrivacyEn = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">6) Your rights</h2>
             <p>Access, rectification, erasure, objection, restriction, portability.</p>
-            <p>Contact: <a href="mailto:tlb@solutio.work" className="text-primary underline">tlb@solutio.work</a></p>
+            <p>Contact: <a href="mailto:contact@solutio.work" className="text-primary underline">contact@solutio.work</a></p>
             <p>You can change cookie choices anytime via 
               <a href="#" onClick={() => (window as any).openCookieSettings?.()} className="text-primary underline ml-1">
                 "Cookie settings"
