@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, CheckCircle, Plus } from 'lucide-react';
+import { ArrowRight, CheckCircle, Plus, Calendar, Linkedin, Mail } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
@@ -110,22 +110,23 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
-            <Button
-              size="lg"
-              onClick={() => scrollTo('outils')}
-              className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 font-semibold"
-            >
-              {t('home.hero_btn_tools')}
-            </Button>
             <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
               <Button
-                variant="outline"
                 size="lg"
-                className="h-12 px-8 border-white/25 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+                className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 font-semibold"
               >
+                <Calendar className="w-4 h-4 mr-2" />
                 {t('home.hero_btn_work')}
               </Button>
             </a>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => scrollTo('outils')}
+              className="h-12 px-8 border-white/25 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm"
+            >
+              {t('home.hero_btn_tools')}
+            </Button>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -401,30 +402,31 @@ const Index = () => {
         <div className="max-w-[1060px] mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1px_1fr] gap-0 items-stretch">
             <div className="p-4 md:pr-12">
-              <Badge className="mb-5 bg-blue-500/10 text-blue-400 border-blue-500/30 text-[11px]">{t('home.dcta_product_badge')}</Badge>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-4">{t('home.dcta_product_title')}</h2>
-              <p className="text-[15px] text-white/50 leading-relaxed mb-8">{t('home.dcta_product_sub')}</p>
-              <Link to="/cartographie/login">
+              <Badge className="mb-5 bg-amber-500/10 text-amber-400 border-amber-500/30 text-[11px]">{t('home.dcta_consult_badge')}</Badge>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-4">{t('home.dcta_consult_title')}</h2>
+              <p className="text-[15px] text-white/50 leading-relaxed mb-8">{t('home.dcta_consult_sub')}</p>
+              <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
                 <Button className="bg-white text-gray-900 hover:bg-gray-100 shadow-lg font-semibold">
-                  {t('home.dcta_product_btn')}
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {t('home.dcta_consult_btn')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-              </Link>
+              </a>
             </div>
 
             <div className="hidden md:block bg-white/10" />
             <div className="md:hidden h-px bg-white/10 my-8" />
 
             <div className="p-4 md:pl-12">
-              <Badge className="mb-5 bg-amber-500/10 text-amber-400 border-amber-500/30 text-[11px]">{t('home.dcta_consult_badge')}</Badge>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-4">{t('home.dcta_consult_title')}</h2>
-              <p className="text-[15px] text-white/50 leading-relaxed mb-8">{t('home.dcta_consult_sub')}</p>
-              <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
+              <Badge className="mb-5 bg-blue-500/10 text-blue-400 border-blue-500/30 text-[11px]">{t('home.dcta_product_badge')}</Badge>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-4">{t('home.dcta_product_title')}</h2>
+              <p className="text-[15px] text-white/50 leading-relaxed mb-8">{t('home.dcta_product_sub')}</p>
+              <Link to="/cartographie/login">
                 <Button className="bg-slate-800 text-white hover:bg-slate-700 font-semibold">
-                  {t('home.dcta_consult_btn')}
+                  {t('home.dcta_product_btn')}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

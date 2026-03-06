@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Mail, Phone, MessageCircle, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Mail, MessageCircle, Clock, CheckCircle, Linkedin } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import MetaTags from '@/components/seo/MetaTags';
@@ -17,6 +17,7 @@ const Contact = () => {
     name: '',
     email: '',
     company: '',
+    projectType: '',
     message: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -65,6 +66,7 @@ const Contact = () => {
       formspreeData.append('name', formData.name);
       formspreeData.append('email', formData.email);
       formspreeData.append('company', formData.company);
+      formspreeData.append('projectType', formData.projectType);
       formspreeData.append('message', formData.message);
       
       const response = await fetch('https://formspree.io/f/myzdypaw', {
@@ -219,6 +221,24 @@ const Contact = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <label htmlFor="projectType" className="text-sm font-medium">
+                    {t('contact.project_type_label')}
+                  </label>
+                  <select
+                    id="projectType"
+                    value={formData.projectType}
+                    onChange={(e) => handleInputChange('projectType', e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <option value="">{t('contact.project_type_placeholder')}</option>
+                    <option value="brainstorm">{t('contact.project_type_brainstorm')}</option>
+                    <option value="simple">{t('contact.project_type_simple')}</option>
+                    <option value="big">{t('contact.project_type_big')}</option>
+                    <option value="other">{t('contact.project_type_other')}</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium">
                     {t('contact.message_label')} <span className="text-destructive">*</span>
                   </label>
@@ -274,7 +294,22 @@ const Contact = () => {
                   <Mail className="h-5 w-5 text-primary mr-3" />
                   <div>
                     <p className="font-medium">{t('contact.email_label_info')}</p>
-                    <p className="text-muted-foreground">tlb@solutio.work</p>
+                    <a href="mailto:tlb@solutio.work" className="text-primary hover:underline">tlb@solutio.work</a>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <Linkedin className="h-5 w-5 text-primary mr-3" />
+                  <div>
+                    <p className="font-medium">LinkedIn</p>
+                    <a
+                      href="https://www.linkedin.com/company/solutio-work"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      Solutio
+                    </a>
                   </div>
                 </div>
 

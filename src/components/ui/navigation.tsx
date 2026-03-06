@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Languages, ArrowRight } from 'lucide-react';
+import { Languages, Calendar } from 'lucide-react';
 import MobileNav from './mobile-nav';
 
 const Navigation = () => {
@@ -73,14 +73,15 @@ const Navigation = () => {
             <Languages className="h-3.5 w-3.5 mr-1" />
             {language === 'fr' ? 'EN' : 'FR'}
           </Button>
-          <Link to="/cartographie/login">
+          <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
             <Button
               size="sm"
               className="h-9 px-5 text-[13.5px] font-bold shadow-sm shadow-primary/20"
             >
-              {t('nav.start_scan')}
+              <Calendar className="w-3.5 h-3.5 mr-1.5" />
+              {t('nav.book_meeting')}
             </Button>
-          </Link>
+          </a>
         </div>
         <MobileNav />
       </div>

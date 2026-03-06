@@ -4,7 +4,7 @@ import { Button } from './button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './sheet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Menu, Languages, Network } from 'lucide-react';
+import { Menu, Languages, Calendar } from 'lucide-react';
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
@@ -100,12 +100,12 @@ const MobileNav = () => {
               {language === 'fr' ? 'English' : 'Francais'}
             </Button>
 
-            <Link to="/cartographie/login" onClick={() => setOpen(false)}>
+            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}>
               <Button variant="default" className="w-full">
-                <Network className="h-4 w-4 mr-2" />
-                {t('nav.start_scan')}
+                <Calendar className="h-4 w-4 mr-2" />
+                {t('nav.book_meeting')}
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </SheetContent>
