@@ -21,6 +21,8 @@ import TestConnections from "./pages/TestConnections";
 import SeoManager from "./pages/SeoManager";
 import CartSessions from "./pages/CartSessions";
 import CartLogin from "./pages/CartLogin";
+import CartPricing from "./pages/CartPricing";
+import CartPaymentSuccess from "./pages/CartPaymentSuccess";
 import { AuthGuard } from "./components/cartographie/AuthGuard";
 import CartLayout from "./components/layout/CartLayout";
 import NotFound from "./pages/NotFound";
@@ -60,6 +62,8 @@ const App = () => (
                   {/* Cartographie routes - public (tool subdomain feel) */}
                   <Route path="/cartographie" element={<Navigate to="/cartographie/login" replace />} />
                   <Route path="/cartographie/login" element={<CartLogin />} />
+                  <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
+                  <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />
                   {/* Cartographie routes - protected (CartLayout provides header + breadcrumbs) */}
                   <Route path="/cartographie/scan" element={<AuthGuard><CartLayout><CartQuickScan /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />

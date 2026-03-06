@@ -33,6 +33,10 @@ function useBreadcrumbs(): Crumb[] {
     crumbs.push({ label: "Dashboard" });
   } else if (pathname === "/cartographie/admin") {
     crumbs.push({ label: "Admin" });
+  } else if (pathname === "/cartographie/pricing") {
+    crumbs.push({ label: "Tarifs" });
+  } else if (pathname === "/cartographie/payment-success") {
+    crumbs.push({ label: "Confirmation" });
   }
 
   return crumbs;

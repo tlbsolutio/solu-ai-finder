@@ -28,47 +28,75 @@ import { Download } from "lucide-react";
 
 const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
 
-const LockedTabContent = ({ onUnlock }: { onUnlock: () => void }) => (
-  <div className="relative min-h-[300px]">
-    <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-      <div className="max-w-sm w-full text-center space-y-4 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-6">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
-          <Lock className="w-5 h-5 text-primary" />
+interface LockedTabContentProps {
+  onUnlock: () => void;
+  /** Items to tease (show first few then blur) */
+  items?: Array<{ label: string; sub?: string }>;
+  count?: number;
+  tabLabel?: string;
+}
+
+const LockedTabContent = ({ onUnlock, items, count, tabLabel }: LockedTabContentProps) => {
+  const teaserItems = items?.slice(0, 3) ?? [];
+  const remaining = (count ?? items?.length ?? 0) - teaserItems.length;
+
+  return (
+    <div className="relative min-h-[300px]">
+      {/* Teaser: show first items clearly, then blur */}
+      {teaserItems.length > 0 && (
+        <div className="space-y-2 mb-2">
+          {teaserItems.map((item, i) => (
+            <div key={i} className="flex items-start gap-3 p-3 rounded-md border bg-card">
+              <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-medium">{item.label}</p>
+                {item.sub && <p className="text-xs text-muted-foreground mt-0.5">{item.sub}</p>}
+              </div>
+            </div>
+          ))}
         </div>
-        <div>
-          <h3 className="font-semibold">Contenu reserve</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Debloquez cette section avec la version complete.
-          </p>
+      )}
+
+      {/* Overlay on remaining */}
+      <div className="relative">
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
+          <div className="max-w-sm w-full text-center space-y-3 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+              <Lock className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-sm">
+                {count && count > 0
+                  ? `${count} ${tabLabel || "elements"} detectes`
+                  : "Contenu reserve"}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                {remaining > 0
+                  ? `+ ${remaining} autres a decouvrir dans la version complete`
+                  : "Debloquez cette section avec la version complete"}
+              </p>
+            </div>
+            <Button onClick={onUnlock} className="w-full h-9 bg-gradient-primary hover:opacity-90 text-xs">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              Voir les formules
+            </Button>
+          </div>
         </div>
-        <Button onClick={onUnlock} className="w-full h-10 bg-gradient-primary hover:opacity-90 text-sm">
-          <Sparkles className="w-4 h-4 mr-2" />
-          Debloquer l'acces complet
-        </Button>
+        <div className="filter blur-sm opacity-20 pointer-events-none select-none" aria-hidden="true">
+          <div className="space-y-2">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-md border p-4">
+                <div className="h-3.5 w-3/4 bg-muted rounded mb-2" />
+                <div className="h-3 w-full bg-muted/60 rounded mb-1.5" />
+                <div className="h-3 w-2/3 bg-muted/40 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
-    <div className="filter blur-sm opacity-30 pointer-events-none select-none" aria-hidden="true">
-      <div className="space-y-3">
-        <div className="rounded-xl border p-5">
-          <div className="skeleton h-4 w-3/4 mb-3" />
-          <div className="skeleton h-3 w-full mb-2" />
-          <div className="skeleton h-3 w-5/6 mb-2" />
-          <div className="skeleton h-3 w-2/3" />
-        </div>
-        <div className="rounded-xl border p-5">
-          <div className="skeleton h-4 w-1/2 mb-3" />
-          <div className="skeleton h-3 w-full mb-2" />
-          <div className="skeleton h-3 w-4/5" />
-        </div>
-        <div className="rounded-xl border p-5">
-          <div className="skeleton h-4 w-2/3 mb-3" />
-          <div className="skeleton h-3 w-full mb-2" />
-          <div className="skeleton h-3 w-3/4" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
@@ -85,6 +113,8 @@ const CartSessionDashboard = () => {
   const [generatingOllama, setGeneratingOllama] = useState(false);
   const [ollamaStep, setOllamaStep] = useState(0);
   const [showGate, setShowGate] = useState(false);
+  const [gateTab, setGateTab] = useState<string | undefined>();
+  const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
   const { generatePdf, isLoading: pdfLoading } = useCartPdfExport();
 
   if (loading) return <ContentLoader />;
@@ -285,17 +315,24 @@ const CartSessionDashboard = () => {
           <Tabs defaultValue="overview" className="space-y-4">
             <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none">
               <TabsList className="inline-flex gap-0.5 h-auto bg-muted p-1 w-max">
+                {/* Synthese (gratuit) */}
                 <TabsTrigger value="overview" className="text-xs gap-1 shrink-0"><BarChart3 className="w-3.5 h-3.5" /><span className="hidden sm:inline">Vue d'ensemble</span><span className="sm:hidden">Resume</span></TabsTrigger>
                 <TabsTrigger value="carte" className="text-xs gap-1 shrink-0"><Map className="w-3.5 h-3.5" />Carte</TabsTrigger>
-                <TabsTrigger value="quickwins" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Zap className="w-3.5 h-3.5" />Quickwins{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="processus" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Processus</span><span className="sm:hidden">Proc.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="outils" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Layers className="w-3.5 h-3.5" />Outils{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="equipes" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Users className="w-3.5 h-3.5" />Equipes{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="irritants" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><AlertTriangle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Irritants</span><span className="sm:hidden">Irrit.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="plan" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><ClipboardList className="w-3.5 h-3.5" /><span className="hidden sm:inline">Plan d'actions</span><span className="sm:hidden">Plan</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
-                <TabsTrigger value="recommandations" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Laptop className="w-3.5 h-3.5" /><span className="hidden sm:inline">Recommandations</span><span className="sm:hidden">Reco.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
                 <TabsTrigger value="questionnaire" className="text-xs gap-1 shrink-0"><FileText className="w-3.5 h-3.5" /><span className="hidden sm:inline">Questionnaire</span><span className="sm:hidden">Q&A</span></TabsTrigger>
-                <TabsTrigger value="analyse" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); setShowGate(true); } : undefined}><Brain className="w-3.5 h-3.5" /><span className="hidden sm:inline">Analyse IA</span><span className="sm:hidden">IA</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                {/* Separator */}
+                <div className="w-px h-5 bg-border mx-1 shrink-0" />
+                {/* Diagnostic (premium) */}
+                <TabsTrigger value="quickwins" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("quickwins"); } : undefined}><Zap className="w-3.5 h-3.5" />Quickwins{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="processus" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("processus"); } : undefined}><Settings className="w-3.5 h-3.5" /><span className="hidden sm:inline">Processus</span><span className="sm:hidden">Proc.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="outils" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("outils"); } : undefined}><Layers className="w-3.5 h-3.5" />Outils{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="equipes" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("equipes"); } : undefined}><Users className="w-3.5 h-3.5" />Equipes{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="irritants" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("irritants"); } : undefined}><AlertTriangle className="w-3.5 h-3.5" /><span className="hidden sm:inline">Irritants</span><span className="sm:hidden">Irrit.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                {/* Separator */}
+                <div className="w-px h-5 bg-border mx-1 shrink-0" />
+                {/* Actions (premium) */}
+                <TabsTrigger value="plan" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("plan"); } : undefined}><ClipboardList className="w-3.5 h-3.5" /><span className="hidden sm:inline">Plan d'actions</span><span className="sm:hidden">Plan</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="recommandations" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("recommandations"); } : undefined}><Laptop className="w-3.5 h-3.5" /><span className="hidden sm:inline">Recommandations</span><span className="sm:hidden">Reco.</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
+                <TabsTrigger value="analyse" className={`text-xs gap-1 shrink-0 ${!isPaid ? "text-muted-foreground" : ""}`} onClick={!isPaid ? (e) => { e.preventDefault(); openGate("analyse"); } : undefined}><Brain className="w-3.5 h-3.5" /><span className="hidden sm:inline">Analyse IA</span><span className="sm:hidden">IA</span>{!isPaid && <Lock className="w-3 h-3 ml-0.5" />}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -409,14 +446,24 @@ const CartSessionDashboard = () => {
 
             {/* QUICKWINS */}
             <TabsContent value="quickwins" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("quickwins")}
+                count={quickwins.length}
+                tabLabel="quick wins"
+                items={quickwins.slice(0, 3).map(qw => ({ label: qw.intitule, sub: qw.impact ? `Impact : ${qw.impact}` : undefined }))}
+              /> : (
                 <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />
               )}
             </TabsContent>
 
             {/* PROCESSUS */}
             <TabsContent value="processus" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("processus")}
+                count={processus.length}
+                tabLabel="processus"
+                items={processus.slice(0, 3).map(p => ({ label: p.nom, sub: p.type || undefined }))}
+              /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Processus ({processus.length})</CardTitle>
@@ -448,7 +495,12 @@ const CartSessionDashboard = () => {
 
             {/* OUTILS */}
             <TabsContent value="outils" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("outils")}
+                count={outils.length}
+                tabLabel="outils"
+                items={outils.slice(0, 3).map(o => ({ label: o.nom, sub: o.type_outil || undefined }))}
+              /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Outils & SI ({outils.length})</CardTitle>
@@ -482,7 +534,12 @@ const CartSessionDashboard = () => {
 
             {/* EQUIPES */}
             <TabsContent value="equipes" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("equipes")}
+                count={equipes.length}
+                tabLabel="equipes"
+                items={equipes.slice(0, 3).map(e => ({ label: e.nom, sub: e.mission || undefined }))}
+              /> : (
               <Card>
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm">Equipes ({equipes.length})</CardTitle>
@@ -511,7 +568,12 @@ const CartSessionDashboard = () => {
 
             {/* IRRITANTS */}
             <TabsContent value="irritants" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("irritants")}
+                count={irritants.length + taches.length}
+                tabLabel="irritants & taches"
+                items={irritants.slice(0, 3).map(i => ({ label: i.intitule, sub: i.type || undefined }))}
+              /> : (
               <div className="space-y-4">
                 <Card>
                   <CardHeader className="pb-2 px-4 pt-4">
@@ -562,7 +624,12 @@ const CartSessionDashboard = () => {
 
             {/* PLAN D'ACTIONS */}
             <TabsContent value="plan" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("plan")}
+                tabLabel="actions"
+                count={quickwins.length}
+                items={quickwins.slice(0, 2).map(qw => ({ label: qw.intitule, sub: `Priorite : ${qw.priorite || "P2"}` }))}
+              /> : (
               <CartPlanActionsTab
                 sessionId={id!}
                 quickwins={quickwins}
@@ -574,7 +641,10 @@ const CartSessionDashboard = () => {
 
             {/* RECOMMANDATIONS */}
             <TabsContent value="recommandations" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("recommandations")}
+                tabLabel="recommandations"
+              /> : (
               <CartRecommandationsTab
                 outils={outils}
                 aiAnalyseTransversale={session.ai_analyse_transversale}
@@ -623,7 +693,10 @@ const CartSessionDashboard = () => {
 
             {/* ANALYSE IA */}
             <TabsContent value="analyse" className="pb-8">
-              {!isPaid ? <LockedTabContent onUnlock={() => setShowGate(true)} /> : (
+              {!isPaid ? <LockedTabContent
+                onUnlock={() => openGate("analyse")}
+                tabLabel="analyses IA"
+              /> : (
               <div className="space-y-4">
                 {[
                   { key: "ai_resume_executif", label: "Resume executif" },
@@ -701,7 +774,19 @@ const CartSessionDashboard = () => {
           </Tabs>
         </div>
 
-        <FreemiumGate open={showGate} onOpenChange={setShowGate} />
+        <FreemiumGate
+          open={showGate}
+          onOpenChange={setShowGate}
+          tabName={gateTab}
+          stats={{
+            processus: processus.length,
+            outils: outils.length,
+            equipes: equipes.length,
+            irritants: irritants.length,
+            quickwins: quickwins.length,
+            taches: taches.length,
+          }}
+        />
       </div>
     );
   }
@@ -723,7 +808,7 @@ const CartSessionDashboard = () => {
             <p className="text-sm text-amber-800">
               Version d'essai — certaines fonctionnalites sont limitees
             </p>
-            <Button size="sm" variant="outline" className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100" onClick={() => setShowGate(true)}>
+            <Button size="sm" variant="outline" className="shrink-0 border-amber-300 text-amber-800 hover:bg-amber-100" onClick={() => openGate()}>
               <Sparkles className="w-3.5 h-3.5 mr-1" />
               Passer a la version complete
             </Button>
