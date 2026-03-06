@@ -15,7 +15,7 @@ interface MetaTagsProps {
 const MetaTags: React.FC<MetaTagsProps> = ({
   title,
   description,
-  image = 'https://solutio.work/lovable-uploads/c8143545-6b97-49dd-85ba-65b954b9e501.png',
+  image = 'https://solutio.work/og-image.png',
   url,
   type = 'website',
   noIndex = false,

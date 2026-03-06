@@ -366,7 +366,7 @@ const translations = {
     'footer.legal_notice': 'Mentions légales',
     'footer.privacy': 'Confidentialité',
     'footer.terms': 'CGU',
-    'footer.copyright': '© 2025 Solutio. Tous droits réservés.',
+    'footer.copyright': '© 2026 Solutio. Tous droits réservés.',
 
     // Not Found page
     'notfound.title': '404',
@@ -737,7 +737,7 @@ const translations = {
     'footer.legal_notice': 'Legal notice',
     'footer.privacy': 'Privacy',
     'footer.terms': 'Terms',
-    'footer.copyright': '© 2025 Solutio. All rights reserved.',
+    'footer.copyright': '© 2026 Solutio. All rights reserved.',
 
     // Not Found page
     'notfound.title': '404',

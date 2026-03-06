@@ -24,6 +24,7 @@ const Navigation = () => {
     { name: t('nav.realisations'), id: 'realisations', type: 'scroll' as const },
     { name: t('nav.accompagnement'), id: 'accompagnement', type: 'scroll' as const },
     { name: t('nav.conviction'), id: 'conviction', type: 'scroll' as const },
+    { name: t('nav.contact'), path: '/contact', type: 'link' as const },
   ];
 
   return (
