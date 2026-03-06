@@ -32,7 +32,7 @@ const Index = () => {
       before: t('home.real1_before'), after: t('home.real1_after'),
     },
     {
-      sector: t('home.real2_sector'), icon: '📣',
+      sector: t('home.real2_sector'), icon: '📊',
       tags: [t('home.real2_tag1'), t('home.real2_tag2'), t('home.real2_tag3')],
       metric: t('home.real2_metric'), metricLabel: t('home.real2_metric_label'),
       before: t('home.real2_before'), after: t('home.real2_after'),
