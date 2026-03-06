@@ -145,7 +145,7 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
         <Button
           size="sm"
           variant={status === "done" ? "outline" : locked ? "secondary" : "default"}
-          className={`w-full text-xs ${status !== "done" && !locked ? "bg-gradient-primary hover:opacity-90" : ""}`}
+          className={`w-full text-xs ${status !== "done" && !locked ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" : ""}`}
           onClick={(e) => { e.stopPropagation(); handleClick(); }}
         >
           {getButtonLabel()}

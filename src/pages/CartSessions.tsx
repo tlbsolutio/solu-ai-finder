@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { Plus, Network, Calendar, ChevronRight, Sparkles, Crown } from "lucide-react";
+import { Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CartSession {
@@ -54,7 +54,6 @@ const CartSessions = () => {
       if (error) throw error;
       setSessions((data || []) as CartSession[]);
 
-      // Load paid status for all sessions
       const { data: subs } = await supabase
         .from("cart_subscriptions")
         .select("session_id")
@@ -69,7 +68,7 @@ const CartSessions = () => {
 
   const createSession = async () => {
     if (!newSessionName.trim()) {
-      toast({ title: "Erreur", description: "Nom de session requis", variant: "destructive" });
+      toast({ title: "Erreur", description: "Nom du diagnostic requis", variant: "destructive" });
       return;
     }
     const uid = ownerId || await ensureSession();
@@ -83,7 +82,7 @@ const CartSessions = () => {
         .select("id")
         .single();
       if (error) throw error;
-      toast({ title: "Session creee" });
+      toast({ title: "Diagnostic cree" });
       navigate(`/cartographie/sessions/${data.id}`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
@@ -93,7 +92,7 @@ const CartSessions = () => {
   const getStatusColor = (s?: string) => {
     switch (s) {
       case "brouillon": return "bg-slate-100 text-slate-600 border-slate-200";
-      case "en_cours": return "bg-blue-50 text-blue-600 border-blue-200";
+      case "en_cours": return "bg-cyan-50 text-cyan-700 border-cyan-200";
       case "analyse_validee": return "bg-emerald-50 text-emerald-600 border-emerald-200";
       default: return "bg-slate-100 text-slate-500 border-slate-200";
     }
@@ -115,12 +114,12 @@ const CartSessions = () => {
       <div className="px-4 sm:px-6 pt-5 pb-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-lg sm:text-xl font-semibold tracking-tight">{isAdmin ? "Toutes les sessions" : "Mes sessions"}</h1>
-            <p className="text-sm text-muted-foreground">{sessions.length} cartographie{sessions.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-lg sm:text-xl font-semibold tracking-tight">{isAdmin ? "Tous les diagnostics" : "Mes diagnostics"}</h1>
+            <p className="text-sm text-muted-foreground">{sessions.length} diagnostic{sessions.length !== 1 ? "s" : ""} organisationnel{sessions.length !== 1 ? "s" : ""}</p>
           </div>
-          <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-primary hover:opacity-90">
+          <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
             <Plus className="w-4 h-4 mr-1.5" />
-            <span className="hidden sm:inline">Nouvelle session</span>
+            <span className="hidden sm:inline">Nouveau diagnostic</span>
             <span className="sm:hidden">Nouveau</span>
           </Button>
         </div>
@@ -130,16 +129,32 @@ const CartSessions = () => {
         {sessions.length === 0 ? (
           <Card className="border-dashed border-2">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-5">
-                <Network className="w-7 h-7 text-primary" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center mb-5">
+                <Network className="w-8 h-8 text-cyan-600" />
               </div>
-              <p className="font-semibold mb-1">Aucune session</p>
-              <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-                Creez votre premiere cartographie organisationnelle et decouvrez vos axes d'amelioration.
+              <p className="font-semibold text-lg mb-1">Lancez votre premier diagnostic</p>
+              <p className="text-sm text-muted-foreground mb-8 max-w-md">
+                Evaluez la maturite de votre organisation a travers 10 axes d'analyse.
+                Obtenez des recommandations IA personnalisees et un plan d'action priorise.
               </p>
-              <Button onClick={() => setShowNewDialog(true)} className="bg-gradient-primary hover:opacity-90">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 max-w-lg w-full">
+                {[
+                  { icon: BarChart3, label: "Evaluez", desc: "150 questions, 10 axes" },
+                  { icon: Network, label: "Cartographiez", desc: "Carte interactive" },
+                  { icon: Zap, label: "Agissez", desc: "Plan d'action IA" },
+                ].map(({ icon: Icon, label, desc }) => (
+                  <div key={label} className="flex flex-col items-center p-3 rounded-xl border bg-card">
+                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center mb-2">
+                      <Icon className="w-4 h-4 text-cyan-600" />
+                    </div>
+                    <p className="text-xs font-medium">{label}</p>
+                    <p className="text-[10px] text-muted-foreground">{desc}</p>
+                  </div>
+                ))}
+              </div>
+              <Button onClick={() => setShowNewDialog(true)} className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
                 <Sparkles className="w-4 h-4 mr-2" />
-                Creer une session
+                Creer mon diagnostic
               </Button>
             </CardContent>
           </Card>
@@ -150,20 +165,20 @@ const CartSessions = () => {
               return (
                 <Card
                   key={s.id}
-                  className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/30 active:scale-[0.98] overflow-hidden"
+                  className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-cyan-300/50 active:scale-[0.98] overflow-hidden"
                   onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
                 >
                   <div className={`h-1 w-full bg-gradient-to-r ${
                     s.status === "analyse_validee" ? "from-emerald-400 to-emerald-500" :
-                    s.packs_completed > 0 ? "from-primary to-primary/60" :
+                    s.packs_completed > 0 ? "from-cyan-500 to-blue-500" :
                     "from-muted to-muted"
                   }`} />
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-3">
                       <div className="min-w-0">
-                        <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{s.nom}</h3>
+                        <h3 className="font-medium text-sm truncate group-hover:text-cyan-600 transition-colors">{s.nom}</h3>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-cyan-600 group-hover:translate-x-0.5 transition-all" />
                     </div>
 
                     <div className="mb-3">
@@ -173,7 +188,7 @@ const CartSessions = () => {
                       </div>
                       <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-primary to-primary/70"
+                          className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-cyan-500 to-blue-500"
                           style={{ width: `${progressPct}%` }}
                         />
                       </div>
@@ -211,24 +226,27 @@ const CartSessions = () => {
 
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Nouvelle cartographie</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Nouveau diagnostic</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div>
-              <Label className="text-xs font-medium">Nom de la session</Label>
+              <Label className="text-xs font-medium">Nom du diagnostic</Label>
               <Input
                 value={newSessionName}
                 onChange={e => setNewSessionName(e.target.value)}
-                placeholder="Ex: Cartographie Q1 2026"
+                placeholder="Ex: Diagnostic Q1 2026 — Mon entreprise"
                 onKeyDown={e => e.key === "Enter" && createSession()}
                 className="mt-1.5"
                 autoFocus
               />
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Choisissez un nom descriptif pour retrouver facilement ce diagnostic.
+              </p>
             </div>
           </div>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>Annuler</Button>
-            <Button onClick={createSession} disabled={creating} className="bg-gradient-primary hover:opacity-90">
-              {creating ? "Creation..." : "Creer"}
+            <Button onClick={createSession} disabled={creating} className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
+              {creating ? "Creation..." : "Creer le diagnostic"}
             </Button>
           </DialogFooter>
         </DialogContent>

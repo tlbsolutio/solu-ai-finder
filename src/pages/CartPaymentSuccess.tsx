@@ -32,8 +32,8 @@ export default function CartPaymentSuccess() {
               <h3 className="text-sm font-semibold">Prochaines etapes</h3>
 
               <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-primary">1</span>
+                <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-cyan-600">1</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Activation de votre acces</p>
@@ -44,8 +44,8 @@ export default function CartPaymentSuccess() {
               </div>
 
               <div className="flex gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="text-xs font-bold text-primary">2</span>
+                <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-cyan-600">2</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium">Explorez vos resultats</p>
@@ -72,7 +72,7 @@ export default function CartPaymentSuccess() {
 
             <div className="flex flex-col gap-2 pt-2">
               <Button
-                className="w-full h-11 bg-gradient-primary hover:opacity-90"
+                className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
                 onClick={() => navigate(sessionId ? `/cartographie/sessions/${sessionId}` : "/cartographie/sessions")}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />

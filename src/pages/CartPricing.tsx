@@ -69,8 +69,8 @@ export default function CartPricing() {
     <div className="flex-1 bg-background">
       {/* Hero */}
       <div className="px-4 sm:px-6 pt-10 pb-8 text-center max-w-3xl mx-auto">
-        <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 px-3 py-1">
-          Cartographie organisationnelle
+        <Badge className="mb-4 bg-cyan-500/10 text-cyan-700 border-cyan-200 px-3 py-1">
+          Solutio Carto — Diagnostic organisationnel
         </Badge>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
           Choisissez votre formule
@@ -126,17 +126,17 @@ export default function CartPricing() {
           </Card>
 
           {/* AUTONOME — highlighted */}
-          <Card className="relative flex flex-col border-primary shadow-lg ring-2 ring-primary/20">
+          <Card className="relative flex flex-col border-cyan-500 shadow-lg ring-2 ring-cyan-500/20">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <Badge className="bg-primary text-primary-foreground px-4 py-1 text-xs font-medium shadow-sm">
+              <Badge className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-4 py-1 text-xs font-medium shadow-sm">
                 Populaire
               </Badge>
             </div>
             <CardContent className="p-6 flex flex-col flex-1">
               <div className="mb-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-cyan-600" />
                   </div>
                   <h3 className="font-semibold text-lg">Autonome</h3>
                 </div>
@@ -151,7 +151,7 @@ export default function CartPricing() {
                 {AUTONOME_FEATURES.map((f) => (
                   <div key={f.text} className="flex items-start gap-2">
                     {f.included ? (
-                      <CheckCircle className={`w-4 h-4 mt-0.5 shrink-0 ${f.highlight ? "text-primary" : "text-emerald-500"}`} />
+                      <CheckCircle className={`w-4 h-4 mt-0.5 shrink-0 ${f.highlight ? "text-cyan-600" : "text-emerald-500"}`} />
                     ) : (
                       <X className="w-4 h-4 text-muted-foreground/40 mt-0.5 shrink-0" />
                     )}
@@ -163,7 +163,7 @@ export default function CartPricing() {
               </div>
 
               <Button
-                className="w-full mt-6 h-11 bg-gradient-primary hover:opacity-90"
+                className="w-full mt-6 h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
                 onClick={() => window.open(buildPaymentLink(AUTONOME_LINK, "autonome"), "_blank")}
               >
                 Debloquer la cartographie
@@ -224,8 +224,8 @@ export default function CartPricing() {
             { icon: Download, title: "Export PDF", desc: "Rapport professionnel a partager avec votre direction ou vos equipes." },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex gap-3 p-4 rounded-xl border bg-card">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-primary" />
+              <div className="w-9 h-9 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-cyan-600" />
               </div>
               <div>
                 <p className="text-sm font-medium">{title}</p>

@@ -220,7 +220,7 @@ const CartQuickScan = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                 <Button
-                  className="bg-gradient-primary hover:opacity-90 h-11"
+                  className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white h-11"
                   onClick={() => window.open("https://pay.revolut.com/payment-link/solutio-cartographie", "_blank")}
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
@@ -427,7 +427,7 @@ const CartQuickScan = () => {
             size="lg"
             onClick={handleSubmit}
             disabled={loading || answered < 5}
-            className="bg-gradient-primary hover:opacity-90 h-12 px-8"
+            className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white h-12 px-8"
           >
             {loading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Sparkles className="w-5 h-5 mr-2" />}
             {loading ? "Analyse en cours..." : "Obtenir mes resultats"}

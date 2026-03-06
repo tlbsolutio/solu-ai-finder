@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Network, Shield } from "lucide-react";
+import { ChevronRight, LogOut, User, Network, Shield, LayoutDashboard } from "lucide-react";
 
 interface Crumb {
   label: string;
@@ -14,22 +14,22 @@ interface Crumb {
 
 function useBreadcrumbs(): Crumb[] {
   const { pathname } = useLocation();
-  const crumbs: Crumb[] = [{ label: "Cartographie", path: "/cartographie" }];
+  const crumbs: Crumb[] = [];
 
   if (pathname === "/cartographie/sessions" || pathname === "/cartographie/sessions/new") {
-    crumbs.push({ label: "Sessions" });
+    crumbs.push({ label: "Diagnostics" });
   } else if (pathname.match(/\/cartographie\/sessions\/[^/]+\/pack\/\d+\/results/)) {
-    crumbs.push({ label: "Sessions", path: "/cartographie/sessions" });
+    crumbs.push({ label: "Diagnostics", path: "/cartographie/sessions" });
     crumbs.push({ label: "Dashboard", path: pathname.replace(/\/pack\/.*/, "") });
     const packNum = pathname.match(/pack\/(\d+)/)?.[1];
     crumbs.push({ label: `Pack ${packNum} — Resultats` });
   } else if (pathname.match(/\/cartographie\/sessions\/[^/]+\/pack\/\d+/)) {
-    crumbs.push({ label: "Sessions", path: "/cartographie/sessions" });
+    crumbs.push({ label: "Diagnostics", path: "/cartographie/sessions" });
     crumbs.push({ label: "Dashboard", path: pathname.replace(/\/pack\/.*/, "") });
     const packNum = pathname.match(/pack\/(\d+)/)?.[1];
     crumbs.push({ label: `Pack ${packNum}` });
   } else if (pathname.match(/\/cartographie\/sessions\/[^/]+/)) {
-    crumbs.push({ label: "Sessions", path: "/cartographie/sessions" });
+    crumbs.push({ label: "Diagnostics", path: "/cartographie/sessions" });
     crumbs.push({ label: "Dashboard" });
   } else if (pathname === "/cartographie/admin") {
     crumbs.push({ label: "Admin" });
@@ -58,38 +58,42 @@ export default function CartLayout({ children }: CartLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Slim top bar */}
+      {/* App header */}
       <header className="sticky top-0 z-50 h-12 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 sm:px-5 flex items-center justify-between gap-2">
-        {/* Left: Logo + Breadcrumbs */}
+        {/* Left: Product identity + Breadcrumbs */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link to="/" className="shrink-0">
-            <img
-              src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
-              alt="Solutio"
-              className="h-6 w-auto"
-            />
+          <Link to="/cartographie/sessions" className="flex items-center gap-2 shrink-0 group">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
+              <Network className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div className="hidden sm:flex items-baseline gap-1">
+              <span className="text-sm font-bold tracking-tight text-foreground">Solutio</span>
+              <span className="text-sm font-bold tracking-tight text-cyan-600">Carto</span>
+            </div>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-            {crumbs.map((crumb, i) => (
-              <React.Fragment key={i}>
-                {i > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground/50" />}
-                {crumb.path ? (
-                  <Link to={crumb.path} className="hover:text-foreground transition-colors truncate max-w-[100px]">
-                    {crumb.label}
-                  </Link>
-                ) : (
-                  <span className="text-foreground font-medium truncate max-w-[140px]">{crumb.label}</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {crumbs.length > 0 && (
+            <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground/40" />
+              {crumbs.map((crumb, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground/40" />}
+                  {crumb.path ? (
+                    <Link to={crumb.path} className="hover:text-foreground transition-colors truncate max-w-[100px]">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className="text-foreground font-medium truncate max-w-[140px]">{crumb.label}</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
           {/* Mobile: show only current page */}
           <div className="flex sm:hidden items-center gap-1.5 min-w-0">
-            <Network className="w-3.5 h-3.5 text-cyan-500 shrink-0" />
             <span className="text-xs font-medium truncate">
-              {crumbs[crumbs.length - 1]?.label}
+              {crumbs[crumbs.length - 1]?.label || "Carto"}
             </span>
           </div>
         </div>
@@ -98,8 +102,8 @@ export default function CartLayout({ children }: CartLayoutProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
-              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-primary" />
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-cyan-600" />
               </div>
               <span className="hidden sm:inline text-xs text-muted-foreground max-w-[120px] truncate">
                 {userName || userEmail || "Compte"}
@@ -113,7 +117,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/cartographie/sessions")}>
-              <Network className="w-3.5 h-3.5 mr-2" /> Mes sessions
+              <LayoutDashboard className="w-3.5 h-3.5 mr-2" /> Mes diagnostics
             </DropdownMenuItem>
             {userEmail === "tlb@solutio.work" && (
               <DropdownMenuItem onClick={() => navigate("/cartographie/admin")}>

@@ -7,7 +7,6 @@ import { Sparkles, CheckCircle, ArrowRight, Crown, Lock } from "lucide-react";
 interface FreemiumGateProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Optional: contextual stats to show what's behind the paywall */
   stats?: {
     processus?: number;
     outils?: number;
@@ -16,9 +15,7 @@ interface FreemiumGateProps {
     quickwins?: number;
     taches?: number;
   };
-  /** Optional: which tab the user tried to access */
   tabName?: string;
-  /** Session ID for per-session pricing */
   sessionId?: string;
 }
 
@@ -47,12 +44,12 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
         {/* Header */}
         <div className="px-6 pt-6 pb-4" style={{
-          background: 'linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--primary) / 0.03) 100%)',
+          background: 'linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(59,130,246,0.04) 100%)',
         }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg">
-              <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-                <Lock className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/15 flex items-center justify-center">
+                <Lock className="w-4 h-4 text-cyan-600" />
               </div>
               Contenu premium
             </DialogTitle>
@@ -63,7 +60,6 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
         </div>
 
         <div className="px-6 pb-6 space-y-5">
-          {/* Show real data counts if available */}
           {hasStats && (
             <div className="grid grid-cols-2 gap-2">
               {[
@@ -75,14 +71,13 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
                 { label: "Taches manuelles", count: stats!.taches },
               ].filter(s => (s.count ?? 0) > 0).map(({ label, count }) => (
                 <div key={label} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-2">
-                  <span className="text-lg font-bold text-primary">{count}</span>
+                  <span className="text-lg font-bold text-cyan-600">{count}</span>
                   <span className="text-xs text-muted-foreground">{label} detectes</span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Value proposition */}
           <div className="space-y-2">
             {[
               "Diagnostic complet (processus, outils, equipes, irritants)",
@@ -97,11 +92,10 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
             ))}
           </div>
 
-          {/* Pricing cards mini */}
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border bg-card p-3 text-center space-y-1">
               <div className="flex items-center justify-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
                 <p className="text-xs font-medium">Autonome</p>
               </div>
               <p className="text-xl font-bold">349<span className="text-xs font-normal text-muted-foreground ml-0.5">EUR</span></p>
@@ -117,10 +111,9 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
             </div>
           </div>
 
-          {/* CTA */}
           <div className="space-y-2">
             <Button
-              className="w-full h-11 bg-gradient-primary hover:opacity-90 text-sm font-medium"
+              className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white text-sm font-medium"
               onClick={() => {
                 onOpenChange(false);
                 navigate(`/cartographie/pricing${sessionId ? `?session=${sessionId}` : ""}`);

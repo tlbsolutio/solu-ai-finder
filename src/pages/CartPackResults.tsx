@@ -229,7 +229,7 @@ const CartPackResults = () => {
           </div>
           <div className="space-y-2 pt-2">
             <Button
-              className="w-full h-11 bg-gradient-primary hover:opacity-90"
+              className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
               onClick={() => navigate("/cartographie/pricing")}
             >
               Voir les formules
