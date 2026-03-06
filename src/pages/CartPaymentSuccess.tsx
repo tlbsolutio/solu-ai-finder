@@ -7,6 +7,7 @@ export default function CartPaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan = searchParams.get("plan"); // "autonome" or "accompagnee"
+  const sessionId = searchParams.get("session");
   const isAccompagnee = plan === "accompagnee";
 
   return (
@@ -72,7 +73,7 @@ export default function CartPaymentSuccess() {
             <div className="flex flex-col gap-2 pt-2">
               <Button
                 className="w-full h-11 bg-gradient-primary hover:opacity-90"
-                onClick={() => navigate("/cartographie/sessions")}
+                onClick={() => navigate(sessionId ? `/cartographie/sessions/${sessionId}` : "/cartographie/sessions")}
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Acceder a mon tableau de bord

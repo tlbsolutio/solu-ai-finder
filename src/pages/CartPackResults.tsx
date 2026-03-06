@@ -31,7 +31,10 @@ const CartPackResults = () => {
   const { id, packId } = useParams<{ id: string; packId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isPaid } = useCartContext();
+  const { isSessionPaid, loadSessionTier } = useCartContext();
+  const isPaid = id ? isSessionPaid(id) : false;
+
+  useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
 
   const bloc = parseInt(packId || "1");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);

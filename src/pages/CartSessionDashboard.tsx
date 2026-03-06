@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCartSessionV2 } from "@/hooks/useCartSessionV2";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -101,8 +101,12 @@ const LockedTabContent = ({ onUnlock, items, count, tabLabel }: LockedTabContent
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isPaid, isAdmin, ownerId } = useCartContext();
+  const { isSessionPaid, loadSessionTier, isAdmin, ownerId } = useCartContext();
   const { toast } = useToast();
+  const isPaid = id ? isSessionPaid(id) : false;
+
+  // Load tier for this specific session on mount
+  useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
 
   const {
     session, packResumes, processus, outils, equipes, irritants, taches, quickwins,
@@ -782,6 +786,7 @@ const CartSessionDashboard = () => {
           open={showGate}
           onOpenChange={setShowGate}
           tabName={gateTab}
+          sessionId={id}
           stats={{
             processus: processus.length,
             outils: outils.length,
@@ -949,7 +954,7 @@ const CartSessionDashboard = () => {
         </Card>
       </main>
 
-      <FreemiumGate open={showGate} onOpenChange={setShowGate} />
+      <FreemiumGate open={showGate} onOpenChange={setShowGate} sessionId={id} />
     </div>
   );
 };

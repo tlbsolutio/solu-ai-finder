@@ -39,6 +39,7 @@ interface UserAgg {
 interface SubscriptionRow {
   id: string;
   owner_id: string;
+  session_id: string | null;
   status: string;
 }
 
@@ -51,7 +52,8 @@ const CartAdmin = () => {
   const [users, setUsers] = useState<UserAgg[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [togglingUser, setTogglingUser] = useState<string | null>(null);
+  const [togglingSession, setTogglingSession] = useState<string | null>(null);
+  const [paidSessionIds, setPaidSessionIds] = useState<Set<string>>(new Set());
 
   // Admin guard
   useEffect(() => {
@@ -77,6 +79,7 @@ const CartAdmin = () => {
         .eq("status", "active");
       const allSubs = (subData || []) as SubscriptionRow[];
       setSubscriptions(allSubs);
+      setPaidSessionIds(new Set(allSubs.map(s => s.session_id).filter(Boolean) as string[]));
 
       // Build user aggregation
       const paidOwnerIds = new Set(allSubs.map(s => s.owner_id));
@@ -125,29 +128,29 @@ const CartAdmin = () => {
     if (userEmail === ADMIN_EMAIL) loadData();
   }, [userEmail, loadData]);
 
-  const togglePaidAccess = async (ownerId: string, currentlyPaid: boolean) => {
-    setTogglingUser(ownerId);
+  const toggleSessionPaidAccess = async (sessionId: string, ownerId: string, currentlyPaid: boolean) => {
+    setTogglingSession(sessionId);
     try {
       if (currentlyPaid) {
         const { error } = await supabase
           .from("cart_subscriptions")
           .delete()
-          .eq("owner_id", ownerId)
+          .eq("session_id", sessionId)
           .eq("status", "active");
         if (error) throw error;
-        toast({ title: "Acces revoque" });
+        toast({ title: "Acces revoque pour cette session" });
       } else {
         const { error } = await supabase
           .from("cart_subscriptions")
-          .insert({ owner_id: ownerId, status: "active" });
+          .insert({ owner_id: ownerId, session_id: sessionId, status: "active" });
         if (error) throw error;
-        toast({ title: "Acces accorde" });
+        toast({ title: "Acces accorde pour cette session" });
       }
       await loadData();
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally {
-      setTogglingUser(null);
+      setTogglingSession(null);
     }
   };
 
@@ -235,7 +238,6 @@ const CartAdmin = () => {
                     <TableHead className="text-center">Sessions</TableHead>
                     <TableHead>Derniere activite</TableHead>
                     <TableHead className="text-center">Analyse</TableHead>
-                    <TableHead className="text-center">Acces</TableHead>
                     <TableHead className="text-center">Contact</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -266,18 +268,6 @@ const CartAdmin = () => {
                           ) : (
                             <Badge variant="outline" className="text-[10px]">Non</Badge>
                           )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Switch
-                              checked={u.has_paid}
-                              disabled={togglingUser === u.owner_id}
-                              onCheckedChange={() => togglePaidAccess(u.owner_id, u.has_paid)}
-                            />
-                            <Badge variant={u.has_paid ? "default" : "outline"} className="text-[10px]">
-                              {u.has_paid ? "Paye" : "Gratuit"}
-                            </Badge>
-                          </div>
                         </TableCell>
                         <TableCell className="text-center">
                           {u.email && u.email !== ADMIN_EMAIL ? (
@@ -320,13 +310,14 @@ const CartAdmin = () => {
                     <TableHead>Statut</TableHead>
                     <TableHead>Secteur</TableHead>
                     <TableHead>Date</TableHead>
+                    <TableHead className="text-center">Acces</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sessions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                         Aucune session
                       </TableCell>
                     </TableRow>
@@ -354,6 +345,18 @@ const CartAdmin = () => {
                             {new Date(s.created_at).toLocaleDateString("fr-FR", {
                               day: "numeric", month: "short",
                             })}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <Switch
+                                checked={paidSessionIds.has(s.id)}
+                                disabled={togglingSession === s.id}
+                                onCheckedChange={() => toggleSessionPaidAccess(s.id, s.owner_id, paidSessionIds.has(s.id))}
+                              />
+                              <Badge variant={paidSessionIds.has(s.id) ? "default" : "outline"} className="text-[10px]">
+                                {paidSessionIds.has(s.id) ? "Premium" : "Free"}
+                              </Badge>
+                            </div>
                           </TableCell>
                           <TableCell className="text-center">
                             <Button

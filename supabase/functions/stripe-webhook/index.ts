@@ -69,11 +69,13 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const session = event.data.object;
-  const customerEmail = session.customer_details?.email || session.customer_email;
-  const paymentRef = session.payment_intent || session.id;
-  const amountTotal = session.amount_total; // in cents
-  const planType = amountTotal >= 80000 ? "accompagnee" : "autonome"; // 890*100=89000, 349*100=34900
+  const checkoutSession = event.data.object;
+  const customerEmail = checkoutSession.customer_details?.email || checkoutSession.customer_email;
+  const paymentRef = checkoutSession.payment_intent || checkoutSession.id;
+  const amountTotal = checkoutSession.amount_total; // in cents
+  const planType = amountTotal >= 80000 ? "accompagnee" : "autonome";
+  // client_reference_id = cart session ID (passed from pricing page)
+  const cartSessionId = checkoutSession.client_reference_id;
 
   if (!customerEmail) {
     console.error("No customer email in checkout session");
@@ -83,7 +85,15 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  console.log(`Activating subscription for ${customerEmail}, plan: ${planType}, ref: ${paymentRef}`);
+  if (!cartSessionId) {
+    console.error("No cart session ID (client_reference_id) in checkout session");
+    return new Response(JSON.stringify({ warning: "No session ID, manual activation needed", email: customerEmail }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  console.log(`Activating subscription for ${customerEmail}, session: ${cartSessionId}, plan: ${planType}, ref: ${paymentRef}`);
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -110,27 +120,30 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  // Check if subscription already exists for this user
+  // Check if subscription already exists for this session
   const { data: existing } = await supabase
     .from("cart_subscriptions")
     .select("id")
-    .eq("owner_id", user.id)
+    .eq("session_id", cartSessionId)
     .limit(1)
     .single();
 
   let subError;
   if (existing) {
-    // Update existing subscription
     const res = await supabase
       .from("cart_subscriptions")
       .update({ status: "active", payment_ref: paymentRef })
       .eq("id", existing.id);
     subError = res.error;
   } else {
-    // Insert new subscription
     const res = await supabase
       .from("cart_subscriptions")
-      .insert({ owner_id: user.id, status: "active", payment_ref: paymentRef });
+      .insert({
+        owner_id: user.id,
+        session_id: cartSessionId,
+        status: "active",
+        payment_ref: paymentRef,
+      });
     subError = res.error;
   }
 
@@ -142,10 +155,10 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  console.log(`Subscription activated for user ${user.id} (${customerEmail}), plan: ${planType}`);
+  console.log(`Subscription activated for user ${user.id} (${customerEmail}), session: ${cartSessionId}, plan: ${planType}`);
 
   return new Response(
-    JSON.stringify({ success: true, userId: user.id, plan: planType }),
+    JSON.stringify({ success: true, userId: user.id, sessionId: cartSessionId, plan: planType }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
 });

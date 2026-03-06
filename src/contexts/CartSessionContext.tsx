@@ -9,12 +9,15 @@ interface CartSessionContextType {
   userName: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  tier: "free" | "paid";
-  isPaid: boolean;
   loading: boolean;
   ensureSession: () => Promise<string | null>;
-  checkTier: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Check if a specific cart session is paid */
+  isSessionPaid: (sessionId: string) => boolean;
+  /** Fetch paid status for a session (call once per dashboard load) */
+  loadSessionTier: (sessionId: string) => Promise<boolean>;
+  /** Legacy global isPaid — true only for admin */
+  isPaid: boolean;
 }
 
 const CartSessionContext = createContext<CartSessionContextType | undefined>(undefined);
@@ -24,13 +27,15 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [tier, setTier] = useState<"free" | "paid">("free");
   const [loading, setLoading] = useState(true);
+  // Cache of paid session IDs
+  const [paidSessions, setPaidSessions] = useState<Set<string>>(new Set());
+
+  const isAdmin = userEmail === ADMIN_EMAIL;
 
   const ensureSession = useCallback(async (): Promise<string | null> => {
     let { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      // For QuickScan (public), use anonymous auth
       const { data, error } = await supabase.auth.signInAnonymously();
       if (error) { console.error("Anonymous auth error:", error); return null; }
       session = data.session;
@@ -50,29 +55,40 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
     setUserEmail(null);
     setUserName(null);
     setIsAuthenticated(false);
+    setPaidSessions(new Set());
   }, []);
 
-  const checkTier = useCallback(async () => {
-    if (!ownerId) return;
+  const loadSessionTier = useCallback(async (sessionId: string): Promise<boolean> => {
     // Admin always has paid access
     if (userEmail === ADMIN_EMAIL) {
-      setTier("paid");
-      return;
+      setPaidSessions(prev => new Set(prev).add(sessionId));
+      return true;
     }
     const { data } = await supabase
       .from("cart_subscriptions")
       .select("status")
-      .eq("owner_id", ownerId)
+      .eq("session_id", sessionId)
       .eq("status", "active")
       .limit(1)
       .single();
-    setTier(data ? "paid" : "free");
-  }, [ownerId, userEmail]);
+    const paid = !!data;
+    setPaidSessions(prev => {
+      const next = new Set(prev);
+      if (paid) next.add(sessionId);
+      else next.delete(sessionId);
+      return next;
+    });
+    return paid;
+  }, [userEmail]);
+
+  const isSessionPaid = useCallback((sessionId: string): boolean => {
+    if (userEmail === ADMIN_EMAIL) return true;
+    return paidSessions.has(sessionId);
+  }, [paidSessions, userEmail]);
 
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      // Only read existing session — don't create anonymous session on every page load
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const user = session.user;
@@ -95,10 +111,13 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => { if (ownerId) checkTier(); }, [ownerId, checkTier]);
-
   return (
-    <CartSessionContext.Provider value={{ ownerId, userEmail, userName, isAuthenticated, isAdmin: userEmail === ADMIN_EMAIL, tier, isPaid: tier === "paid", loading, ensureSession, checkTier, signOut }}>
+    <CartSessionContext.Provider value={{
+      ownerId, userEmail, userName, isAuthenticated, isAdmin, loading,
+      ensureSession, signOut,
+      isSessionPaid, loadSessionTier,
+      isPaid: isAdmin, // legacy — only admin gets global paid
+    }}>
       {children}
     </CartSessionContext.Provider>
   );

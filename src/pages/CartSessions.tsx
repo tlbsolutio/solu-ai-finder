@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { Plus, Network, Calendar, ChevronRight, Sparkles } from "lucide-react";
+import { Plus, Network, Calendar, ChevronRight, Sparkles, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CartSession {
@@ -27,10 +27,11 @@ interface CartSession {
 const CartSessions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { ownerId, ensureSession, isPaid, isAdmin } = useCartContext();
+  const { ownerId, ensureSession, isAdmin } = useCartContext();
   const { toast } = useToast();
 
   const [sessions, setSessions] = useState<CartSession[]>([]);
+  const [paidSessionIds, setPaidSessionIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [showNewDialog, setShowNewDialog] = useState(location.pathname.includes("/new"));
   const [newSessionName, setNewSessionName] = useState("");
@@ -46,13 +47,21 @@ const CartSessions = () => {
         .from("cart_sessions")
         .select("*")
         .order("updated_at", { ascending: false });
-      // Admin sees all sessions, normal users only their own
       if (!isAdmin) {
         query = query.eq("owner_id", ownerId);
       }
       const { data, error } = await query;
       if (error) throw error;
       setSessions((data || []) as CartSession[]);
+
+      // Load paid status for all sessions
+      const { data: subs } = await supabase
+        .from("cart_subscriptions")
+        .select("session_id")
+        .eq("status", "active");
+      if (subs) {
+        setPaidSessionIds(new Set(subs.map(s => s.session_id).filter(Boolean)));
+      }
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally { setLoading(false); }
@@ -70,7 +79,7 @@ const CartSessions = () => {
     try {
       const { data, error } = await supabase
         .from("cart_sessions")
-        .insert({ nom: newSessionName.trim(), owner_id: uid, tier: isPaid ? "paid" : "free", status: "brouillon", pack_status_json: {}, packs_completed: 0 })
+        .insert({ nom: newSessionName.trim(), owner_id: uid, tier: "free", status: "brouillon", pack_status_json: {}, packs_completed: 0 })
         .select("id")
         .single();
       if (error) throw error;
@@ -175,6 +184,12 @@ const CartSessions = () => {
                         <Badge variant="outline" className={`text-[10px] ${getStatusColor(s.status)}`}>
                           {getStatusLabel(s.status)}
                         </Badge>
+                        {paidSessionIds.has(s.id) && (
+                          <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-700 border-amber-200 gap-0.5">
+                            <Crown className="w-2.5 h-2.5" />
+                            Premium
+                          </Badge>
+                        )}
                         {isAdmin && s.owner_id !== ownerId && (
                           <Badge variant="outline" className="text-[9px] bg-purple-50 text-purple-600 border-purple-200">
                             {s.owner_id.slice(0, 6)}...

@@ -18,6 +18,8 @@ interface FreemiumGateProps {
   };
   /** Optional: which tab the user tried to access */
   tabName?: string;
+  /** Session ID for per-session pricing */
+  sessionId?: string;
 }
 
 const TAB_VALUE_MAP: Record<string, string> = {
@@ -31,7 +33,7 @@ const TAB_VALUE_MAP: Record<string, string> = {
   analyse: "Analyse causale inter-packs et quantification d'impact",
 };
 
-export function FreemiumGate({ open, onOpenChange, stats, tabName }: FreemiumGateProps) {
+export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: FreemiumGateProps) {
   const navigate = useNavigate();
   const contextMessage = tabName ? TAB_VALUE_MAP[tabName] : null;
 
@@ -121,7 +123,7 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName }: FreemiumGat
               className="w-full h-11 bg-gradient-primary hover:opacity-90 text-sm font-medium"
               onClick={() => {
                 onOpenChange(false);
-                navigate("/cartographie/pricing");
+                navigate(`/cartographie/pricing${sessionId ? `?session=${sessionId}` : ""}`);
               }}
             >
               Voir les formules

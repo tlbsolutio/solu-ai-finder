@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +54,16 @@ const ACCOMPAGNEE_FEATURES: PlanFeature[] = [
 
 export default function CartPricing() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session");
+
+  // Append session ID to Stripe link via client_reference_id
+  const buildPaymentLink = (baseLink: string, plan: string) => {
+    const url = new URL(baseLink);
+    if (sessionId) url.searchParams.set("client_reference_id", sessionId);
+    // Prefill success redirect with session context
+    return url.toString();
+  };
 
   return (
     <div className="flex-1 bg-background">
@@ -154,7 +164,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-gradient-primary hover:opacity-90"
-                onClick={() => window.open(AUTONOME_LINK, "_blank")}
+                onClick={() => window.open(buildPaymentLink(AUTONOME_LINK, "autonome"), "_blank")}
               >
                 Debloquer la cartographie
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -197,7 +207,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-amber-600 hover:bg-amber-700 text-white"
-                onClick={() => window.open(ACCOMPAGNEE_LINK, "_blank")}
+                onClick={() => window.open(buildPaymentLink(ACCOMPAGNEE_LINK, "accompagnee"), "_blank")}
               >
                 Choisir l'accompagnement
                 <ArrowRight className="w-4 h-4 ml-2" />
