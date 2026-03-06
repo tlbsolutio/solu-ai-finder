@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCartContext } from "@/contexts/CartSessionContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles,
+  Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles, Lock, ArrowRight,
 } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
@@ -30,6 +31,7 @@ const CartPackResults = () => {
   const { id, packId } = useParams<{ id: string; packId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isPaid } = useCartContext();
 
   const bloc = parseInt(packId || "1");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
@@ -204,6 +206,42 @@ const CartPackResults = () => {
           <Progress value={undefined} className="h-2 animate-pulse" />
         </div>
         <p className="text-xs text-muted-foreground">~10-20 secondes</p>
+      </div>
+    );
+  }
+
+  // Freemium gate: free users cannot see detailed pack results
+  if (!isPaid) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4 bg-card rounded-2xl border shadow-xl p-8">
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">Resultats detailles reserves</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              L'analyse detaillee par pack (objets detectes, alertes, quick wins) est disponible dans la version complete.
+            </p>
+          </div>
+          <div className="space-y-2 pt-2">
+            <Button
+              className="w-full h-11 bg-gradient-primary hover:opacity-90"
+              onClick={() => navigate("/cartographie/pricing")}
+            >
+              Voir les formules
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-muted-foreground"
+              onClick={() => navigate(`/cartographie/sessions/${id}`)}
+            >
+              Retour au dashboard
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

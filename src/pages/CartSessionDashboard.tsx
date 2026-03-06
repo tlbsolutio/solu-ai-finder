@@ -242,31 +242,35 @@ const CartSessionDashboard = () => {
           )}
           {isFinalGenerated && (
             <>
-              <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className={`h-8 text-xs ${generatingOllama ? "opacity-80" : ""}`}>
-                {generatingOllama ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                    <span className="hidden sm:inline">Analyse en cours...</span>
-                    <span className="sm:hidden">...</span>
-                  </>
-                ) : (
-                  <>
-                    <Brain className="w-3.5 h-3.5 mr-1" />
-                    <span className="hidden sm:inline">Approfondie</span>
-                    <span className="sm:hidden">IA</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs"
-                disabled={pdfLoading}
-                onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline ml-1">{pdfLoading ? "..." : "PDF"}</span>
-              </Button>
+              {isPaid && (
+                <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className={`h-8 text-xs ${generatingOllama ? "opacity-80" : ""}`}>
+                  {generatingOllama ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                      <span className="hidden sm:inline">Analyse en cours...</span>
+                      <span className="sm:hidden">...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Brain className="w-3.5 h-3.5 mr-1" />
+                      <span className="hidden sm:inline">Approfondie</span>
+                      <span className="sm:hidden">IA</span>
+                    </>
+                  )}
+                </Button>
+              )}
+              {isPaid && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs"
+                  disabled={pdfLoading}
+                  onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline ml-1">{pdfLoading ? "..." : "PDF"}</span>
+                </Button>
+              )}
             </>
           )}
         </div>
