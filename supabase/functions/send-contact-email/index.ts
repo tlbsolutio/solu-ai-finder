@@ -3,8 +3,12 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://solutio.work",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",  
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
@@ -206,21 +210,21 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="message-summary">
                   <div class="message-item">
                     <div class="message-label">Nom :</div>
-                    <div class="message-value">${name}</div>
+                    <div class="message-value">${esc(name)}</div>
                   </div>
                   <div class="message-item">
                     <div class="message-label">Email :</div>
-                    <div class="message-value">${email}</div>
+                    <div class="message-value">${esc(email)}</div>
                   </div>
                   ${company ? `
                     <div class="message-item">
                       <div class="message-label">Entreprise :</div>
-                      <div class="message-value">${company}</div>
+                      <div class="message-value">${esc(company)}</div>
                     </div>
                   ` : ''}
                   <div class="message-item">
                     <div class="message-label">Message :</div>
-                    <div class="message-value">${message}</div>
+                    <div class="message-value">${esc(message)}</div>
                   </div>
                 </div>
                 
@@ -249,7 +253,7 @@ const handler = async (req: Request): Promise<Response> => {
     const notificationEmailResponse = await resend.emails.send({
       from: "Solutio Contact <no-reply@resend.dev>",
       to: ["contact@solutio.work"], // Replace with your actual email
-      subject: `🔔 Nouveau message de contact - ${name}`,
+      subject: `🔔 Nouveau message de contact - ${esc(name)}`,
       html: `
         <!DOCTYPE html>
         <html lang="fr">
@@ -336,23 +340,23 @@ const handler = async (req: Request): Promise<Response> => {
             <div class="contact-info">
               <div class="contact-item">
                 <div class="contact-label">Nom :</div>
-                <div class="contact-value"><strong>${name}</strong></div>
+                <div class="contact-value"><strong>${esc(name)}</strong></div>
               </div>
               <div class="contact-item">
                 <div class="contact-label">Email :</div>
-                <div class="contact-value"><a href="mailto:${email}">${email}</a></div>
+                <div class="contact-value"><a href="mailto:${esc(email)}">${esc(email)}</a></div>
               </div>
               ${company ? `
                 <div class="contact-item">
                   <div class="contact-label">Entreprise :</div>
-                  <div class="contact-value"><strong>${company}</strong></div>
+                  <div class="contact-value"><strong>${esc(company)}</strong></div>
                 </div>
               ` : ''}
             </div>
             
             <h3>💬 Message</h3>
             <div class="message-content">
-              <p>${message}</p>
+              <p>${esc(message)}</p>
             </div>
             
             <div style="text-align: center; margin: 30px 0; padding: 20px; background: #f0fdf4; border-radius: 8px;">

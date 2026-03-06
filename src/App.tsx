@@ -10,7 +10,6 @@ import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "./components/ui/error-boundary";
 import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
-// Diagnostic page removed from tunnel — kept as file but not routed
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import PrivacyEn from "./pages/PrivacyEn";

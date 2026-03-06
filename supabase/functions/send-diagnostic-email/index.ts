@@ -3,8 +3,12 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://solutio.work",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
@@ -597,9 +601,9 @@ const handler = async (req: Request): Promise<Response> => {
                     return `
                       <div class="saas-card">
                         <div class="saas-header">
-                          ${saas.logoUrl ? `<img src="${saas.logoUrl}" alt="${saas.name}" class="saas-logo">` : '<div class="saas-logo" style="display: flex; align-items: center; justify-content: center; font-weight: bold; color: #4f46e5; font-size: 20px;">📱</div>'}
+                          ${saas.logoUrl ? `<img src="${esc(saas.logoUrl)}" alt="${esc(saas.name)}" class="saas-logo">` : '<div class="saas-logo" style="display: flex; align-items: center; justify-content: center; font-weight: bold; color: #4f46e5; font-size: 20px;">📱</div>'}
                           <div class="saas-info">
-                            <h4>${saas.name}</h4>
+                            <h4>${esc(saas.name)}</h4>
                             <p class="tagline">${saas.tagline || saas.description || 'Solution d\'automatisation recommandée'}</p>
                           </div>
                           <div class="saas-price">À partir de ${startingPrice}</div>
