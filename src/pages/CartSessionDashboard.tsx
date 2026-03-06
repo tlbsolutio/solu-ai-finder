@@ -384,7 +384,25 @@ const CartSessionDashboard = () => {
                         <CardTitle className="text-sm">Resume executif</CardTitle>
                       </CardHeader>
                       <CardContent className="px-4 pb-4">
-                        <FormattedText text={session.ai_resume_executif} />
+                        {isPaid ? (
+                          <FormattedText text={session.ai_resume_executif} />
+                        ) : (
+                          <div className="relative">
+                            <div className="line-clamp-3 text-sm text-muted-foreground leading-relaxed">
+                              <FormattedText text={session.ai_resume_executif} />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-card to-transparent" />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 text-xs text-primary"
+                              onClick={() => openGate()}
+                            >
+                              <Lock className="w-3 h-3 mr-1" />
+                              Lire l'analyse complete
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -394,16 +412,38 @@ const CartSessionDashboard = () => {
                       <CardHeader className="pb-2 px-4 pt-4">
                         <CardTitle className="text-sm flex items-center gap-1.5">
                           <AlertCircle className="w-4 h-4 text-destructive" />
-                          Alertes prioritaires
+                          Alertes prioritaires ({sortedAlerts.length})
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="px-4 pb-4 space-y-2">
-                        {sortedAlerts.map((alert, i) => (
-                          <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
-                            <p className="font-semibold">{alert.titre}</p>
-                            {alert.description && <p className="mt-0.5 opacity-80 line-clamp-2">{alert.description}</p>}
+                        {isPaid ? (
+                          sortedAlerts.map((alert, i) => (
+                            <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
+                              <p className="font-semibold">{alert.titre}</p>
+                              {alert.description && <p className="mt-0.5 opacity-80 line-clamp-2">{alert.description}</p>}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="space-y-2">
+                            {sortedAlerts.map((alert, i) => (
+                              <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
+                                <div className="flex items-center justify-between">
+                                  <p className="font-semibold">Alerte {alert.gravite}</p>
+                                  <Lock className="w-3 h-3 text-muted-foreground" />
+                                </div>
+                              </div>
+                            ))}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full text-xs text-primary"
+                              onClick={() => openGate()}
+                            >
+                              <Lock className="w-3 h-3 mr-1" />
+                              Voir le detail des alertes
+                            </Button>
                           </div>
-                        ))}
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -439,7 +479,7 @@ const CartSessionDashboard = () => {
                     </span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="px-0 pb-0">
+                <CardContent className="px-0 pb-0 relative">
                   <OrgMap
                     processus={processus}
                     outils={outils}
@@ -448,6 +488,25 @@ const CartSessionDashboard = () => {
                     packResumes={packResumes}
                     aiCartographyJson={(session as any).ai_cartography_json}
                   />
+                  {!isPaid && (
+                    <div className="absolute inset-0 z-10 flex items-end justify-center pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--card) / 0.7) 60%, hsl(var(--card) / 0.95) 100%)" }}>
+                      <div className="pointer-events-auto mb-8 text-center space-y-3 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-5 max-w-xs">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+                          <Map className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm">{totalObjects} objets cartographies</h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Debloquez la carte interactive complete avec labels et details
+                          </p>
+                        </div>
+                        <Button onClick={() => openGate()} className="w-full h-9 bg-gradient-primary hover:opacity-90 text-xs">
+                          <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                          Voir les formules
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -897,18 +956,24 @@ const CartSessionDashboard = () => {
                 <CardHeader className="pb-2 px-4 pt-4">
                   <CardTitle className="text-sm flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 text-destructive" />
-                    Alertes detectees
+                    Alertes detectees ({sortedAlerts.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-2">
-                  {sortedAlerts.map((alert, i) => (
-                    <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
-                      <p className="font-semibold">{alert.titre}</p>
-                      {alert.description && (
-                        <p className="mt-0.5 opacity-80 line-clamp-2">{alert.description}</p>
-                      )}
-                    </div>
-                  ))}
+                  {isPaid ? (
+                    sortedAlerts.map((alert, i) => (
+                      <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
+                        <p className="font-semibold">{alert.titre}</p>
+                        {alert.description && <p className="mt-0.5 opacity-80 line-clamp-2">{alert.description}</p>}
+                      </div>
+                    ))
+                  ) : (
+                    sortedAlerts.map((alert, i) => (
+                      <div key={i} className={`rounded-md border px-3 py-2 text-xs ${alertColor(alert.gravite)}`}>
+                        <p className="font-semibold">Alerte {alert.gravite}</p>
+                      </div>
+                    ))
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -922,16 +987,28 @@ const CartSessionDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 pb-4 space-y-1.5">
-                  {quickwins.slice(0, 4).map((qw) => (
-                    <div key={qw.id} className="flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                        qw.impact === "Fort" ? "bg-green-500" : qw.impact === "Moyen" ? "bg-yellow-500" : "bg-gray-400"
-                      }`} />
-                      <p className="text-xs truncate">{qw.intitule}</p>
+                  {isPaid ? (
+                    <>
+                      {quickwins.slice(0, 4).map((qw) => (
+                        <div key={qw.id} className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            qw.impact === "Fort" ? "bg-green-500" : qw.impact === "Moyen" ? "bg-yellow-500" : "bg-gray-400"
+                          }`} />
+                          <p className="text-xs truncate">{qw.intitule}</p>
+                        </div>
+                      ))}
+                      {quickwins.length > 4 && (
+                        <p className="text-xs text-muted-foreground text-center">+{quickwins.length - 4} autres</p>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-center space-y-2 py-2">
+                      <p className="text-xs text-muted-foreground">{quickwins.length} quick wins identifies</p>
+                      <Button variant="ghost" size="sm" className="text-xs text-primary" onClick={() => openGate()}>
+                        <Lock className="w-3 h-3 mr-1" />
+                        Debloquer
+                      </Button>
                     </div>
-                  ))}
-                  {quickwins.length > 4 && (
-                    <p className="text-xs text-muted-foreground text-center">+{quickwins.length - 4} autres</p>
                   )}
                 </CardContent>
               </Card>
