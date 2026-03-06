@@ -23,9 +23,9 @@ const MetaTags: React.FC<MetaTagsProps> = ({
 }) => {
   const { language } = useLanguage();
 
-  const siteTitle = 'Solutio | Conseil en transformation digitale & outils sur mesure';
+  const siteTitle = 'Solutio — Outils & Conseil en Transformation Digitale';
   const fullTitle = title || siteTitle;
-  const defaultDescription = 'Solutio accompagne les PME dans leur transformation digitale : cartographie organisationnelle, developpement sur mesure et conseil strategique.';
+  const defaultDescription = 'Solutio aide les professionnels a se concentrer sur ce qui leur rapporte. Cartographie organisationnelle gratuite, developpement de systemes sur mesure et accompagnement transformation digitale pour equipes ambitieuses.';
   const metaDescription = description || defaultDescription;
   const currentUrl = url || window.location.href;
 

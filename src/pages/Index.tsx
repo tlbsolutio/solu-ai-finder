@@ -56,24 +56,26 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <MetaTags
-        title="Solutio | Conseil en transformation digitale & outils sur mesure"
-        description="Solutio existe pour que les professionnels puissent se concentrer sur ce qui leur rapporte. Cartographie organisationnelle, developpement sur mesure et accompagnement conseil."
+        title="Solutio — Outils & Conseil en Transformation Digitale"
+        description="Solutio aide les professionnels a se concentrer sur ce qui leur rapporte. Cartographie organisationnelle gratuite, developpement de systemes sur mesure et accompagnement transformation digitale pour equipes ambitieuses."
         type="website"
-        keywords="transformation digitale, conseil, cartographie organisationnelle, outils sur mesure, automatisation, accompagnement PME"
+        keywords="transformation digitale, cartographie organisationnelle, outils SaaS, accompagnement PME, automatisation, systemes sur mesure"
       />
       <StructuredData
         type="Organization"
         data={{
           name: 'Solutio',
-          description: 'Cabinet de conseil en transformation digitale. Outils sur mesure et accompagnement.',
-          service: [
-            { '@type': 'Service', name: 'Cartographie organisationnelle', description: 'Evaluation de la maturite de vos processus, outils et equipes.' },
-            { '@type': 'Service', name: 'Developpement sur mesure', description: 'Systemes applicatifs tailles pour votre organisation.' },
-            { '@type': 'Service', name: 'Accompagnement conseil', description: 'Diagnostic, priorisation, implementation et formation.' },
-          ],
+          description: 'Solutio concoit des outils digitaux et accompagne les equipes dans leur transformation organisationnelle. Cartographie, systemes sur mesure, conseil.',
         }}
       />
-      <StructuredData type="WebSite" data={{ name: 'Solutio', url: 'https://solutio.work' }} />
+      <StructuredData type="WebSite" data={{ name: 'Solutio', url: 'https://solutio.work', description: 'Outils & Conseil en Transformation Digitale pour equipes ambitieuses' }} />
+      <StructuredData
+        type="ProfessionalService"
+        data={{
+          name: 'Solutio',
+          description: 'Studio tech B2B — outils SaaS, systemes sur mesure et conseil en transformation digitale pour PME et equipes ambitieuses.',
+        }}
+      />
       <StructuredData
         type="FAQPage"
         data={{ questions: faqs.map((f) => ({ question: f.q, answer: f.a })) }}
