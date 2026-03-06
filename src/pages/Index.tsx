@@ -110,10 +110,10 @@ const Index = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
-            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
+            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
               <Button
                 size="lg"
-                className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 font-semibold"
+                className="h-12 px-8 w-full sm:w-auto bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 font-semibold"
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 {t('home.hero_btn_work')}
@@ -260,8 +260,8 @@ const Index = () => {
             {realisations.map((r, i) => (
               <Card key={i} className="border hover:border-primary/25 hover:shadow-lg transition-all duration-300">
                 <CardContent className="p-7">
-                  <div className="flex justify-between items-start mb-5">
-                    <div className="flex items-center gap-3">
+                  <div className="mb-5">
+                    <div className="flex items-center gap-3 mb-3">
                       <span className="text-xl">{r.icon}</span>
                       <div>
                         <p className="text-[13px] font-bold mb-1">{r.sector}</p>
@@ -272,8 +272,8 @@ const Index = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right flex-shrink-0 ml-3">
-                      <p className="text-3xl sm:text-4xl font-extrabold text-primary leading-none">{r.metric}</p>
+                    <div className="bg-primary/5 rounded-lg px-4 py-3">
+                      <p className="text-lg sm:text-xl font-extrabold text-primary leading-snug">{r.metric}</p>
                       <p className="text-[10px] font-bold text-muted-foreground tracking-wide uppercase mt-1">{r.metricLabel}</p>
                     </div>
                   </div>
@@ -405,7 +405,7 @@ const Index = () => {
               <Badge className="mb-5 bg-amber-500/10 text-amber-400 border-amber-500/30 text-[11px]">{t('home.dcta_consult_badge')}</Badge>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight tracking-tight mb-4">{t('home.dcta_consult_title')}</h2>
               <p className="text-[15px] text-white/50 leading-relaxed mb-8">{t('home.dcta_consult_sub')}</p>
-              <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
+              <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer" className="inline-block">
                 <Button className="bg-white text-gray-900 hover:bg-gray-100 shadow-lg font-semibold">
                   <Calendar className="w-4 h-4 mr-2" />
                   {t('home.dcta_consult_btn')}
