@@ -23,6 +23,7 @@ const translations = {
     'nav.outils': 'Outils',
     'nav.realisations': 'Realisations',
     'nav.accompagnement': 'Accompagnement',
+    'nav.conviction': 'Notre conviction',
 
     // Hero section
     'hero.badge': 'Conseil & Transformation Digitale',
@@ -390,6 +391,7 @@ const translations = {
     'nav.start_diagnostic': 'Free scan',
     'nav.start_scan': 'Free scan',
     'nav.book_meeting': 'Book a meeting',
+    'nav.conviction': 'Our belief',
     'nav.outils': 'Tools',
     'nav.realisations': 'Work',
     'nav.accompagnement': 'Consulting',

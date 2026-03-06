@@ -337,7 +337,7 @@ const Index = () => {
       <div className="h-px w-full bg-border" />
 
       {/* ═══ CONVICTION ═══ */}
-      <section className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
+      <section id="conviction" className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
         <div className="max-w-[1060px] mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-start">
             <div>

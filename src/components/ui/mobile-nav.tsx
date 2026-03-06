@@ -63,6 +63,7 @@ const MobileNav = () => {
             { name: t('nav.outils'), id: 'outils' },
             { name: t('nav.realisations'), id: 'realisations' },
             { name: t('nav.accompagnement'), id: 'accompagnement' },
+            { name: t('nav.conviction'), id: 'conviction' },
           ].map((item) => (
             <button
               key={item.id}
