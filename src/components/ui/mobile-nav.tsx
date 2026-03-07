@@ -4,7 +4,7 @@ import { Button } from './button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from './sheet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Menu, Languages, Calendar } from 'lucide-react';
+import { Menu, Languages, Calendar, Compass } from 'lucide-react';
 
 const MobileNav = () => {
   const [open, setOpen] = useState(false);
@@ -88,6 +88,16 @@ const MobileNav = () => {
           </Link>
 
           <div className="border-t pt-4 space-y-4">
+            <Link
+              to="/cartographie/scan"
+              onClick={() => setOpen(false)}
+            >
+              <Button variant="outline" className="w-full justify-start border-primary/30 text-primary">
+                <Compass className="h-4 w-4 mr-2" />
+                Diagnostic gratuit
+              </Button>
+            </Link>
+
             <Button
               variant="outline"
               size="sm"

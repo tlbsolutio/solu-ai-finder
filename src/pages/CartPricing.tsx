@@ -414,17 +414,21 @@ export default function CartPricing() {
           ].map(({ q, a }, index) => (
             <div
               key={q}
-              className="rounded-xl border bg-card overflow-hidden transition-all duration-200 hover:shadow-sm cursor-pointer"
-              onClick={() => setOpenFaq(openFaq === index ? null : index)}
+              className="rounded-xl border bg-card overflow-hidden transition-all duration-200 hover:shadow-sm"
             >
-              <div className="flex items-center justify-between p-4">
+              <button
+                type="button"
+                className="w-full flex items-center justify-between p-4 cursor-pointer text-left"
+                aria-expanded={openFaq === index}
+                onClick={() => setOpenFaq(openFaq === index ? null : index)}
+              >
                 <p className="text-sm font-medium pr-4">{q}</p>
                 {openFaq === index ? (
                   <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
                 ) : (
                   <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
                 )}
-              </div>
+              </button>
               {openFaq === index && (
                 <div className="px-4 pb-4 -mt-1">
                   <p className="text-xs text-muted-foreground leading-relaxed">{a}</p>
