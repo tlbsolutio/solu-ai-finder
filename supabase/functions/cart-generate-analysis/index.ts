@@ -147,30 +147,32 @@ serve(async (req) => {
       `[Pack ${r.bloc}] "${r.reponse?.substring(0, 120)}"`
     ).join("\n");
 
-    const prompt = `Consultant expert en transformation PME francaises. ${sectorInfo}Analyse cette cartographie et produis un rapport JSON.
+    const prompt = `Tu es un consultant senior en strategie et transformation digitale pour les PME francaises. Tu rediges comme un associe de cabinet de conseil : ton, precision, impact. ${sectorInfo}
 
-SESSION "${session.nom}" — ${context.reponses_count} reponses
+SESSION "${session.nom}" — ${context.reponses_count} reponses analysees
 
 SCORES PAR PACK :
 ${packSummaryText}
 
-OBJETS : ${context.processus.length} processus, ${context.outils.length} outils, ${context.equipes.length} equipes, ${context.irritants.length} irritants, ${context.taches_manuelles.length} taches manuelles
+OBJETS DETECTES : ${context.processus.length} processus, ${context.outils.length} outils, ${context.equipes.length} equipes, ${context.irritants.length} irritants, ${context.taches_manuelles.length} taches manuelles
 Irritants cles : ${topIrritants || "Aucun"}
-Quick wins : ${topQuickwins || "Aucun"}
-Outils : ${context.outils.map((o: any) => o.nom).join(", ") || "Aucun"}
+Quick wins identifies : ${topQuickwins || "Aucun"}
+Outils en place : ${context.outils.map((o: any) => o.nom).join(", ") || "Aucun"}
 Equipes : ${context.equipes.map((e: any) => e.nom).join(", ") || "Aucune"}
 
-VERBATIMS :
+VERBATIMS TERRAIN :
 ${sampleReponses}
 
-Produis ce JSON (sans markdown, valeurs = texte concis) :
+Produis ce JSON (sans markdown, valeurs = texte concis et percutant) :
 {
-  "ai_resume_executif": "Resume 8-10 lignes, scores, axes critiques, verbatims cles",
-  "ai_forces": "5 forces avec preuves. Format: • Force — Preuve (Pack X)",
-  "ai_dysfonctionnements": "8 dysfonctionnements. Format: • Probleme — Impact EUR — Pack — Cause",
-  "ai_analyse_transversale": "3 liens causaux inter-packs + 2 noeuds critiques + score global pondere",
-  "ai_plan_optimisation": "P1: 3 quick wins (<3 mois). P2: 3 chantiers (3-9 mois). P3: 2 transformations. Format: Action — Impact — Effort — Outil — KPI",
-  "ai_vision_cible": "4 milestones M+3/M+6/M+12/M+18 avec KPIs et gains cumules"
+  "ai_resume_executif": "Resume executif de 10-15 lignes ecrit comme un brief strategique de consultant. Structure : (1) Constat general en 2 phrases percutantes, (2) Score moyen et axes les plus faibles avec chiffres, (3) Les 3 problemes structurels majeurs identifies avec leur impact business, (4) Le potentiel de transformation avec une estimation de gains, (5) Call-to-action : la premiere decision a prendre maintenant. Citer 2-3 verbatims terrain entre guillemets pour ancrer le diagnostic dans la realite.",
+  "ai_forces": "5 forces avec preuves. Format: • Force — Preuve (Pack X). Pour chaque force, indiquer comment la capitaliser pour accelerer la transformation.",
+  "ai_dysfonctionnements": "8 dysfonctionnements. Format: • Probleme — Impact estime (EUR/an ou heures/mois) — Pack — Cause racine. Classer par impact decroissant.",
+  "ai_analyse_transversale": "3 chaines causales inter-packs (Probleme Pack X → Impact Pack Y → Consequence business chiffree). 2 noeuds critiques (les problemes qui en causent le plus d'autres). Score maturite global pondere. Identifier le 'maillon faible' de l'organisation.",
+  "ai_plan_optimisation": "Plan structure en objectifs SMART :\n• P1 QUICK WINS (<3 mois) : 3 actions avec pour chacune : Objectif mesurable — Responsable suggere — KPI de succes — Gain attendu\n• P2 CHANTIERS (3-9 mois) : 3 projets avec : Objectif SMART — Ressources necessaires — Jalons intermediaires — ROI attendu\n• P3 TRANSFORMATIONS (9-18 mois) : 2 initiatives structurelles avec : Vision cible — Investissement estime — Impact strategique",
+  "ai_vision_cible": "Vision cible detaillee avec milestones concrets :\n• M+3 : Quick wins deployes — KPIs atteints — Gains cumules\n• M+6 : Chantiers P2 lances — Premiers resultats mesurables — Nouveaux processus en place\n• M+12 : Transformation visible — Metriques avant/apres — Culture organisationnelle evoluee\n• M+18 : Organisation optimisee — Avantage concurrentiel acquis — Prochaines etapes. Chaque milestone doit avoir un indicateur chiffre verifiable.",
+  "ai_cout_inaction_annuel": "Estimation du cout annuel de ne rien changer, decompose en : (1) Heures perdues en taches manuelles/doublons x cout horaire moyen, (2) Manque a gagner commercial (leads perdus, conversion faible), (3) Risques RH (turnover, desengagement), (4) Cout d'opportunite (retard vs concurrence). Donner une fourchette totale estimee en EUR/an.",
+  "ai_kpis_de_suivi": "6-8 KPIs concrets pour piloter la transformation. Format: • Nom du KPI — Valeur actuelle estimee — Objectif a 6 mois — Objectif a 12 mois — Methode de mesure. Couvrir : efficacite operationnelle, satisfaction client, performance commerciale, engagement RH."
 }
 IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
 
@@ -218,7 +220,7 @@ IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
         // Last resort: extract whatever fields we can find
         console.error("Failed to parse JSON, extracting fields manually");
         parsed = {};
-        const fields = ["ai_resume_executif", "ai_forces", "ai_dysfonctionnements", "ai_analyse_transversale", "ai_plan_optimisation", "ai_vision_cible"];
+        const fields = ["ai_resume_executif", "ai_forces", "ai_dysfonctionnements", "ai_analyse_transversale", "ai_plan_optimisation", "ai_vision_cible", "ai_cout_inaction_annuel", "ai_kpis_de_suivi"];
         for (const field of fields) {
           const fieldMatch = jsonStr.match(new RegExp(`"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
           if (fieldMatch) {
@@ -240,7 +242,7 @@ IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
       return String(val);
     };
 
-    await supabase.from("cart_sessions").update({
+    const updatePayload: Record<string, unknown> = {
       ai_resume_executif: toText(parsed.ai_resume_executif),
       ai_forces: toText(parsed.ai_forces),
       ai_dysfonctionnements: toText(parsed.ai_dysfonctionnements),
@@ -249,7 +251,12 @@ IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
       ai_vision_cible: toText(parsed.ai_vision_cible),
       analyse_status: "generee",
       final_generation_done: true,
-    }).eq("id", sessionId);
+    };
+    // Add new optional fields if present (backward compatible — columns may not exist yet)
+    if (parsed.ai_cout_inaction_annuel) updatePayload.ai_cout_inaction_annuel = toText(parsed.ai_cout_inaction_annuel);
+    if (parsed.ai_kpis_de_suivi) updatePayload.ai_kpis_de_suivi = toText(parsed.ai_kpis_de_suivi);
+
+    await supabase.from("cart_sessions").update(updatePayload).eq("id", sessionId);
 
     return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: unknown) {

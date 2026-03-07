@@ -75,10 +75,19 @@ const Navigation = () => {
             <Languages className="h-3.5 w-3.5 mr-1" />
             {language === 'fr' ? 'EN' : 'FR'}
           </Button>
+          <Link to="/cartographie/scan">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 px-4 text-[13px] font-semibold border-primary/30 text-primary hover:bg-primary/5"
+            >
+              Diagnostic gratuit
+            </Button>
+          </Link>
           <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
             <Button
               size="sm"
-              className="h-9 px-5 text-[13.5px] font-bold shadow-sm shadow-primary/20"
+              className="h-9 px-5 text-[13.5px] font-bold shadow-sm shadow-primary/20 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
             >
               <Calendar className="w-3.5 h-3.5 mr-1.5" />
               {t('nav.book_meeting')}

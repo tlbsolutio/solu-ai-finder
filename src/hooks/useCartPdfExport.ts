@@ -287,6 +287,10 @@ export function useCartPdfExport() {
       doc.setTextColor(...C.primary);
       doc.setFont("helvetica", "bold");
       doc.text("SOLUTIO.WORK", MARGIN + 10, 40);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "normal");
+      doc.text("Transformation Digitale & Cartographie Organisationnelle", MARGIN + 10, 48);
 
       // Title
       doc.setFontSize(32);
@@ -680,6 +684,32 @@ export function useCartPdfExport() {
         }
       }
 
+      // ==================== TACHES MANUELLES ====================
+      if (taches.length > 0) {
+        doc.addPage();
+        pages.push(pages.length + 1);
+        y = 24;
+        y = drawSectionHeader(doc, y, `Taches Manuelles & Repetitives (${taches.length})`, C.purple);
+
+        const tacheRows = taches.map((t) => [
+          t.nom,
+          t.frequence || "-",
+          t.double_saisie ? "Oui" : "Non",
+        ]);
+
+        autoTable(doc, {
+          startY: y,
+          head: [["Tache", "Frequence", "Double saisie"]],
+          body: tacheRows,
+          margin: { left: MARGIN, right: MARGIN },
+          styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
+          headStyles: { fillColor: C.purple, textColor: C.white, fontStyle: "bold" },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 70 }, 1: { cellWidth: 30 }, 2: { cellWidth: 20, halign: "center" } },
+          alternateRowStyles: { fillColor: [245, 243, 255] },
+        });
+        y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
+      }
+
       // ==================== BACK COVER ====================
       doc.addPage();
       pages.push(pages.length + 1);
@@ -688,10 +718,22 @@ export function useCartPdfExport() {
       doc.setFillColor(...C.primary);
       doc.rect(0, 0, 6, PAGE_H, "F");
 
+      // Decorative elements
+      doc.setFillColor(0, 180, 216);
+      doc.setGState(doc.GState({ opacity: 0.03 }));
+      doc.circle(160, 80, 50, "F");
+      doc.circle(50, 200, 35, "F");
+      doc.setGState(doc.GState({ opacity: 1 }));
+
       doc.setFontSize(24);
       doc.setTextColor(...C.white);
       doc.setFont("helvetica", "bold");
-      doc.text("Merci.", MARGIN + 10, 120);
+      doc.text("Merci.", MARGIN + 10, 100);
+
+      doc.setFontSize(14);
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "normal");
+      doc.text("Votre transformation commence ici.", MARGIN + 10, 115);
 
       doc.setFontSize(11);
       doc.setTextColor(148, 163, 184);
@@ -704,11 +746,24 @@ export function useCartPdfExport() {
       doc.setFontSize(9);
       doc.setTextColor(148, 163, 184);
       doc.setFont("helvetica", "normal");
-      doc.text("Cartographie & Optimisation Organisationnelle", MARGIN + 10, 162);
-      doc.text("Propulse par Intelligence Artificielle", MARGIN + 10, 169);
+      doc.text("Cartographie & Optimisation Organisationnelle", MARGIN + 10, 165);
+      doc.text("Propulse par Intelligence Artificielle", MARGIN + 10, 172);
+
+      // Next steps
+      doc.setFontSize(10);
+      doc.setTextColor(...C.primary);
+      doc.setFont("helvetica", "bold");
+      doc.text("Prochaines etapes :", MARGIN + 10, 195);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "normal");
+      doc.text("1. Priorisez vos quick wins P1 pour un impact immediat", MARGIN + 10, 205);
+      doc.text("2. Planifiez les projets P2 sur 3-9 mois", MARGIN + 10, 213);
+      doc.text("3. Reservez un RDV strategique : calendly.com/tlb-ov_p/30min", MARGIN + 10, 221);
+      doc.text("4. Contactez-nous : contact@solutio.work", MARGIN + 10, 229);
 
       doc.setFontSize(8);
-      doc.text(date, MARGIN + 10, 185);
+      doc.text(date, MARGIN + 10, 250);
 
       // Add page numbers to all pages
       const totalPages = doc.getNumberOfPages();

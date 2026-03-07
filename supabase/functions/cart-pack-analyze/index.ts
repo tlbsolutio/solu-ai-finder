@@ -241,6 +241,8 @@ Produis EXACTEMENT ce JSON (sans commentaires, sans markdown) :
   "resume": "Synthese professionnelle en 5-8 lignes basee UNIQUEMENT sur les reponses de ce pack. Cite des verbatims entre guillemets.",
   "score_maturite": 3,
   "niveau_maturite": "Critique|Emergent|En developpement|Mature|Optimise",
+  "description_maturite": "Description granulaire du niveau actuel : ce qui fonctionne, ce qui manque, et a quoi ressemblerait un niveau mature/optimise pour cette dimension specifique (${blocName}). 3-4 phrases.",
+  "benchmark_secteur": "Si le secteur est connu, comparaison qualitative avec la moyenne du secteur : 'Vous etes en dessous/au niveau/au dessus de la moyenne du secteur sur cet axe car...' Sinon, comparaison avec la moyenne des PME francaises.",
   "forces": ["Force 1 — citation verbatim entre guillemets", "Force 2"],
   "faiblesses": ["Faiblesse 1 — citation verbatim entre guillemets", "Faiblesse 2"],
   "signaux_faibles": ["Signal faible ou contradiction detecte dans les reponses"],
@@ -263,8 +265,10 @@ Produis EXACTEMENT ce JSON (sans commentaires, sans markdown) :
     { "nom_tache": "Tache manuelle SPECIFIQUE mentionnee dans les reponses", "frequence": "Quotidien|Hebdomadaire|Mensuel", "double_saisie": false }
   ],
   "quickwins": [
-    { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3" }
-  ]
+    { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3", "delai_mise_en_oeuvre": "1 semaine|2-3 semaines|1 mois|2-3 mois", "roi_attendu": "Description concrete du retour attendu (ex: gain de 5h/semaine, reduction de 30% des erreurs, +15% taux de conversion)" }
+  ],
+  "risques_inaction": ["Si rien ne change sur cet axe dans les 6-12 prochains mois : consequence concrete et chiffree (ex: perte de clients, turnover, cout croissant...)"],
+  "objectif_90_jours": "Un objectif SMART concret a atteindre en 90 jours sur cette dimension. Mesurable, avec un indicateur de succes clair. Ex: 'Reduire le temps de traitement des devis de 2h a 30min en implementant un modele standardise et un outil de generation automatique.'"
 }
 
 Score maturite: 1=Critique, 2=Emergent, 3=En developpement, 4=Mature, 5=Optimise.
@@ -412,8 +416,12 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
     return new Response(JSON.stringify({
       success: true, resume: analysis.resume, score_maturite: analysis.score_maturite,
       niveau_maturite: analysis.niveau_maturite || "En developpement",
+      description_maturite: analysis.description_maturite || null,
+      benchmark_secteur: analysis.benchmark_secteur || null,
       forces: analysis.forces || [], faiblesses: analysis.faiblesses || [],
       alertes: analysis.alertes || [], objets: insertResults, objets_count: objetsCount,
+      risques_inaction: analysis.risques_inaction || [],
+      objectif_90_jours: analysis.objectif_90_jours || null,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {
     console.error("cart-pack-analyze error:", e);

@@ -18,8 +18,9 @@ import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
-  Download, ChevronLeft, ChevronRight,
+  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
@@ -256,6 +257,21 @@ const CartSessionDashboard = () => {
     irritants: irritants.length + taches.length,
   };
 
+  // Section completion indicators
+  const sectionCompleted: Record<string, boolean> = {
+    overview: packsCompleted >= 1,
+    carte: processus.length > 0 || outils.length > 0,
+    questionnaire: packResumes.length > 0,
+    quickwins: quickwins.length > 0,
+    processus: processus.length > 0,
+    outils: outils.length > 0,
+    equipes: equipes.length > 0,
+    irritants: irritants.length > 0 || taches.length > 0,
+    plan: !!(session.ai_plan_optimisation),
+    recommandations: !!(session.ai_analyse_transversale),
+    analyse: !!(session.ai_resume_executif),
+  };
+
   const isAdminViewing = isAdmin && session.owner_id !== ownerId;
 
   // Average maturity score
@@ -297,15 +313,21 @@ const CartSessionDashboard = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-2">
-        {SECTIONS.map((group) => (
-          <div key={group.group} className="mb-1">
-            {!sidebarCollapsed && (
-              <p className="px-3 py-1 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{group.group}</p>
+        {SECTIONS.map((group, gi) => (
+          <div key={group.group} className={gi > 0 ? "mt-2" : ""}>
+            {!sidebarCollapsed ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 mb-0.5">
+                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">{group.group}</p>
+                <div className="flex-1 h-px bg-border/60" />
+              </div>
+            ) : (
+              <div className="mx-2 my-1.5 h-px bg-border/60" />
             )}
             {group.items.map((item) => {
               const isActive = activeSection === item.id;
               const isLocked = !item.free && !isPaid;
               const count = sectionCounts[item.id];
+              const isComplete = sectionCompleted[item.id];
               return (
                 <button
                   key={item.id}
@@ -319,7 +341,15 @@ const CartSessionDashboard = () => {
                   } ${sidebarCollapsed ? "justify-center px-0" : ""}`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
-                  <item.icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-cyan-600" : ""}`} />
+                  <div className="relative shrink-0">
+                    <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-600" : ""}`} />
+                    {isComplete && !isLocked && !sidebarCollapsed && (
+                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
+                    )}
+                    {isComplete && !isLocked && sidebarCollapsed && (
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 ring-1 ring-white" />
+                    )}
+                  </div>
                   {!sidebarCollapsed && (
                     <>
                       <span className="truncate">{item.label}</span>
@@ -406,14 +436,94 @@ const CartSessionDashboard = () => {
   );
 
   // ========== SECTION CONTENT RENDERERS ==========
+  const scoreColor = (score: number) => {
+    if (score < 2) return "text-red-600";
+    if (score < 3) return "text-orange-500";
+    if (score < 4) return "text-amber-500";
+    return "text-emerald-600";
+  };
+  const scoreBg = (score: number) => {
+    if (score < 2) return "from-red-500/10 to-red-500/5 border-red-200";
+    if (score < 3) return "from-orange-500/10 to-orange-500/5 border-orange-200";
+    if (score < 4) return "from-amber-500/10 to-amber-500/5 border-amber-200";
+    return "from-emerald-500/10 to-emerald-500/5 border-emerald-200";
+  };
+
   const renderOverview = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="space-y-5">
+      {/* Quick Stats Banner */}
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
+        <div className="flex items-center gap-1.5">
+          <Settings className="w-3.5 h-3.5 text-blue-500" />
+          <span className="font-semibold">{processus.length}</span>
+          <span className="text-muted-foreground text-xs">processus detectes</span>
+        </div>
+        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="flex items-center gap-1.5">
+          <Layers className="w-3.5 h-3.5 text-emerald-500" />
+          <span className="font-semibold">{outils.length}</span>
+          <span className="text-muted-foreground text-xs">outils recenses</span>
+        </div>
+        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="flex items-center gap-1.5">
+          <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+          <span className="font-semibold">{irritants.length}</span>
+          <span className="text-muted-foreground text-xs">irritants identifies</span>
+        </div>
+        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5 text-amber-500" />
+          <span className="font-semibold">{quickwins.length}</span>
+          <span className="text-muted-foreground text-xs">quick wins disponibles</span>
+        </div>
+      </div>
+
+      {/* Score Global + Stat Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+        {/* Score Global de Maturite - Prominent Card */}
+        <Card className={`sm:col-span-2 bg-gradient-to-br ${avgScore ? scoreBg(parseFloat(avgScore)) : "from-slate-50 to-slate-100/50 border-slate-200"} overflow-hidden`}>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="relative">
+              {/* Circular progress ring */}
+              <svg width="72" height="72" viewBox="0 0 72 72" className="transform -rotate-90">
+                <circle cx="36" cy="36" r="30" fill="none" stroke="currentColor" strokeWidth="4" className="text-muted/20" />
+                <circle
+                  cx="36" cy="36" r="30" fill="none"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  className={avgScore ? scoreColor(parseFloat(avgScore)) : "text-muted"}
+                  strokeDasharray={`${((parseFloat(avgScore || "0") / 5) * 188.5).toFixed(1)} 188.5`}
+                  style={{ transition: "stroke-dasharray 1s ease-out" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`text-xl font-bold ${avgScore ? scoreColor(parseFloat(avgScore)) : "text-muted-foreground"}`}>
+                  {avgScore || "--"}
+                </span>
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Score global de maturite</p>
+              <p className={`text-2xl font-bold leading-tight ${avgScore ? scoreColor(parseFloat(avgScore)) : "text-muted-foreground"}`}>
+                {avgScore ? `${avgScore}/5` : "N/A"}
+              </p>
+              {avgScore && (
+                <div className="flex items-center gap-1 mt-1">
+                  <TrendingUp className={`w-3 h-3 ${parseFloat(avgScore) >= 3 ? "text-emerald-500" : "text-amber-500"}`} />
+                  <span className="text-[11px] text-muted-foreground">
+                    {parseFloat(avgScore) >= 4 ? "Excellent niveau" : parseFloat(avgScore) >= 3 ? "Bon niveau" : parseFloat(avgScore) >= 2 ? "En progression" : "A ameliorer"}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Stat Mini Cards */}
         {[
           { icon: Layers, label: "Packs completes", value: `${packsCompleted}/10`, color: "text-cyan-600 bg-cyan-500/10" },
           { icon: Network, label: "Objets detectes", value: totalObjects.toString(), color: "text-blue-600 bg-blue-500/10" },
           { icon: Zap, label: "Quick wins", value: quickwins.length.toString(), color: "text-amber-600 bg-amber-500/10" },
-          { icon: AlertCircle, label: "Alertes", value: sortedAlerts.length.toString(), color: "text-red-600 bg-red-500/10" },
         ].map(({ icon: Icon, label, value, color }) => (
           <Card key={label}>
             <CardContent className="p-3 flex items-center gap-3">
@@ -432,7 +542,10 @@ const CartSessionDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-1">
           <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm">Radar de maturite</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-1.5">
+              <Target className="w-4 h-4 text-cyan-500" />
+              Radar de maturite
+            </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4 flex justify-center">
             <RadarChart scores={radarScores} size={220} />
@@ -502,22 +615,77 @@ const CartSessionDashboard = () => {
         </div>
       </div>
 
+      {/* Pack Progress Visualization */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Resumes par pack</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PACK_DEFINITIONS.map((packDef) => (
-            <PackCard
-              key={packDef.bloc}
-              sessionId={id!}
-              packDef={packDef}
-              status={getPackStatus(packDef.bloc)}
-              answeredQuestions={getPackProgress(packDef.bloc)}
-              packResume={getPackResume(packDef.bloc)}
-              realTotalQuestions={getPackTotalQuestions(packDef.bloc)}
-            />
-          ))}
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Progression par pack</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {PACK_DEFINITIONS.map((packDef) => {
+            const status = getPackStatus(packDef.bloc);
+            const answered = getPackProgress(packDef.bloc);
+            const total = getPackTotalQuestions(packDef.bloc) || packDef.totalQuestions;
+            const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+            const pr = getPackResume(packDef.bloc);
+            const packScore = pr?.score_maturite;
+            const isDone = status === "done";
+            return (
+              <Card key={packDef.bloc} className={`transition-all hover:shadow-md ${isDone ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
+                <CardContent className="p-3 flex flex-col items-center text-center gap-2">
+                  {/* Circular progress ring */}
+                  <div className="relative">
+                    <svg width="52" height="52" viewBox="0 0 52 52" className="transform -rotate-90">
+                      <circle cx="26" cy="26" r="22" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/20" />
+                      <circle
+                        cx="26" cy="26" r="22" fill="none"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        className={isDone ? "text-emerald-500" : "text-cyan-500"}
+                        strokeDasharray={`${(pct / 100) * 138.2} 138.2`}
+                        style={{ transition: "stroke-dasharray 0.8s ease-out" }}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {isDone ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                      ) : (
+                        <span className="text-xs font-bold text-muted-foreground">{pct}%</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="min-w-0 w-full">
+                    <p className="text-xs font-medium leading-tight line-clamp-1">{packDef.icon} {packDef.title}</p>
+                    {packScore != null && (
+                      <p className={`text-[11px] font-semibold mt-0.5 ${scoreColor(packScore)}`}>{packScore}/5</p>
+                    )}
+                    {!isDone && pct === 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Non commence</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
+
+      {/* Detailed Pack Resumes (below progress) */}
+      {packResumes.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Resumes par pack</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {PACK_DEFINITIONS.map((packDef) => (
+              <PackCard
+                key={packDef.bloc}
+                sessionId={id!}
+                packDef={packDef}
+                status={getPackStatus(packDef.bloc)}
+                answeredQuestions={getPackProgress(packDef.bloc)}
+                packResume={getPackResume(packDef.bloc)}
+                realTotalQuestions={getPackTotalQuestions(packDef.bloc)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -564,9 +732,11 @@ const CartSessionDashboard = () => {
   );
 
   const renderQuestionnaire = () => (
-    <div className="space-y-3">
+    <div>
+      <SectionHeader title="Questionnaire" description="Resultats detailles par pack thematique" icon={FileText} count={packResumes.length} />
+      <div className="space-y-3">
       {packResumes.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-6">Aucun pack complete</p>
+        <EmptyState message="Aucun pack complete pour le moment" icon={FileText} />
       ) : PACK_DEFINITIONS.map((packDef) => {
         const pr = packResumes.find((r) => r.bloc === packDef.bloc);
         if (!pr) return null;
@@ -597,18 +767,54 @@ const CartSessionDashboard = () => {
           </Card>
         );
       })}
+      </div>
+    </div>
+  );
+
+  const EmptyState = ({ message, icon: EmptyIcon }: { message: string; icon: React.ElementType }) => (
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+      <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
+        <EmptyIcon className="w-5 h-5 text-muted-foreground/60" />
+      </div>
+      <p className="text-sm text-muted-foreground max-w-xs">{message}</p>
+      <p className="text-xs text-muted-foreground/60 mt-1">Commencez par completer votre premier pack pour debloquer cette section</p>
+    </div>
+  );
+
+  const SectionHeader = ({ title, description, icon: SIcon, count, actionLabel, onAction }: {
+    title: string; description?: string; icon: React.ElementType; count?: number; actionLabel?: string; onAction?: () => void;
+  }) => (
+    <div className="flex items-start justify-between gap-3 mb-4">
+      <div className="flex items-start gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
+          <SIcon className="w-4 h-4 text-cyan-600" />
+        </div>
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold flex items-center gap-2">
+            {title}
+            {count !== undefined && count > 0 && (
+              <Badge variant="secondary" className="text-xs font-normal">{count}</Badge>
+            )}
+          </h2>
+          {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        </div>
+      </div>
+      {actionLabel && onAction && (
+        <Button size="sm" variant="outline" className="shrink-0 text-xs h-8" onClick={onAction}>
+          {actionLabel}
+        </Button>
+      )}
     </div>
   );
 
   const renderProcessus = () => (
-    <Card>
-      <CardHeader className="pb-2 px-4 pt-4">
-        <CardTitle className="text-sm">Processus ({processus.length})</CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-2">
-        {processus.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">Aucun processus detecte</p>
-        ) : processus.map((p) => (
+    <div>
+      <SectionHeader title="Processus" description="Processus metiers detectes dans votre organisation" icon={Settings} count={processus.length} />
+      <Card>
+        <CardContent className="px-4 py-4 space-y-2">
+          {processus.length === 0 ? (
+            <EmptyState message="Aucun processus detecte pour le moment" icon={Settings} />
+          ) : processus.map((p) => (
           <div key={p.id} className="flex items-start gap-3 p-3 rounded-md bg-blue-50/50 border border-blue-100">
             <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
             <div className="flex-1 min-w-0">
@@ -627,17 +833,17 @@ const CartSessionDashboard = () => {
         ))}
       </CardContent>
     </Card>
+    </div>
   );
 
   const renderOutils = () => (
-    <Card>
-      <CardHeader className="pb-2 px-4 pt-4">
-        <CardTitle className="text-sm">Outils & SI ({outils.length})</CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-2">
-        {outils.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">Aucun outil detecte</p>
-        ) : outils.map((o) => (
+    <div>
+      <SectionHeader title="Outils & SI" description="Logiciels et systemes d'information utilises" icon={Layers} count={outils.length} />
+      <Card>
+        <CardContent className="px-4 py-4 space-y-2">
+          {outils.length === 0 ? (
+            <EmptyState message="Aucun outil detecte pour le moment" icon={Layers} />
+          ) : outils.map((o) => (
           <div key={o.id} className="flex items-start gap-3 p-3 rounded-md bg-green-50/50 border border-green-100">
             <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
             <div className="flex-1 min-w-0">
@@ -658,17 +864,17 @@ const CartSessionDashboard = () => {
         ))}
       </CardContent>
     </Card>
+    </div>
   );
 
   const renderEquipes = () => (
-    <Card>
-      <CardHeader className="pb-2 px-4 pt-4">
-        <CardTitle className="text-sm">Equipes ({equipes.length})</CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4 space-y-2">
-        {equipes.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">Aucune equipe detectee</p>
-        ) : equipes.map((e) => (
+    <div>
+      <SectionHeader title="Equipes" description="Structure et organisation des equipes" icon={Users} count={equipes.length} />
+      <Card>
+        <CardContent className="px-4 py-4 space-y-2">
+          {equipes.length === 0 ? (
+            <EmptyState message="Aucune equipe detectee pour le moment" icon={Users} />
+          ) : equipes.map((e) => (
           <div key={e.id} className="flex items-start gap-3 p-3 rounded-md bg-orange-50/50 border border-orange-100">
             <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 shrink-0" />
             <div className="flex-1 min-w-0">
@@ -684,18 +890,18 @@ const CartSessionDashboard = () => {
         ))}
       </CardContent>
     </Card>
+    </div>
   );
 
   const renderIrritants = () => (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader className="pb-2 px-4 pt-4">
-          <CardTitle className="text-sm">Irritants & Risques ({irritants.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-4 space-y-2">
-          {irritants.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">Aucun irritant detecte</p>
-          ) : irritants.map((i) => (
+    <div>
+      <SectionHeader title="Irritants & Risques" description="Points de friction et risques operationnels identifies" icon={AlertTriangle} count={irritants.length + taches.length} />
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="px-4 py-4 space-y-2">
+            {irritants.length === 0 ? (
+              <EmptyState message="Aucun irritant detecte pour le moment" icon={AlertTriangle} />
+            ) : irritants.map((i) => (
             <div key={i.id} className="flex items-start gap-3 p-3 rounded-md bg-red-50/50 border border-red-100">
               <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${(i.gravite || 0) >= 4 ? "bg-red-600" : (i.gravite || 0) >= 3 ? "bg-orange-500" : "bg-yellow-400"}`} />
               <div className="flex-1 min-w-0">
@@ -731,11 +937,14 @@ const CartSessionDashboard = () => {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 
   const renderAnalyse = () => (
-    <div className="space-y-4">
+    <div>
+      <SectionHeader title="Analyse IA" description="Analyse generee par intelligence artificielle" icon={Brain} />
+      <div className="space-y-4">
       {[
         { key: "ai_resume_executif", label: "Resume executif" },
         { key: "ai_forces", label: "Forces identifiees" },
@@ -805,6 +1014,7 @@ const CartSessionDashboard = () => {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 
@@ -1026,12 +1236,44 @@ const CartSessionDashboard = () => {
             </Button>
           </div>
         )}
+        {/* Quick Stats Banner */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
+          <div className="flex items-center gap-1.5">
+            <Settings className="w-3.5 h-3.5 text-blue-500" />
+            <span className="font-semibold">{processus.length}</span>
+            <span className="text-muted-foreground text-xs">processus</span>
+          </div>
+          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="font-semibold">{outils.length}</span>
+            <span className="text-muted-foreground text-xs">outils</span>
+          </div>
+          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
+            <span className="font-semibold">{irritants.length}</span>
+            <span className="text-muted-foreground text-xs">irritants</span>
+          </div>
+          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span className="font-semibold">{quickwins.length}</span>
+            <span className="text-muted-foreground text-xs">quick wins</span>
+          </div>
+          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-muted-foreground text-xs">{estimatedTimeRemaining > 0 ? `~${estimatedTimeRemaining} min restant` : "Complete"}</span>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Layers, label: "Packs completes", value: `${packsCompleted}/10`, color: "text-cyan-600 bg-cyan-500/10" },
             { icon: CheckCircle, label: "Questions repondues", value: totalReponses.toString(), color: "text-blue-600 bg-blue-500/10" },
             { icon: Network, label: "Objets detectes", value: totalObjects.toString(), color: "text-emerald-600 bg-emerald-500/10" },
-            { icon: Clock, label: "Temps restant", value: estimatedTimeRemaining > 0 ? `~${estimatedTimeRemaining} min` : "Termine", color: "text-amber-600 bg-amber-500/10" },
+            { icon: Target, label: "Score moyen", value: avgScore ? `${avgScore}/5` : "--", color: avgScore && parseFloat(avgScore) >= 3 ? "text-emerald-600 bg-emerald-500/10" : "text-amber-600 bg-amber-500/10" },
           ].map(({ icon: Icon, label, value, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
@@ -1047,23 +1289,60 @@ const CartSessionDashboard = () => {
           ))}
         </div>
 
-        {packsCompleted === 10 && (
-          <Card className="border-emerald-300 bg-emerald-50/50">
-            <CardContent className="p-4 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle className="w-6 h-6 text-emerald-600 shrink-0" />
-                <div>
-                  <p className="font-semibold text-emerald-800">Tous les packs sont completes !</p>
-                  <p className="text-sm text-emerald-700">Votre diagnostic complet est pret a etre genere.</p>
+        {/* Generate Analysis Card - Always visible */}
+        <Card className={`overflow-hidden ${packsCompleted >= 5 ? "border-cyan-300 bg-gradient-to-br from-cyan-50/80 to-blue-50/50" : "border-slate-200 bg-slate-50/30"}`}>
+          <CardContent className="p-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${packsCompleted >= 5 ? "bg-gradient-to-br from-cyan-500 to-blue-500" : "bg-muted"}`}>
+                  <Brain className={`w-5 h-5 ${packsCompleted >= 5 ? "text-white" : "text-muted-foreground"}`} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-sm">
+                    {packsCompleted >= 10
+                      ? "Tous les packs sont completes !"
+                      : packsCompleted >= 5
+                      ? "Analyse disponible"
+                      : "Diagnostic IA"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {packsCompleted >= 5
+                      ? "Votre diagnostic complet est pret a etre genere par l'IA."
+                      : `Completez au moins 5 packs pour debloquer l'analyse. (${packsCompleted}/5)`}
+                  </p>
+                  {packsCompleted < 5 && (
+                    <div className="mt-2 flex items-center gap-2 w-48">
+                      <Progress value={(packsCompleted / 5) * 100} className="h-1.5" />
+                      <span className="text-[10px] text-muted-foreground font-medium">{packsCompleted}/5</span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <Button onClick={handleGenerateFinal} disabled={generatingFinal} className="shrink-0 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
-                <Sparkles className="w-4 h-4 mr-2" />
-                {generatingFinal ? "Generation..." : "Generer le diagnostic"}
+              <Button
+                onClick={handleGenerateFinal}
+                disabled={generatingFinal || packsCompleted < 5}
+                className={`shrink-0 h-10 px-5 text-sm ${
+                  packsCompleted >= 5
+                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
+                    : ""
+                }`}
+                variant={packsCompleted < 5 ? "secondary" : "default"}
+              >
+                {generatingFinal ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generation en cours...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className={`w-4 h-4 mr-2 ${packsCompleted >= 5 ? "animate-pulse" : ""}`} />
+                    Generer le diagnostic
+                  </>
+                )}
               </Button>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-4">

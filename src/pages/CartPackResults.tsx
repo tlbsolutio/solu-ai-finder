@@ -284,18 +284,41 @@ const CartPackResults = () => {
       </header>
 
       <main className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
-        <Card className="border-green-200 bg-green-50/30">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Resume IA</CardTitle>
-              {renderStars(result.score_maturite)}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm leading-relaxed">{result.resume}</p>
-            <div className="flex gap-2 flex-wrap">
-              <Badge variant="outline">{result.objets_count} objets detectes</Badge>
-              <Badge variant="outline">Score maturite : {result.score_maturite}/5</Badge>
+        {/* Score hero card */}
+        <Card className="border-cyan-200 bg-gradient-to-br from-cyan-50/50 to-blue-50/30 overflow-hidden">
+          <CardContent className="p-5">
+            <div className="flex items-start gap-5">
+              {/* Score circle */}
+              <div className="shrink-0 relative">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="35" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+                  <circle
+                    cx="40" cy="40" r="35" fill="none"
+                    stroke={result.score_maturite >= 4 ? "#22c55e" : result.score_maturite >= 3 ? "#06b6d4" : result.score_maturite >= 2 ? "#f97316" : "#ef4444"}
+                    strokeWidth="4"
+                    strokeDasharray={`${(result.score_maturite / 5) * 220} 220`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 40 40)"
+                    className="transition-all duration-1000"
+                  />
+                  <text x="40" y="36" textAnchor="middle" fontSize="18" fontWeight="bold" fill="currentColor">{result.score_maturite}</text>
+                  <text x="40" y="50" textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">/5</text>
+                </svg>
+              </div>
+              {/* Summary */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="font-semibold text-base">Analyse IA</h2>
+                  {renderStars(result.score_maturite)}
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">{result.resume}</p>
+                <div className="flex gap-2 flex-wrap mt-3">
+                  <Badge variant="outline" className="bg-white/70">{result.objets_count} objets detectes</Badge>
+                  <Badge variant="outline" className="bg-white/70">
+                    {result.score_maturite >= 4 ? "Mature" : result.score_maturite >= 3 ? "En developpement" : result.score_maturite >= 2 ? "Emergent" : "Critique"}
+                  </Badge>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -413,9 +436,22 @@ const CartPackResults = () => {
           </Card>
         )}
 
-        <div className="flex justify-center pb-6">
-          <Button variant="outline" onClick={triggerAnalysis} disabled={analyzing}>
-            <Sparkles className="w-4 h-4 mr-2" />
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
+          {bloc < 10 && (
+            <Button
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
+              onClick={() => navigate(`/cartographie/sessions/${id}/pack/${bloc + 1}`)}
+            >
+              Pack suivant : {PACK_DEFINITIONS.find(p => p.bloc === bloc + 1)?.title || `Pack ${bloc + 1}`}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
+            Retour au dashboard
+          </Button>
+          <Button variant="ghost" size="sm" onClick={triggerAnalysis} disabled={analyzing}>
+            <Sparkles className="w-4 h-4 mr-1" />
             Relancer l'analyse
           </Button>
         </div>

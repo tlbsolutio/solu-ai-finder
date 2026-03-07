@@ -25,9 +25,16 @@ export default defineConfig(({ mode }) => ({
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
+          'vendor-charts': ['recharts', 'd3'],
+          'vendor-export': ['jspdf', 'jspdf-autotable', 'html-to-image'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+        },
       },
     },
-    // Optimize asset inlining threshold
     assetsInlineLimit: 4096,
+    chunkSizeWarningLimit: 800,
   },
 }));

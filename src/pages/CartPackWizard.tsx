@@ -310,20 +310,33 @@ const CartPackWizard = () => {
       </header>
 
       <div className="border-b px-4 py-2 bg-muted/30">
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {sections.map((sec, i) => (
-            <button
-              key={sec}
-              onClick={() => setCurrentSectionIndex(i)}
-              className={`shrink-0 px-2 py-1 rounded text-xs transition-colors ${
-                i === currentSectionIndex
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {sections.map((sec, i) => {
+            const sectionQs = sectionGroups[sec] || [];
+            const answered = sectionQs.filter((q: any) => getValue(q).trim()).length;
+            const allDone = answered === sectionQs.length && sectionQs.length > 0;
+            return (
+              <button
+                key={sec}
+                onClick={() => setCurrentSectionIndex(i)}
+                className={`shrink-0 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+                  i === currentSectionIndex
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : allDone
+                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                    : answered > 0
+                    ? "bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                }`}
+              >
+                {allDone && i !== currentSectionIndex && <CheckCircle className="w-3 h-3" />}
+                <span>{sec.length > 20 ? `${i + 1}` : sec}</span>
+                {!allDone && answered > 0 && i !== currentSectionIndex && (
+                  <span className="text-[9px] opacity-70">{answered}/{sectionQs.length}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Network, Shield, LayoutDashboard } from "lucide-react";
+import { ChevronRight, LogOut, User, Network, Shield, LayoutDashboard, Crown, HelpCircle } from "lucide-react";
 
 interface Crumb {
   label: string;
@@ -119,12 +119,18 @@ export default function CartLayout({ children }: CartLayoutProps) {
             <DropdownMenuItem onClick={() => navigate("/cartographie/sessions")}>
               <LayoutDashboard className="w-3.5 h-3.5 mr-2" /> Mes diagnostics
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/cartographie/pricing")}>
+              <Crown className="w-3.5 h-3.5 mr-2 text-amber-500" /> Passer en Premium
+            </DropdownMenuItem>
             {userEmail === "tlb@solutio.work" && (
               <DropdownMenuItem onClick={() => navigate("/cartographie/admin")}>
                 <Shield className="w-3.5 h-3.5 mr-2" /> Administration
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => window.open("mailto:contact@solutio.work", "_blank")}>
+              <HelpCircle className="w-3.5 h-3.5 mr-2" /> Aide & Support
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
               <LogOut className="w-3.5 h-3.5 mr-2" /> Se deconnecter
             </DropdownMenuItem>

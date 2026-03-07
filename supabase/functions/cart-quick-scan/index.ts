@@ -89,8 +89,10 @@ On te donne une description libre d'une entreprise et ses reponses a un mini-que
 REGLES :
 - Score base UNIQUEMENT sur les reponses fournies
 - Quick wins actionnables et priorises (P1 = impact fort + effort faible, P2 = impact fort + effort moyen, P3 = reste)
-- Dysfonctionnements avec impact estime
+- Dysfonctionnements avec impact estime en heures/mois ou euros/an
 - Ne jamais inventer ce qui n'est pas dans les reponses
+- Evaluer le niveau de maturite digitale de l'entreprise (capacite a utiliser le numerique comme levier strategique)
+- Estimer le potentiel de gain en heures/mois si les quick wins sont mis en place
 
 DESCRIPTION DE L'ENTREPRISE :
 ${description_libre || "Non fournie"}
@@ -107,12 +109,17 @@ Produis ce JSON EXACT :
   "quick_wins": [
     { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3" }
   ],
-  "dysfonctionnements": ["Dysfonctionnement 1 — Impact estime: X"],
-  "resume": "Resume en 3-5 lignes du diagnostic rapide avec les points cles"
+  "dysfonctionnements": ["Dysfonctionnement 1 — Impact estime: X heures/mois perdues"],
+  "resume": "Resume en 5-8 lignes : diagnostic clair avec scores cles, les 2-3 problemes les plus impactants, et les 2 premieres actions concretes a lancer cette semaine. Terminer par une phrase sur le potentiel de transformation.",
+  "niveau_conscience_digitale": "Debutant|Sensibilise|Engage|Avance|Leader — Description en 1-2 phrases du rapport de l'entreprise au numerique (outils utilises, automatisation, culture data)",
+  "score_urgence": 5,
+  "axes_critiques": ["Axe le plus critique avec justification courte", "2eme axe critique", "3eme axe critique"],
+  "potentiel_transformation": "Estimation du gain potentiel en heures/mois si les quick wins P1 et P2 sont implementes (ex: 15-25h/mois). Expliquer brievement la source des gains."
 }
 
 Axes : 1=Contexte, 2=Clients, 3=Organisation, 4=RH, 5=Commercial, 6=Operations, 7=Outils/SI, 8=Communication, 9=Qualite, 10=KPIs
 Score: 1=Critique, 2=Emergent, 3=En developpement, 4=Mature, 5=Optimise
+score_urgence: 1=Aucune urgence (tout va bien), 5=Urgence moderee (pertes d'efficacite visibles), 8=Urgence forte (risques business), 10=Urgence critique (survie menacee)
 Reponds UNIQUEMENT en JSON valide.`;
 
     let rawContent: string | null = null;

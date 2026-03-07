@@ -210,18 +210,22 @@ Irritants: ${irritants.slice(0, 10).map((i: any) => `${i.intitule} (${i.gravite}
 
     // ========== STEP 1: Cross-pack causal analysis ==========
     console.log("Step 1: Cross-pack causal analysis");
-    const step1Prompt = `Consultant senior transformation PME. ${sectorInfo}Analyse transversale de cette cartographie.
+    const step1Prompt = `Consultant senior transformation PME. ${sectorInfo}Analyse transversale approfondie de cette cartographie.
 
 ${packSummaryText}
 
 ${objectsCompact}
 
-Produis une analyse causale inter-packs concise :
-1. 3 chaines causales (Probleme Pack X → Impact Pack Y → Consequence chiffree)
-2. 2 noeuds critiques (problemes qui en causent le plus d'autres)
-3. Score maturite global pondere
-4. Plan d'actions: P1 (3 quick wins <3 mois), P2 (3 chantiers 3-9 mois), P3 (2 transformations)
-5. Vision cible: M+3, M+6, M+12, M+18
+Produis une analyse causale inter-packs detaillee et actionnable :
+1. 3 chaines causales (Probleme Pack X → Impact Pack Y → Consequence business chiffree en EUR/an ou heures/mois). Pour chaque chaine, identifier le point d'intervention le plus efficace.
+2. 2 noeuds critiques (problemes qui en causent le plus d'autres) — expliquer pourquoi ils sont structurants et ce qui se passe si on les resout en premier.
+3. Score maturite global pondere avec justification de la ponderation.
+4. Plan d'actions SMART :
+   - P1 (3 quick wins <3 mois) : Action — Objectif mesurable — KPI de succes — Gain attendu — Responsable suggere
+   - P2 (3 chantiers 3-9 mois) : Projet — Jalons M+3/M+6 — Ressources — ROI attendu
+   - P3 (2 transformations 9-18 mois) : Vision — Investissement — Impact strategique
+5. Vision cible avec milestones concrets : M+3, M+6, M+12, M+18 — chaque milestone avec KPIs chiffres et gains cumules.
+6. Cout d'inaction : estimer ce que coute chaque mois de retard en heures perdues et manque a gagner.
 
 Reponds en texte structure, pas de JSON.`;
 
@@ -239,19 +243,34 @@ Reponds en texte structure, pas de JSON.`;
     const topOutils = outils.slice(0, 6);
     const topIrritants = irritants.sort((a: any, b: any) => (b.gravite || 0) - (a.gravite || 0)).slice(0, 8);
 
-    const step2Prompt = `Donnees:
+    const step2Prompt = `Donnees de la cartographie organisationnelle:
 Equipes: ${topEquipes.map((e: any) => `${e.nom}(eq-${e.id})`).join(", ")}
 Processus: ${topProcessus.map((p: any) => `${p.nom}(pr-${p.id})`).join(", ")}
 Outils: ${topOutils.map((o: any) => `${o.nom}(ou-${o.id})`).join(", ")}
 Irritants: ${topIrritants.map((i: any) => `${i.intitule}(ir-${i.id},g=${i.gravite})`).join(", ")}
 
-Genere exactement 20-30 noeuds et 25-40 edges. Utilise les IDs fournis (eq-X, pr-X, ou-X, ir-X).
-Types noeud: equipe, processus, outil, irritant
-Types edge: feeds_into (equipe→processus), uses (processus→outil), blocks (irritant→processus, animated:true), causes (irritant→irritant)
-Chaque noeud a min 1 edge. Description courte (max 10 mots).`;
+REGLES DE GENERATION :
+1. Genere exactement 20-30 noeuds et 25-40 edges. Utilise les IDs fournis (eq-X, pr-X, ou-X, ir-X).
+2. Types noeud: equipe, processus, outil, irritant
+3. Types edge et labels explicites:
+   - feeds_into (equipe→processus) : label = role de l'equipe dans le processus (ex: "execute et pilote", "alimente en donnees")
+   - uses (processus→outil) : label = nature de l'usage (ex: "saisie manuelle", "reporting", "gestion pipeline")
+   - blocks (irritant→processus, animated:true) : label = comment l'irritant bloque (ex: "ralentit de 40%", "cause des erreurs", "empeche le suivi")
+   - causes (irritant→irritant) : label = lien causal (ex: "entraine", "aggrave", "est la cause racine de")
+   - supports (outil→equipe) : label = ce que l'outil apporte (ex: "centralise les donnees", "facilite la collaboration")
+4. Chaque noeud a min 1 edge.
+5. Description RICHE pour chaque noeud (15-25 mots) : decrire l'etat actuel, le probleme principal ou la contribution cle. Pas de descriptions generiques.
+6. Priorite (1-5) pour chaque noeud : 1=peripherique, 3=important, 5=critique/urgent. Les irritants graves ont priorite 4-5, les processus critiques 4-5.
+7. Clusters : regrouper les noeuds par domaine fonctionnel pour une meilleure lisibilite visuelle.
+
+QUALITE DES DESCRIPTIONS :
+- MAUVAIS : "Gestion commerciale" → TROP GENERIQUE
+- BON : "Pipeline commercial non structure, suivi sur Excel avec perte de 30% des leads entrants"
+- MAUVAIS : "Equipe terrain" → TROP GENERIQUE
+- BON : "8 techniciens terrain sans outil mobile, CR papier ressaisis le lendemain au bureau"`;
 
     const step2System = `Tu es un generateur JSON. Reponds UNIQUEMENT avec du JSON valide, sans markdown, sans texte avant/apres.
-Format: {"nodes":[{"id":"str","type":"equipe|processus|outil|irritant","label":"str","maturityScore":3,"gravite":0,"description":"str"}],"edges":[{"id":"e1","source":"id","target":"id","type":"str","label":"str","animated":false}]}`;
+Format: {"nodes":[{"id":"str","type":"equipe|processus|outil|irritant","label":"str","maturityScore":3,"gravite":0,"description":"str (15-25 mots, specifique et actionnable)","priorite":3}],"edges":[{"id":"e1","source":"id","target":"id","type":"str","label":"str (explique la relation)","animated":false}],"clusters":[{"id":"cluster-1","label":"Nom du domaine fonctionnel","nodeIds":["id1","id2"],"description":"Description courte du cluster"}]}`;
 
     const step2Result = await generate(step2Prompt, geminiApiKey, 8000, step2System);
     const cartographyJson = extractJson(step2Result);

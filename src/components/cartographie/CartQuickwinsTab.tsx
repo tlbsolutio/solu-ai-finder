@@ -99,8 +99,34 @@ export function CartQuickwinsTab({ sessionId, quickwins, onReload }: CartQuickwi
     );
   };
 
+  const p1Count = quickwins.filter(q => q.priorite_calculee === "Top Priority" || q.priorite_calculee === "P1").length;
+  const p2Count = quickwins.filter(q => q.priorite_calculee === "Important" || q.priorite_calculee === "P2").length;
+  const doneCount = quickwins.filter(q => q.statut === "fait").length;
+
   return (
     <div className="space-y-4">
+      {/* Summary banner */}
+      {quickwins.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 text-center">
+            <p className="text-2xl font-bold text-cyan-700">{quickwins.length}</p>
+            <p className="text-[11px] text-cyan-600">Quick wins detectes</p>
+          </div>
+          <div className="p-3 rounded-lg bg-gradient-to-br from-red-50 to-orange-50 border border-red-200/50 text-center">
+            <p className="text-2xl font-bold text-red-600">{p1Count}</p>
+            <p className="text-[11px] text-red-500">Priorite haute (P1)</p>
+          </div>
+          <div className="p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 text-center">
+            <p className="text-2xl font-bold text-amber-600">{p2Count}</p>
+            <p className="text-[11px] text-amber-500">Priorite moyenne (P2)</p>
+          </div>
+          <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 text-center">
+            <p className="text-2xl font-bold text-emerald-600">{doneCount}</p>
+            <p className="text-[11px] text-emerald-500">Realises</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-muted-foreground flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5" /> Trier par :</span>
         {(["priority", "impact", "effort", "bloc"] as const).map(s => (
