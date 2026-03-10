@@ -25,6 +25,7 @@ import CartPricing from "./pages/CartPricing";
 import CartPaymentSuccess from "./pages/CartPaymentSuccess";
 import { AuthGuard } from "./components/cartographie/AuthGuard";
 import CartLayout from "./components/layout/CartLayout";
+import CartHome from "./pages/CartHome";
 import NotFound from "./pages/NotFound";
 
 // Lazy-loaded heavy pages
@@ -60,7 +61,7 @@ const App = () => (
                   <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
                   <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
                   {/* Cartographie routes - public (tool subdomain feel) */}
-                  <Route path="/cartographie" element={<Navigate to="/cartographie/login" replace />} />
+                  <Route path="/cartographie" element={<CartHome />} />
                   <Route path="/cartographie/login" element={<CartLogin />} />
                   <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />

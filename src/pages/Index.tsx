@@ -273,7 +273,7 @@ const Index = () => {
             <SectionLabel>Accompagnement</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
               Un seul interlocuteur,{' '}
-              <span className="text-primary">de l'analyse a la mise en production.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">de l'analyse a la mise en production.</span>
             </h2>
 
             <div className="space-y-8">
@@ -304,7 +304,7 @@ const Index = () => {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight max-w-xl">
               {t('index.products_title1')}
-              <span className="text-primary">{t('index.products_title_highlight')}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.products_title_highlight')}</span>
             </h2>
             <p className="text-sm text-muted-foreground max-w-[260px] leading-relaxed lg:text-right">
               {t('index.products_subtitle')}
@@ -402,7 +402,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight">
               {t('index.cases_title1')}
-              <span className="text-primary">{t('index.cases_title_highlight')}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.cases_title_highlight')}</span>
             </h2>
             <p className="text-base text-muted-foreground leading-relaxed">{t('index.cases_desc')}</p>
           </div>
@@ -456,7 +456,7 @@ const Index = () => {
             <SectionLabel>Conviction</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
               La valeur d'un professionnel se mesure à ce qu'il accomplit.{' '}
-              <span className="text-primary">Ce n'est pas une question de temps — c'est une question de maîtrise.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">Ce n'est pas une question de temps — c'est une question de maîtrise.</span>
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
               <p>
