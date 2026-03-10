@@ -26,8 +26,13 @@ export function useCartSessionV2(sessionId: string | undefined) {
     setError(null);
 
     try {
-      const [sessionRes, packResumesRes, processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes, reponsesRes, questionsRes] = await Promise.all([
-        supabase.from("cart_sessions").select("*").eq("id", sessionId).single(),
+      // Session is critical — fetch it first
+      const sessionRes = await supabase.from("cart_sessions").select("*").eq("id", sessionId).single();
+      if (sessionRes.error) throw sessionRes.error;
+      setSession(sessionRes.data as CartSessionV2);
+
+      // Use allSettled for secondary data so partial failures don't block the whole page
+      const results = await Promise.allSettled([
         supabase.from("cart_pack_resumes").select("*").eq("session_id", sessionId),
         supabase.from("cart_processus").select("*").eq("session_id", sessionId).order("created_at"),
         supabase.from("cart_outils").select("*").eq("session_id", sessionId).order("created_at"),
@@ -39,26 +44,28 @@ export function useCartSessionV2(sessionId: string | undefined) {
         supabase.from("cart_questions").select("bloc").eq("actif", true),
       ]);
 
-      if (sessionRes.error) throw sessionRes.error;
+      const getData = (idx: number) => {
+        const r = results[idx];
+        return r.status === "fulfilled" ? (r.value.data || []) : [];
+      };
 
-      setSession(sessionRes.data as CartSessionV2);
-      setPackResumes((packResumesRes.data || []).map(pr => ({
+      setPackResumes(getData(0).map((pr: any) => ({
         ...pr,
         alertes: Array.isArray(pr.alertes) ? pr.alertes : [],
         quickwins_ids: Array.isArray(pr.quickwins_ids) ? pr.quickwins_ids : [],
       })) as CartPackResume[]);
-      setProcessus((processusRes.data || []) as CartProcessusV2[]);
-      setOutils((outilsRes.data || []) as CartOutilV2[]);
-      setEquipes((equipesRes.data || []) as CartEquipeV2[]);
-      setIrritants((irritantsRes.data || []) as CartIrritantV2[]);
-      setTaches((tachesRes.data || []) as CartTacheV2[]);
-      setQuickwins((quickwinsRes.data || []) as CartQuickwinV2[]);
+      setProcessus(getData(1) as CartProcessusV2[]);
+      setOutils(getData(2) as CartOutilV2[]);
+      setEquipes(getData(3) as CartEquipeV2[]);
+      setIrritants(getData(4) as CartIrritantV2[]);
+      setTaches(getData(5) as CartTacheV2[]);
+      setQuickwins(getData(6) as CartQuickwinV2[]);
 
-      const reponses = reponsesRes.data || [];
+      const reponses = getData(7);
       setTotalReponses(reponses.length);
 
       const qCounts: Record<number, number> = {};
-      for (const q of (questionsRes.data || [])) {
+      for (const q of getData(8)) {
         qCounts[q.bloc] = (qCounts[q.bloc] || 0) + 1;
       }
       setQuestionCountsByBloc(qCounts);

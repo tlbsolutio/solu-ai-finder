@@ -24,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
+import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 
 const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
@@ -1069,8 +1070,8 @@ const CartSessionDashboard = () => {
       case "equipes": return renderEquipes();
       case "irritants": return renderIrritants();
       case "plan": return <CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} />;
-      case "recommandations": return <CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} />;
-      case "analyse": return renderAnalyse();
+      case "recommandations": return <AIContentBoundary label="Recommandations"><CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} /></AIContentBoundary>;
+      case "analyse": return <AIContentBoundary label="Analyse IA">{renderAnalyse()}</AIContentBoundary>;
       default: return renderOverview();
     }
   };
