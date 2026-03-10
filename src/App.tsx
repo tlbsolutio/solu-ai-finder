@@ -61,7 +61,7 @@ const App = () => (
                   <Route path="/test-connections" element={<MainLayout><TestConnections /></MainLayout>} />
                   <Route path="/seo-manager" element={<MainLayout><SeoManager /></MainLayout>} />
                   {/* Cartographie routes - public (tool subdomain feel) */}
-                  <Route path="/cartographie" element={<CartHome />} />
+                  <Route path="/cartographie" element={<MainLayout><CartHome /></MainLayout>} />
                   <Route path="/cartographie/login" element={<CartLogin />} />
                   <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />
