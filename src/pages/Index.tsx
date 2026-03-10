@@ -209,8 +209,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.services_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Du diagnostic a la transformation,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">un seul interlocuteur</span>
+              Trois expertises,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">un seul parcours</span>
             </h2>
             <p className="text-muted-foreground text-lg">
               {t('index.services_desc')}
@@ -462,12 +462,32 @@ const Index = () => {
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
               <p>
+                Un expert-comptable qui recopie des données d'un logiciel à un autre.
+                Un consultant qui reconstitue ses reportings chaque semaine dans Excel.
+                Un dirigeant qui pilote ses équipes par email faute d'outil adapté.
+                Ce n'est pas un problème de compétence — c'est un problème d'environnement de travail.
+              </p>
+              <p>
+                Il existe des milliers d'outils SaaS sur le marché. Le problème, c'est qu'aucun n'a été
+                pensé pour <em>votre</em> contexte. Alors les licences s'empilent, les passerelles se bricolent,
+                et au final autant de temps est consacré à gérer les outils qu'à faire le travail lui-même.
+              </p>
+              <p>
                 Vision, stratégie, exécution — c'est là que se crée ce qu'aucun système ne peut remplacer.
-                Tout le reste peut et devrait être pris en charge par la technologie.
+                Tout le reste peut et devrait être pris en charge par la technologie. Quand les outils sont
+                construits pour un contexte précis, ils absorbent ce qui n'aurait jamais dû requérir
+                d'attention humaine.
               </p>
               <p className="text-foreground font-medium">
-                Quand les outils sont construits pour un contexte précis, ils absorbent ce qui n'aurait
-                jamais dû requérir de l'attention humaine. Ce temps revient là où il a de la valeur.
+                Solutio existe pour résoudre exactement ça. Le point de départ, c'est la réalité terrain —
+                pas un catalogue. L'objectif : libérer du temps pour que chaque professionnel puisse se
+                concentrer sur ce qui fait vraiment sa valeur — réfléchir, analyser, décider, transmettre.
+              </p>
+            </div>
+
+            <div className="mt-10 border-l-4 border-cyan-500 pl-6">
+              <p className="text-xl font-bold text-foreground leading-snug">
+                La technologie n'est pas une fin en soi. C'est le levier qui permet à chacun de travailler à la hauteur de son intelligence.
               </p>
             </div>
           </div>
