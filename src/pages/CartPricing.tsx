@@ -405,11 +405,11 @@ export default function CartPricing() {
             },
             {
               q: "Mon paiement est-il securise ?",
-              a: "Oui, le paiement est traite par Stripe, leader mondial du paiement en ligne. Vos donnees bancaires ne transitent jamais par nos serveurs. Vous recevez une facture par email.",
+              a: "Oui, le paiement est traité par Stripe, leader mondial du paiement en ligne. Les données bancaires ne transitent jamais par les serveurs Solutio. Une facture est envoyée par email.",
             },
             {
               q: "Mes donnees sont-elles protegees ?",
-              a: "Absolument. Vos donnees sont hebergees en Europe (Supabase Ireland), chiffrees en transit et au repos. Nous ne les partageons jamais avec des tiers.",
+              a: "Absolument. Les données sont hébergées en Europe (Supabase Ireland), chiffrées en transit et au repos. Aucun partage avec des tiers.",
             },
           ].map(({ q, a }, index) => (
             <div

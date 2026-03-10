@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, CheckCircle, Plus, Calendar, Linkedin, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle, Plus, Calendar } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
@@ -15,17 +15,35 @@ const Index = () => {
   const [activeServiceTab, setActiveServiceTab] = React.useState(0);
   const [teamSize, setTeamSize] = React.useState(15);
   const [hoursLost, setHoursLost] = React.useState(5);
-  const [openFaq, setOpenFaq] = React.useState<number | null>(null);
-
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const faqs = [
-    { q: t('home.faq1_q'), a: t('home.faq1_a') },
-    { q: t('home.faq2_q'), a: t('home.faq2_a') },
-    { q: t('home.faq3_q'), a: t('home.faq3_a') },
-    { q: t('home.faq4_q'), a: t('home.faq4_a') },
+    {
+      q: "C'est quoi exactement Solutio ?",
+      a: "Solutio est un business partner tech : diagnostic organisationnel, développement d'outils sur mesure et accompagnement jusqu'à l'adoption. L'outil de cartographie organisationnelle est gratuit pour commencer.",
+    },
+    {
+      q: "Le diagnostic est vraiment gratuit ?",
+      a: "Oui. La cartographie organisationnelle est accessible gratuitement et sans engagement. Elle couvre 10 axes d'analyse et génère un radar de maturité avec des recommandations actionnables.",
+    },
+    {
+      q: "Combien coûte un projet de développement sur mesure ?",
+      a: "Cela dépend de la complexité. Un outil simple peut démarrer autour de quelques milliers d'euros, une plateforme complète sera plus conséquente. Le diagnostic gratuit permet de cadrer le besoin avant toute proposition de devis.",
+    },
+    {
+      q: "Vous travaillez avec quels types d'entreprises ?",
+      a: "Indépendants, équipes de 5, structures de 50+ — la taille n'est pas le critère. Le point commun : l'ambition de mieux s'organiser et la volonté de changer ce qui ne fonctionne pas. Cabinets de conseil, agences, entreprises industrielles, ESS.",
+    },
+    {
+      q: "En quoi c'est différent d'un cabinet de conseil classique ?",
+      a: "Pas de PowerPoint de 200 slides. Le diagnostic utilise un outil IA concret, les recommandations sont priorisées avec ROI estimé, et si besoin les outils sont construits sur mesure. Du diagnostic à l'implémentation, un seul interlocuteur.",
+    },
+    {
+      q: "Mes données sont-elles protégées ?",
+      a: "Les données sont hébergées en Europe, chiffrées en transit et au repos. Aucun partage avec des tiers.",
+    },
   ];
 
   const realisations = [
@@ -87,10 +105,10 @@ const Index = () => {
       label: 'Outils sur mesure',
       content: "Les outils SaaS sont conçus pour être généralistes — c'est ce qui leur permet d'adresser le plus grand nombre. Ce n'est pas un défaut, c'est un choix de marché. Aujourd'hui, construire un outil taillé pour un contexte précis est accessible. Il n'y a plus de raison de s'adapter à un outil qui n'a pas été pensé pour vous.",
       checklist: [
-        'Applications métier sur mesure',
-        'Intégrations entre systèmes existants',
-        'Automatisation des tâches répétitives',
-        'Tableaux de bord et reporting',
+        'Plateformes SaaS internes ou client',
+        'Automatisation de processus répétitifs',
+        'Intégrations multi-outils (API, CRM, ERP)',
+        'Tableaux de bord et reporting sur mesure',
       ],
     },
     {
@@ -122,7 +140,7 @@ const Index = () => {
         type="ProfessionalService"
         data={{
           name: 'Solutio',
-          description: 'Studio tech B2B — outils SaaS, systemes sur mesure et conseil en transformation digitale pour PME et equipes ambitieuses.',
+          description: 'Business partner tech — outils SaaS, systemes sur mesure et conseil en transformation digitale pour equipes ambitieuses.',
         }}
       />
       <StructuredData
@@ -231,7 +249,7 @@ const Index = () => {
           <SectionLabel>Services</SectionLabel>
 
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
-            {"Du diagnostic a la transformation, un seul interlocuteur"}
+            {"Du diagnostic à la transformation, un seul interlocuteur"}
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-2xl">
             {"Diagnostic, construction, accompagnement — jusqu'aux résultats."}
@@ -509,10 +527,10 @@ const Index = () => {
           <SectionLabel>Calculateur</SectionLabel>
 
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold leading-[1.1] tracking-tight mb-4 max-w-2xl">
-            {"Combien coûtent les inefficacités chaque mois ?"}
+            {"Combien vous coûtent vos inefficacités ?"}
           </h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-12 max-w-2xl">
-            {"Ajustez les curseurs selon votre réalité."}
+            {"Estimation basée sur un coût horaire moyen de 45 EUR/h charges comprises."}
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
@@ -554,6 +572,9 @@ const Index = () => {
                   <span>20h</span>
                 </div>
               </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-6">
+                {"Ajustez les curseurs selon votre réalité."}
+              </p>
             </div>
 
             <Card className="border-primary/20 border-2">
@@ -563,7 +584,7 @@ const Index = () => {
                   {monthlyCost.toLocaleString('fr-FR')} EUR
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed mt-6">
-                  {"Un diagnostic a 349 EUR peut identifier comment recuperer une partie significative de cette somme."}
+                  {"Un diagnostic à 349 EUR peut identifier comment récupérer une partie significative de cette somme."}
                 </p>
               </CardContent>
             </Card>
@@ -585,12 +606,12 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border rounded-2xl overflow-hidden">
             {faqs.map((f, i) => {
               const isLeft = i % 2 === 0;
-              const isTop = i < 2;
+              const isLastRow = i >= faqs.length - 2;
               return (
                 <div
                   key={i}
-                  className={`p-8 sm:p-9 ${isLeft ? 'md:border-r' : ''} ${isTop ? 'border-b' : ''} ${
-                    i === 1 || i === 2 ? 'bg-muted/30' : ''
+                  className={`p-8 sm:p-9 ${isLeft ? 'md:border-r' : ''} ${!isLastRow ? 'border-b' : ''} ${
+                    i % 4 === 1 || i % 4 === 2 ? 'bg-muted/30' : ''
                   }`}
                 >
                   <p className="text-base font-bold mb-3 leading-snug">{f.q}</p>
