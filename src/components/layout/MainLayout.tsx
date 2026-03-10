@@ -34,8 +34,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </h3>
           <p className="text-sm text-white/50 mb-8 max-w-md mx-auto leading-relaxed">
             {language === 'fr'
-              ? "Diagnostic gratuit sur 10 axes, outils sur mesure et accompagnement expert. Un seul objectif : des resultats mesurables."
-              : "Free diagnostic on 10 axes, custom tools and expert support. One goal: measurable results."}
+              ? "Diagnostic gratuit sur 10 axes, outils sur mesure et accompagnement jusqu'à l'adoption. Un seul interlocuteur."
+              : "Free diagnostic on 10 axes, custom tools and support through adoption. One point of contact."}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/cartographie" className="w-full sm:w-auto">
@@ -64,7 +64,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 className="h-7 w-auto brightness-[10] opacity-60"
               />
               <p className="text-sm text-white/40 leading-relaxed max-w-xs">
-                Conseil en transformation digitale. Diagnostic, outils sur mesure et accompagnement pour les PME.
+                Conseil en transformation digitale. Diagnostic, outils sur mesure et accompagnement.
               </p>
               <div className="flex items-center gap-2">
                 <a

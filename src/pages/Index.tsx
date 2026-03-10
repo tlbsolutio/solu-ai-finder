@@ -278,9 +278,9 @@ const Index = () => {
 
             <div className="space-y-8">
               {[
-                { num: '01', title: 'Diagnostic', desc: "Comprendre comment l'organisation fonctionne reellement — flux, outils, pertes de temps, irritants. On cartographie ce qui existe avant de proposer quoi que ce soit." },
+                { num: '01', title: 'Diagnostic', desc: "Comprendre comment l'organisation fonctionne réellement — flux, outils, pertes de temps, irritants. Cartographier ce qui existe avant de proposer quoi que ce soit." },
                 { num: '02', title: 'Conception', desc: "Definir precisement ce qu'il faut construire, configurer ou changer. Architecture technique, choix d'outils, perimetre — tout est cadre avant de commencer." },
-                { num: '03', title: 'Construction', desc: "Developpement sur mesure, configuration, integrations, automatisations. Le livrable peut etre un outil, un systeme, un document, une formation — ce qui resout le probleme." },
+                { num: '03', title: 'Construction', desc: "Développement sur mesure, configuration, intégrations, automatisations. Le livrable peut être un outil, un système, une formation — ce qui résout le problème." },
                 { num: '04', title: 'Adoption', desc: "Former les equipes, ajuster ce qui doit l'etre, s'assurer que ce qui a ete livre est reellement utilise au quotidien. Pas de livraison sans suivi." },
               ].map((s) => (
                 <div key={s.num} className="flex gap-5 items-start">
@@ -455,40 +455,19 @@ const Index = () => {
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="container mx-auto px-6 sm:px-10 relative">
           <div className="max-w-3xl mx-auto">
-            <SectionLabel>Notre conviction</SectionLabel>
+            <SectionLabel>Conviction</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-8">
-              Moins de production, plus de reflexion{' '}
-              <span className="text-primary">— c'est la que se cree la vraie valeur.</span>
+              La valeur d'un professionnel se mesure à ce qu'il accomplit.{' '}
+              <span className="text-primary">Ce n'est pas une question de temps — c'est une question de maîtrise.</span>
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
               <p>
-                Un expert-comptable qui passe 3 heures a recopier des donnees d'un logiciel a un autre.
-                Un consultant qui reconstitue ses reportings client chaque semaine dans Excel.
-                Un dirigeant qui gere ses equipes par email parce qu'aucun outil existant ne correspond
-                vraiment a son fonctionnement.
-              </p>
-              <p>
-                Ce n'est pas un probleme de competence — c'est un probleme d'environnement de travail.
-                Ces professionnels connaissent leur metier mieux que personne. Mais leur quotidien est
-                engorge par des taches qui ne mobilisent ni leur intelligence, ni leur experience,
-                ni leur capacite de jugement.
-              </p>
-              <p>
-                Il existe des milliers d'outils SaaS sur le marche. Le probleme, c'est qu'aucun n'a ete
-                pense pour <em>votre</em> contexte. Alors on empile les licences, on bricole des passerelles,
-                et au final on passe autant de temps a gerer les outils qu'a faire le travail lui-meme.
+                Vision, stratégie, exécution — c'est là que se crée ce qu'aucun système ne peut remplacer.
+                Tout le reste peut et devrait être pris en charge par la technologie.
               </p>
               <p className="text-foreground font-medium">
-                Solutio existe pour resoudre exactement ca. On part de la realite terrain — pas d'un
-                catalogue — et on construit ce qui manque. L'objectif : liberer du temps pour que chaque
-                professionnel puisse se concentrer sur ce qui fait vraiment sa valeur — reflechir,
-                analyser, decider, transmettre.
-              </p>
-            </div>
-
-            <div className="mt-10 border-l-4 border-primary pl-6">
-              <p className="text-xl font-bold text-foreground leading-snug">
-                La technologie n'est pas une fin en soi. C'est le levier qui permet a chacun de travailler a la hauteur de son intelligence.
+                Quand les outils sont construits pour un contexte précis, ils absorbent ce qui n'aurait
+                jamais dû requérir de l'attention humaine. Ce temps revient là où il a de la valeur.
               </p>
             </div>
           </div>
