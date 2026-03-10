@@ -280,33 +280,33 @@ const CartSessionDashboard = () => {
 
   // ========== SIDEBAR COMPONENT ==========
   const Sidebar = () => (
-    <aside className={`hidden lg:flex flex-col border-r bg-card/50 transition-all duration-200 ${sidebarCollapsed ? "w-14" : "w-56"}`}>
+    <aside className={`hidden lg:flex flex-col border-r border-white/10 bg-gradient-to-b from-slate-900 to-slate-950 transition-all duration-200 ${sidebarCollapsed ? "w-14" : "w-56"}`}>
       {/* Session header */}
-      <div className="p-3 border-b">
+      <div className="p-3 border-b border-white/10">
         {!sidebarCollapsed ? (
           <div className="flex items-start justify-between gap-1">
             <div className="min-w-0">
-              <h2 className="text-xs font-semibold truncate">{session.nom}</h2>
+              <h2 className="text-xs font-semibold truncate text-white/90">{session.nom}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style={{ width: `${(packsCompleted / 10) * 100}%` }} />
                 </div>
-                <span className="text-[10px] text-muted-foreground font-medium">{packsCompleted}/10</span>
+                <span className="text-[10px] text-white/40 font-medium">{packsCompleted}/10</span>
               </div>
               {avgScore && (
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="text-[10px] text-muted-foreground">Score moyen</span>
+                  <span className="text-[10px] text-white/40">Score moyen</span>
                   <span className={`text-xs font-bold ${parseFloat(avgScore) >= 3.5 ? "text-emerald-600" : parseFloat(avgScore) >= 2.5 ? "text-amber-600" : "text-red-600"}`}>{avgScore}/5</span>
                 </div>
               )}
             </div>
-            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-muted rounded shrink-0 mt-0.5">
-              <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
+            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-white/10 rounded shrink-0 mt-0.5">
+              <ChevronLeft className="w-3.5 h-3.5 text-white/40" />
             </button>
           </div>
         ) : (
-          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-muted rounded">
-            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-white/10 rounded">
+            <ChevronRight className="w-3.5 h-3.5 text-white/40" />
           </button>
         )}
       </div>
@@ -317,11 +317,11 @@ const CartSessionDashboard = () => {
           <div key={group.group} className={gi > 0 ? "mt-2" : ""}>
             {!sidebarCollapsed ? (
               <div className="flex items-center gap-2 px-3 py-1.5 mb-0.5">
-                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">{group.group}</p>
-                <div className="flex-1 h-px bg-border/60" />
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{group.group}</p>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
             ) : (
-              <div className="mx-2 my-1.5 h-px bg-border/60" />
+              <div className="mx-2 my-1.5 h-px bg-white/10" />
             )}
             {group.items.map((item) => {
               const isActive = activeSection === item.id;
@@ -334,15 +334,15 @@ const CartSessionDashboard = () => {
                   onClick={() => handleSectionClick(item.id, item.free)}
                   className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors relative ${
                     isActive
-                      ? "bg-cyan-50 text-cyan-700 font-medium border-r-2 border-cyan-500"
+                      ? "bg-cyan-500/10 text-cyan-400 font-medium border-r-2 border-cyan-400"
                       : isLocked
-                      ? "text-muted-foreground/50 hover:bg-muted/50"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-white/20 hover:bg-white/5"
+                      : "text-white/50 hover:bg-white/10 hover:text-white/80"
                   } ${sidebarCollapsed ? "justify-center px-0" : ""}`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
                   <div className="relative shrink-0">
-                    <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-600" : ""}`} />
+                    <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-400" : ""}`} />
                     {isComplete && !isLocked && !sidebarCollapsed && (
                       <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
                     )}
@@ -355,9 +355,9 @@ const CartSessionDashboard = () => {
                       <span className="truncate">{item.label}</span>
                       <div className="ml-auto flex items-center gap-1">
                         {count !== undefined && count > 0 && !isLocked && (
-                          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 leading-none">{count}</span>
+                          <span className="text-[10px] text-white/40 bg-white/10 rounded-full px-1.5 py-0.5 leading-none">{count}</span>
                         )}
-                        {isLocked && <Lock className="w-3 h-3 text-muted-foreground/40" />}
+                        {isLocked && <Lock className="w-3 h-3 text-white/20" />}
                       </div>
                     </>
                   )}
@@ -370,7 +370,7 @@ const CartSessionDashboard = () => {
 
       {/* Sidebar footer: actions */}
       {isFinalGenerated && !sidebarCollapsed && (
-        <div className="p-3 border-t space-y-1.5">
+        <div className="p-3 border-t border-white/10 space-y-1.5">
           {isPaid && (
             <Button
               size="sm"

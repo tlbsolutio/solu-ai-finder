@@ -193,45 +193,48 @@ const CartSessions = () => {
       <div className="flex-1 px-4 sm:px-6 py-5 max-w-6xl mx-auto w-full space-y-5">
 
         {/* Welcome header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
-              {isAdmin ? "Tous les diagnostics" : `Bonjour ${firstName}`}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {sessions.length === 0
-                ? "Lancez votre premier diagnostic organisationnel"
-                : `${sessions.length} diagnostic${sessions.length > 1 ? "s" : ""} - ${completedSessions} analyse${completedSessions > 1 ? "s" : ""} generee${completedSessions > 1 ? "s" : ""}`
-              }
-            </p>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 p-6 sm:p-8">
+          {/* Glow effects */}
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(ellipse at 20% 50%, #06b6d4 0%, transparent 50%)' }} />
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(ellipse at 80% 80%, #3b82f6 0%, transparent 50%)' }} />
+          <div className="relative flex items-start justify-between gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                {isAdmin ? "Tous les diagnostics" : `Bonjour ${firstName}`}
+              </h1>
+              <p className="text-sm text-white/50 mt-0.5">
+                {sessions.length === 0
+                  ? "Lancez votre premier diagnostic organisationnel"
+                  : `${sessions.length} diagnostic${sessions.length > 1 ? "s" : ""} - ${completedSessions} analyse${completedSessions > 1 ? "s" : ""} generee${completedSessions > 1 ? "s" : ""}`
+                }
+              </p>
+            </div>
+            <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-white/10 border border-white/20 hover:bg-white/20 text-white shrink-0 backdrop-blur-sm">
+              <Plus className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Nouveau diagnostic</span>
+              <span className="sm:hidden">Nouveau</span>
+            </Button>
           </div>
-          <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shrink-0">
-            <Plus className="w-4 h-4 mr-1.5" />
-            <span className="hidden sm:inline">Nouveau diagnostic</span>
-            <span className="sm:hidden">Nouveau</span>
-          </Button>
         </div>
 
         {/* Quick stats (only if sessions exist) */}
         {sessions.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { icon: BarChart3, label: "Diagnostics", value: sessions.length.toString(), color: "text-cyan-600 bg-cyan-500/10" },
-              { icon: CheckCircle, label: "Analyses generees", value: completedSessions.toString(), color: "text-emerald-600 bg-emerald-500/10" },
-              { icon: Network, label: "Objets detectes", value: totalObjects.toString(), color: "text-blue-600 bg-blue-500/10" },
-              { icon: Crown, label: "Premium", value: paidSessionIds.size.toString(), color: "text-amber-600 bg-amber-500/10" },
-            ].map(({ icon: Icon, label, value, color }) => (
-              <Card key={label}>
-                <CardContent className="p-3 flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground truncate">{label}</p>
-                    <p className="text-lg font-bold leading-tight">{value}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              { icon: BarChart3, label: "Diagnostics", value: sessions.length.toString(), gradient: "from-cyan-500/20 to-blue-500/20", iconColor: "text-cyan-500", border: "border-cyan-500/20" },
+              { icon: CheckCircle, label: "Analyses generees", value: completedSessions.toString(), gradient: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-500", border: "border-emerald-500/20" },
+              { icon: Network, label: "Objets detectes", value: totalObjects.toString(), gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-500", border: "border-blue-500/20" },
+              { icon: Crown, label: "Premium", value: paidSessionIds.size.toString(), gradient: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-500", border: "border-amber-500/20" },
+            ].map(({ icon: Icon, label, value, gradient, iconColor, border }) => (
+              <div key={label} className={`rounded-xl border ${border} bg-gradient-to-br ${gradient} p-3 flex items-center gap-3 transition-all hover:scale-[1.02]`}>
+                <div className="w-9 h-9 rounded-lg bg-white/80 dark:bg-white/10 flex items-center justify-center shrink-0 shadow-sm">
+                  <Icon className={`w-4 h-4 ${iconColor}`} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-muted-foreground truncate">{label}</p>
+                  <p className="text-lg font-bold leading-tight">{value}</p>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -276,8 +279,8 @@ const CartSessions = () => {
         {sessions.length === 0 ? (
           <Card className="border-dashed border-2">
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center mb-5">
-                <Network className="w-8 h-8 text-cyan-600" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center mb-5 shadow-lg shadow-cyan-500/10 border border-white/10">
+                <Network className="w-8 h-8 text-cyan-400" />
               </div>
               <p className="font-semibold text-lg mb-1">Aucun diagnostic en cours</p>
               <p className="text-sm text-muted-foreground mb-8 max-w-md">
@@ -315,7 +318,7 @@ const CartSessions = () => {
                 return (
                   <Card
                     key={s.id}
-                    className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-cyan-300/50 active:scale-[0.99] overflow-hidden"
+                    className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/5 hover:border-cyan-400/40 hover:-translate-y-0.5 active:scale-[0.99] overflow-hidden"
                     onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
                   >
                     {/* Top accent bar */}
