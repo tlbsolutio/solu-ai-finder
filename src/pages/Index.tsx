@@ -177,7 +177,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.problem_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              {t('index.problem_title')}
+              Les pertes de temps dans une organisation sont{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">rarement là où on les cherche.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
               {t('index.problem_desc')}
@@ -208,7 +209,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.services_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              {t('index.services_title')}
+              Du diagnostic a la transformation,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">un seul interlocuteur</span>
             </h2>
             <p className="text-muted-foreground text-lg">
               {t('index.services_desc')}
@@ -511,7 +513,8 @@ const ROICalculator = () => {
           <div className="text-center mb-12">
             <SectionLabel>{t('index.roi_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              {t('index.roi_title')}
+              Combien vous coutent vos{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">inefficacites ?</span>
             </h2>
             <p className="text-muted-foreground">
               {t('index.roi_subtitle')}
