@@ -402,7 +402,7 @@ const CartSessionDashboard = () => {
 
   // ========== MOBILE NAV ==========
   const MobileNav = () => (
-    <div className="lg:hidden overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b bg-card/50">
+    <div className="lg:hidden overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b border-slate-200 bg-white">
       <div className="flex gap-0.5 py-1.5 w-max">
         {SECTIONS.map((group, gi) => (
           <div key={group.group} className="flex items-center gap-0.5">
@@ -452,29 +452,29 @@ const CartSessionDashboard = () => {
   const renderOverview = () => (
     <div className="space-y-5">
       {/* Quick Stats Banner */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 text-sm text-white">
         <div className="flex items-center gap-1.5">
           <Settings className="w-3.5 h-3.5 text-blue-500" />
           <span className="font-semibold">{processus.length}</span>
-          <span className="text-muted-foreground text-xs">processus detectes</span>
+          <span className="text-white/50 text-xs">processus detectes</span>
         </div>
-        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="w-px h-4 bg-white/20 hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-emerald-500" />
           <span className="font-semibold">{outils.length}</span>
-          <span className="text-muted-foreground text-xs">outils recenses</span>
+          <span className="text-white/50 text-xs">outils recenses</span>
         </div>
-        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="w-px h-4 bg-white/20 hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
           <span className="font-semibold">{irritants.length}</span>
-          <span className="text-muted-foreground text-xs">irritants identifies</span>
+          <span className="text-white/50 text-xs">irritants identifies</span>
         </div>
-        <div className="w-px h-4 bg-border hidden sm:block" />
+        <div className="w-px h-4 bg-white/20 hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-semibold">{quickwins.length}</span>
-          <span className="text-muted-foreground text-xs">quick wins disponibles</span>
+          <span className="text-white/50 text-xs">quick wins disponibles</span>
         </div>
       </div>
 
@@ -540,7 +540,8 @@ const CartSessionDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-1">
+        <Card className="lg:col-span-1 overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-cyan-500 to-blue-500" />
           <CardHeader className="pb-2 px-4 pt-4">
             <CardTitle className="text-sm flex items-center gap-1.5">
               <Target className="w-4 h-4 text-cyan-500" />
@@ -628,7 +629,7 @@ const CartSessionDashboard = () => {
             const packScore = pr?.score_maturite;
             const isDone = status === "done";
             return (
-              <Card key={packDef.bloc} className={`transition-all hover:shadow-md ${isDone ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
+              <Card key={packDef.bloc} className={`transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${isDone ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
                 <CardContent className="p-3 flex flex-col items-center text-center gap-2">
                   {/* Circular progress ring */}
                   <div className="relative">
@@ -1237,31 +1238,31 @@ const CartSessionDashboard = () => {
           </div>
         )}
         {/* Quick Stats Banner */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 text-sm text-white">
           <div className="flex items-center gap-1.5">
             <Settings className="w-3.5 h-3.5 text-blue-500" />
             <span className="font-semibold">{processus.length}</span>
             <span className="text-muted-foreground text-xs">processus</span>
           </div>
-          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Layers className="w-3.5 h-3.5 text-emerald-500" />
             <span className="font-semibold">{outils.length}</span>
             <span className="text-muted-foreground text-xs">outils</span>
           </div>
-          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
             <span className="font-semibold">{irritants.length}</span>
             <span className="text-muted-foreground text-xs">irritants</span>
           </div>
-          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span className="font-semibold">{quickwins.length}</span>
             <span className="text-muted-foreground text-xs">quick wins</span>
           </div>
-          <div className="w-px h-4 bg-border hidden sm:block" />
+          <div className="w-px h-4 bg-white/20 hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-muted-foreground text-xs">{estimatedTimeRemaining > 0 ? `~${estimatedTimeRemaining} min restant` : "Complete"}</span>

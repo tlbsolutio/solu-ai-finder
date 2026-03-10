@@ -94,7 +94,7 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
 
   return (
     <Card
-      className={`relative overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group ${
+      className={`relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-0.5 group ${
         locked ? "opacity-60" : status === "done" ? "border-emerald-200/50" : ""
       }`}
       onClick={handleClick}
