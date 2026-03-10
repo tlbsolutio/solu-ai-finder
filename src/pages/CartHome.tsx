@@ -9,26 +9,20 @@ import MetaTags from "@/components/seo/MetaTags";
 import {
   ArrowRight,
   Brain,
-  Building2,
   ChartColumn,
-  Check,
   ChevronDown,
   CircleCheckBig,
   Clock,
   Download,
   DollarSign,
   FileText,
-  Globe,
   Layers,
   ListChecks,
   Lock,
   Map,
-  Minus,
   Network,
   Presentation,
-  Quote,
   RefreshCw,
-  Rocket,
   Server,
   Settings,
   Shield,
@@ -37,7 +31,6 @@ import {
   TriangleAlert,
   TrendingUp,
   Users,
-  X,
   Zap,
 } from "lucide-react";
 
@@ -513,26 +506,6 @@ const CartHome = () => {
         </div>
       </section>
 
-      {/* ════════════════ METRICS BAR ════════════════ */}
-      <section className="py-6 relative -mt-10 z-10">
-        <div className="container mx-auto px-6 sm:px-10">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            {[
-              { value: t("carto.metrics_packs"), desc: t("carto.metrics_packs_desc"), icon: Layers, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-950/30" },
-              { value: t("carto.metrics_questions"), desc: t("carto.metrics_questions_desc"), icon: FileText, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
-              { value: t("carto.metrics_duration"), desc: t("carto.metrics_duration_desc"), icon: Clock, color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-950/30" },
-              { value: t("carto.metrics_objects"), desc: t("carto.metrics_objects_desc"), icon: Brain, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-            ].map((m) => (
-              <div key={m.desc} className={`${m.bg} rounded-2xl p-5 text-center border border-border/20`}>
-                <m.icon className={`w-5 h-5 ${m.color} mx-auto mb-2`} />
-                <p className={`text-2xl font-black ${m.color}`}>{m.value}</p>
-                <p className="text-xs text-muted-foreground mt-1">{m.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ════════════════ HOW IT WORKS ════════════════ */}
       <section className="py-24 sm:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-cyan-50/20 to-slate-50/80 dark:from-slate-900/30 dark:via-cyan-950/10 dark:to-slate-900/30" />
@@ -590,60 +563,6 @@ const CartHome = () => {
           <p className="text-center text-sm text-muted-foreground mt-10">
             ~10 minutes par pack &middot; Reprenez &agrave; tout moment &middot; Donn&eacute;es sauvegard&eacute;es
           </p>
-        </div>
-      </section>
-
-      {/* ════════════════ SOCIAL PROOF ════════════════ */}
-      <section className="py-24 sm:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/80 via-background to-background dark:from-slate-900/20" />
-        <div className="relative container mx-auto px-6 sm:px-10">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-              {t("carto.proof_title")}
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              {t("carto.proof_subtitle")}
-            </p>
-          </div>
-
-          {/* Testimonial */}
-          <div className="max-w-3xl mx-auto mb-16">
-            <Card className="p-8 sm:p-10 rounded-2xl border-cyan-200/40 bg-gradient-to-br from-cyan-50/30 to-blue-50/20 dark:from-cyan-950/10 dark:to-blue-950/5 relative">
-              <Quote className="w-10 h-10 text-cyan-200 dark:text-cyan-800 absolute top-6 left-6" />
-              <blockquote className="text-lg sm:text-xl font-medium leading-relaxed text-foreground mb-6 pl-8 sm:pl-10">
-                {t("carto.proof_quote")}
-              </blockquote>
-              <div className="pl-8 sm:pl-10 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">{t("carto.proof_author")}</p>
-                  <p className="text-xs text-muted-foreground">{t("carto.proof_company")}</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Company types */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-5xl mx-auto">
-            {[
-              { label: t("carto.proof_type1"), icon: Building2 },
-              { label: t("carto.proof_type2"), icon: Rocket },
-              { label: t("carto.proof_type3"), icon: Settings },
-              { label: t("carto.proof_type4"), icon: Users },
-              { label: t("carto.proof_type5"), icon: Globe },
-              { label: t("carto.proof_type6"), icon: Target },
-            ].map((type) => (
-              <div
-                key={type.label}
-                className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border/20 bg-background hover:border-cyan-200/60 hover:shadow-sm transition-all"
-              >
-                <type.icon className="w-5 h-5 text-muted-foreground" />
-                <span className="text-xs font-medium text-center">{type.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -1113,60 +1032,6 @@ const CartHome = () => {
                 </div>
               </div>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════ COMPARISON ════════════════ */}
-      <section className="py-24 sm:py-32">
-        <div className="container mx-auto px-6 sm:px-10">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
-              {t("carto.compare_title")}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">
-                {t("carto.compare_title_highlight")}
-              </span>
-            </h2>
-          </div>
-
-          <div className="max-w-3xl mx-auto">
-            <div className="rounded-2xl border border-border/30 overflow-hidden shadow-sm">
-              {/* Header */}
-              <div className="grid grid-cols-3 bg-slate-50 dark:bg-slate-900/50 border-b border-border/30">
-                <div className="p-4" />
-                <div className="p-4 text-center border-x border-border/20">
-                  <p className="text-sm font-bold text-muted-foreground">{t("carto.compare_col_traditional")}</p>
-                </div>
-                <div className="p-4 text-center bg-cyan-50/50 dark:bg-cyan-950/20">
-                  <p className="text-sm font-bold text-cyan-700">{t("carto.compare_col_carto")}</p>
-                </div>
-              </div>
-
-              {/* Rows */}
-              {[
-                { label: t("carto.compare_row1_label"), trad: t("carto.compare_row1_traditional"), carto: t("carto.compare_row1_carto") },
-                { label: t("carto.compare_row2_label"), trad: t("carto.compare_row2_traditional"), carto: t("carto.compare_row2_carto") },
-                { label: t("carto.compare_row3_label"), trad: t("carto.compare_row3_traditional"), carto: t("carto.compare_row3_carto") },
-                { label: t("carto.compare_row4_label"), trad: t("carto.compare_row4_traditional"), carto: t("carto.compare_row4_carto") },
-                { label: t("carto.compare_row5_label"), trad: t("carto.compare_row5_traditional"), carto: t("carto.compare_row5_carto") },
-              ].map((row, i) => (
-                <div key={row.label} className={`grid grid-cols-3 ${i % 2 === 0 ? "bg-background" : "bg-slate-50/50 dark:bg-slate-900/20"} border-b border-border/20 last:border-0`}>
-                  <div className="p-4 flex items-center">
-                    <span className="text-sm font-semibold text-foreground">{row.label}</span>
-                  </div>
-                  <div className="p-4 text-center border-x border-border/20 flex items-center justify-center">
-                    <span className="text-sm text-muted-foreground">{row.trad}</span>
-                  </div>
-                  <div className="p-4 text-center bg-cyan-50/30 dark:bg-cyan-950/10 flex items-center justify-center">
-                    <span className="text-sm font-medium text-cyan-700 dark:text-cyan-400">{row.carto}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-xs text-muted-foreground text-center mt-6 italic">
-              {t("carto.compare_footer")}
-            </p>
           </div>
         </div>
       </section>

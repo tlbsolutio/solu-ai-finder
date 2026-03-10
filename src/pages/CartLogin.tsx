@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Network, Loader2, Mail, Lock, User, CheckCircle, Sparkles, BarChart3, Zap, FileText } from "lucide-react";
+import { Map, Loader2, Mail, Lock, User, Sparkles, BarChart3, Zap, FileText, Network, Clock, Shield, ArrowLeft } from "lucide-react";
 
 const CartLogin = () => {
   const navigate = useNavigate();
@@ -89,63 +89,53 @@ const CartLogin = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left panel - product showcase (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden" style={{
-        background: 'linear-gradient(135deg, #0a0f1a 0%, #0c1929 40%, #0f172a 100%)',
-      }}>
-        {/* Glow effects */}
-        <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: 'radial-gradient(ellipse at 20% 40%, #06b6d4 0%, transparent 50%)',
-        }} />
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: 'radial-gradient(ellipse at 80% 80%, #3b82f6 0%, transparent 50%)',
-        }} />
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-b from-cyan-50/80 via-blue-50/30 to-background dark:from-cyan-950/30 dark:via-blue-950/10 dark:to-background">
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-40" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(6,182,212,0.04) 1px, transparent 0)',
           backgroundSize: '32px 32px',
         }} />
+        {/* Glow effects */}
+        <div className="absolute top-20 left-1/4 w-[500px] h-[500px] rounded-full opacity-20" style={{
+          background: 'radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)',
+        }} />
+        <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] rounded-full opacity-15" style={{
+          background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
+        }} />
 
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 text-white max-w-2xl">
+        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 max-w-2xl">
+          {/* Back to cartographie */}
+          <Link to="/cartographie" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-10">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Retour
+          </Link>
+
           {/* Product identity */}
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <Network className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Map className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-bold">Solutio</span>
-                <span className="text-lg font-bold text-cyan-400">Carto</span>
+                <span className="text-lg font-bold text-foreground">Solutio</span>
+                <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Carto</span>
               </div>
-              <p className="text-[11px] text-white/40 -mt-0.5">Diagnostic organisationnel</p>
+              <p className="text-[11px] text-muted-foreground -mt-0.5">Diagnostic organisationnel</p>
             </div>
           </div>
 
-          <h2 className="text-3xl xl:text-4xl font-bold mb-4 leading-tight">
-            Diagnostiquez votre organisation.<br />
-            <span className="text-cyan-400">Transformez-la.</span>
+          <h2 className="text-3xl xl:text-4xl font-extrabold mb-4 leading-tight tracking-tight text-foreground">
+            Diagnostiquez votre organisation.{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">
+              Transformez-la.
+            </span>
           </h2>
-          <p className="text-white/50 mb-10 leading-relaxed text-sm xl:text-base">
-            Evaluez la maturite de vos processus, outils et equipes
-            a travers 10 axes d'analyse. Obtenez un plan d'action
-            concret, priorise par l'IA.
+          <p className="text-muted-foreground mb-10 leading-relaxed text-sm xl:text-base max-w-lg">
+            150 questions, 10 axes d'analyse, une IA qui cartographie vos processus, identifie vos blocages et genere un plan d'action concret.
           </p>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-4 mb-10">
-            {[
-              { value: "150", label: "Questions", sub: "10 axes d'analyse" },
-              { value: "IA", label: "Analyse", sub: "Claude + Gemini" },
-              { value: "PDF", label: "Export", sub: "Rapport complet" },
-            ].map(({ value, label, sub }) => (
-              <div key={label} className="text-center p-3 rounded-xl bg-white/5 border border-white/10">
-                <p className="text-2xl font-bold text-cyan-400">{value}</p>
-                <p className="text-xs font-medium text-white/70 mt-0.5">{label}</p>
-                <p className="text-[10px] text-white/30">{sub}</p>
-              </div>
-            ))}
-          </div>
-
           {/* Feature list */}
-          <div className="space-y-3">
+          <div className="space-y-3 mb-10">
             {[
               { icon: BarChart3, text: "Radar de maturite sur 10 dimensions" },
               { icon: Network, text: "Carte interactive de votre organisation" },
@@ -153,18 +143,25 @@ const CartLogin = () => {
               { icon: FileText, text: "Rapport PDF professionnel exportable" },
             ].map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-cyan-500/10 flex items-center justify-center shrink-0">
-                  <Icon className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-950/30 flex items-center justify-center shrink-0">
+                  <Icon className="w-3.5 h-3.5 text-cyan-600" />
                 </div>
-                <span className="text-white/60 text-sm">{text}</span>
+                <span className="text-sm text-muted-foreground">{text}</span>
               </div>
             ))}
           </div>
 
-          {/* Trust badge */}
-          <div className="mt-10 flex items-center gap-2 text-[11px] text-white/30">
-            <Lock className="w-3 h-3" />
-            <span>Donnees chiffrees - Hebergement UE (Irlande)</span>
+          {/* Trust badges */}
+          <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-cyan-500" /> A votre rythme
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-cyan-500" /> Donnees UE
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-cyan-500" /> Sans engagement
+            </span>
           </div>
         </div>
       </div>
@@ -174,13 +171,17 @@ const CartLogin = () => {
         <div className="w-full max-w-sm space-y-6">
           {/* Mobile product identity */}
           <div className="lg:hidden text-center mb-2">
+            <Link to="/cartographie" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Retour
+            </Link>
             <div className="flex items-center justify-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
-                <Network className="w-4 h-4 text-white" />
+                <Map className="w-4 h-4 text-white" />
               </div>
               <div className="flex items-baseline gap-1">
                 <span className="text-base font-bold">Solutio</span>
-                <span className="text-base font-bold text-cyan-600">Carto</span>
+                <span className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Carto</span>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Diagnostic organisationnel</p>
@@ -246,7 +247,7 @@ const CartLogin = () => {
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" disabled={loading}>
+                      <Button type="submit" variant="hero" className="w-full h-10 shadow-lg shadow-cyan-500/20" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         Se connecter
                       </Button>
@@ -310,7 +311,7 @@ const CartLogin = () => {
                         />
                       </div>
                     </div>
-                    <Button type="submit" className="w-full h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" disabled={loading}>
+                    <Button type="submit" variant="hero" className="w-full h-10 shadow-lg shadow-cyan-500/20" disabled={loading}>
                       {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
                       Creer mon compte gratuit
                     </Button>
