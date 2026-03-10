@@ -16,6 +16,14 @@ export interface CartSessionV2 {
   ai_plan_optimisation: string | null;
   ai_vision_cible: string | null;
   ai_analyse_transversale: string | null;
+  ai_cartography_json: any | null;
+  ai_impact_quantification: any | null;
+  ai_cross_pack_analysis: any | null;
+  ai_target_vision: any | null;
+  ai_cout_inaction_annuel: string | null;
+  ai_kpis_de_suivi: string | null;
+  sector_id: string | null;
+  sector_confidence: number | null;
   analyse_status: string;
   notes_internes: string | null;
   created_at: string;

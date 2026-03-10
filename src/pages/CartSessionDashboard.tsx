@@ -706,7 +706,7 @@ const CartSessionDashboard = () => {
           equipes={equipes}
           irritants={irritants}
           packResumes={packResumes}
-          aiCartographyJson={(session as any).ai_cartography_json}
+          aiCartographyJson={session.ai_cartography_json}
         />
         {!isPaid && (
           <div className="absolute inset-0 z-10 flex items-end justify-center pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--card) / 0.7) 60%, hsl(var(--card) / 0.95) 100%)" }}>
@@ -946,14 +946,16 @@ const CartSessionDashboard = () => {
       <SectionHeader title="Analyse IA" description="Analyse generee par intelligence artificielle" icon={Brain} />
       <div className="space-y-4">
       {[
-        { key: "ai_resume_executif", label: "Resume executif" },
-        { key: "ai_forces", label: "Forces identifiees" },
-        { key: "ai_dysfonctionnements", label: "Dysfonctionnements" },
-        { key: "ai_analyse_transversale", label: "Analyse transversale" },
-        { key: "ai_plan_optimisation", label: "Plan d'optimisation" },
-        { key: "ai_vision_cible", label: "Vision cible" },
+        { key: "ai_resume_executif" as const, label: "Resume executif" },
+        { key: "ai_forces" as const, label: "Forces identifiees" },
+        { key: "ai_dysfonctionnements" as const, label: "Dysfonctionnements" },
+        { key: "ai_analyse_transversale" as const, label: "Analyse transversale" },
+        { key: "ai_plan_optimisation" as const, label: "Plan d'optimisation" },
+        { key: "ai_vision_cible" as const, label: "Vision cible" },
+        { key: "ai_cout_inaction_annuel" as const, label: "Cout d'inaction annuel" },
+        { key: "ai_kpis_de_suivi" as const, label: "KPIs de suivi" },
       ].map(({ key, label }) => {
-        const content = (session as any)[key];
+        const content = session[key];
         if (!content) return null;
         return (
           <Card key={key}>
@@ -967,7 +969,7 @@ const CartSessionDashboard = () => {
         );
       })}
 
-      {(session as any).ai_cross_pack_analysis && (
+      {session.ai_cross_pack_analysis && (
         <Card className="border-purple-200">
           <CardHeader className="pb-2 px-4 pt-4">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -976,14 +978,14 @@ const CartSessionDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof (session as any).ai_cross_pack_analysis === "string"
-              ? (session as any).ai_cross_pack_analysis
-              : JSON.stringify((session as any).ai_cross_pack_analysis, null, 2)} />
+            <FormattedText text={typeof session.ai_cross_pack_analysis === "string"
+              ? session.ai_cross_pack_analysis
+              : JSON.stringify(session.ai_cross_pack_analysis, null, 2)} />
           </CardContent>
         </Card>
       )}
 
-      {(session as any).ai_impact_quantification && (
+      {session.ai_impact_quantification && (
         <Card className="border-green-200">
           <CardHeader className="pb-2 px-4 pt-4">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -992,14 +994,14 @@ const CartSessionDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof (session as any).ai_impact_quantification === "string"
-              ? (session as any).ai_impact_quantification
-              : JSON.stringify((session as any).ai_impact_quantification, null, 2)} />
+            <FormattedText text={typeof session.ai_impact_quantification === "string"
+              ? session.ai_impact_quantification
+              : JSON.stringify(session.ai_impact_quantification, null, 2)} />
           </CardContent>
         </Card>
       )}
 
-      {(session as any).ai_target_vision && (
+      {session.ai_target_vision && (
         <Card className="border-blue-200">
           <CardHeader className="pb-2 px-4 pt-4">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -1008,9 +1010,9 @@ const CartSessionDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof (session as any).ai_target_vision === "string"
-              ? (session as any).ai_target_vision
-              : JSON.stringify((session as any).ai_target_vision, null, 2)} />
+            <FormattedText text={typeof session.ai_target_vision === "string"
+              ? session.ai_target_vision
+              : JSON.stringify(session.ai_target_vision, null, 2)} />
           </CardContent>
         </Card>
       )}
@@ -1067,7 +1069,7 @@ const CartSessionDashboard = () => {
       case "equipes": return renderEquipes();
       case "irritants": return renderIrritants();
       case "plan": return <CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} />;
-      case "recommandations": return <CartRecommandationsTab outils={outils} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} />;
+      case "recommandations": return <CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} />;
       case "analyse": return renderAnalyse();
       default: return renderOverview();
     }

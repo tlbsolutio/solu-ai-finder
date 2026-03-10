@@ -6,11 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
   Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles, Lock, ArrowRight,
+  Settings, Layers, Users, AlertTriangle, ClipboardList, Zap, TrendingUp,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
+import {
+  getRecommendationsForBloc,
+  type SaasRecommendation,
+} from "@/lib/saasRecommendations";
 
 interface PackAnalysisResult {
   resume: string;
@@ -27,6 +34,22 @@ interface PackAnalysisResult {
   objets_count: number;
 }
 
+const OBJECT_SECTIONS = [
+  { key: "processus", label: "Processus detectes", table: "cart_processus", nameField: "nom", icon: Settings, color: "blue", bgClass: "bg-blue-50/50 border-blue-100" },
+  { key: "outils", label: "Outils detectes", table: "cart_outils", nameField: "nom", icon: Layers, color: "green", bgClass: "bg-green-50/50 border-green-100" },
+  { key: "equipes", label: "Equipes detectees", table: "cart_equipes", nameField: "nom", icon: Users, color: "orange", bgClass: "bg-orange-50/50 border-orange-100" },
+  { key: "irritants", label: "Irritants detectes", table: "cart_irritants", nameField: "intitule", icon: AlertTriangle, color: "red", bgClass: "bg-red-50/50 border-red-100" },
+  { key: "taches", label: "Taches manuelles", table: "cart_taches", nameField: "nom", icon: ClipboardList, color: "purple", bgClass: "bg-purple-50/50 border-purple-100" },
+];
+
+const SCORE_CONFIG: Record<number, { label: string; color: string; bgGradient: string; ringColor: string }> = {
+  1: { label: "Critique", color: "text-red-600", bgGradient: "from-red-50 to-red-100/30", ringColor: "#ef4444" },
+  2: { label: "Emergent", color: "text-orange-600", bgGradient: "from-orange-50 to-orange-100/30", ringColor: "#f97316" },
+  3: { label: "En developpement", color: "text-cyan-600", bgGradient: "from-cyan-50 to-blue-50/30", ringColor: "#06b6d4" },
+  4: { label: "Mature", color: "text-emerald-600", bgGradient: "from-emerald-50 to-green-50/30", ringColor: "#22c55e" },
+  5: { label: "Excellent", color: "text-emerald-600", bgGradient: "from-emerald-50 to-green-50/30", ringColor: "#10b981" },
+};
+
 const CartPackResults = () => {
   const { id, packId } = useParams<{ id: string; packId: string }>();
   const navigate = useNavigate();
@@ -38,10 +61,15 @@ const CartPackResults = () => {
 
   const bloc = parseInt(packId || "1");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
+  const scoreConfig = (score: number) => SCORE_CONFIG[Math.min(5, Math.max(1, score))] || SCORE_CONFIG[3];
 
   const [analyzing, setAnalyzing] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [result, setResult] = useState<PackAnalysisResult | null>(null);
+  const [showSaasRecos, setShowSaasRecos] = useState(false);
+
+  // Get relevant SaaS for this pack
+  const saasRecos = getRecommendationsForBloc(bloc);
 
   useEffect(() => {
     const loadExisting = async () => {
@@ -171,18 +199,16 @@ const CartPackResults = () => {
     toast({ title: "Valide" });
   };
 
-  const renderStars = (score: number) => (
-    <div className="flex gap-0.5">
-      {Array.from({ length: 5 }, (_, i) => (
-        <Star key={i} className={`w-4 h-4 ${i < score ? "fill-yellow-400 text-yellow-400" : "text-muted"}`} />
-      ))}
-    </div>
-  );
-
   const alertColor = (gravite: string) => {
     if (gravite === "critique") return "bg-red-50 border-red-200 text-red-800";
     if (gravite === "important") return "bg-orange-50 border-orange-200 text-orange-800";
     return "bg-yellow-50 border-yellow-100 text-yellow-800";
+  };
+
+  const alertIcon = (gravite: string) => {
+    if (gravite === "critique") return "bg-red-500";
+    if (gravite === "important") return "bg-orange-500";
+    return "bg-yellow-500";
   };
 
   if (loadingExisting) {
@@ -196,24 +222,26 @@ const CartPackResults = () => {
   if (analyzing) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-          <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+        <div className="relative">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+            <Sparkles className="w-10 h-10 text-cyan-500 animate-pulse" />
+          </div>
+          <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-cyan-500 animate-ping" />
         </div>
         <div className="text-center space-y-2">
           <h2 className="text-xl font-semibold">Analyse en cours...</h2>
           <p className="text-muted-foreground text-sm max-w-xs">
-            L'IA analyse vos reponses et detecte les processus et opportunites.
+            L'IA analyse vos reponses du pack <strong>{packDef?.title}</strong> et detecte les processus, outils et opportunites.
           </p>
         </div>
-        <div className="w-48">
+        <div className="w-64">
           <Progress value={undefined} className="h-2 animate-pulse" />
         </div>
-        <p className="text-xs text-muted-foreground">~10-20 secondes</p>
+        <p className="text-xs text-muted-foreground">Cela prend environ 10 a 20 secondes</p>
       </div>
     );
   }
 
-  // Freemium gate: free users cannot see detailed pack results
   if (!isPaid) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
@@ -235,12 +263,7 @@ const CartPackResults = () => {
               Voir les formules
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-muted-foreground"
-              onClick={() => navigate(`/cartographie/sessions/${id}`)}
-            >
+            <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
               Retour au dashboard
             </Button>
           </div>
@@ -258,13 +281,8 @@ const CartPackResults = () => {
     );
   }
 
-  const objectSections = [
-    { key: "processus", label: "Processus detectes", table: "cart_processus", nameField: "nom" },
-    { key: "outils", label: "Outils detectes", table: "cart_outils", nameField: "nom" },
-    { key: "equipes", label: "Equipes detectees", table: "cart_equipes", nameField: "nom" },
-    { key: "irritants", label: "Irritants detectes", table: "cart_irritants", nameField: "intitule" },
-    { key: "taches", label: "Taches manuelles", table: "cart_taches", nameField: "nom" },
-  ];
+  const sc = scoreConfig(result.score_maturite);
+  const totalObjects = Object.values(result.objets).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
     <div className="flex-1">
@@ -277,110 +295,149 @@ const CartPackResults = () => {
               <p className="text-[11px] text-muted-foreground">Pack {bloc}/10</p>
             </div>
           </div>
-          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
-            Dashboard
-          </Button>
+          <div className="flex items-center gap-1.5">
+            <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={triggerAnalysis} disabled={analyzing}>
+              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              Relancer
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
+              Dashboard
+            </Button>
+          </div>
         </div>
       </header>
 
-      <main className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
-        {/* Score hero card */}
-        <Card className="border-cyan-200 bg-gradient-to-br from-cyan-50/50 to-blue-50/30 overflow-hidden">
-          <CardContent className="p-5">
-            <div className="flex items-start gap-5">
+      <main className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+        {/* Score Hero Card */}
+        <Card className={`bg-gradient-to-br ${sc.bgGradient} overflow-hidden border-none shadow-lg`}>
+          <CardContent className="p-6">
+            <div className="flex items-start gap-6">
               {/* Score circle */}
               <div className="shrink-0 relative">
-                <svg width="80" height="80" viewBox="0 0 80 80">
-                  <circle cx="40" cy="40" r="35" fill="none" stroke="hsl(var(--border))" strokeWidth="4" />
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="3" className="text-muted/15" />
                   <circle
-                    cx="40" cy="40" r="35" fill="none"
-                    stroke={result.score_maturite >= 4 ? "#22c55e" : result.score_maturite >= 3 ? "#06b6d4" : result.score_maturite >= 2 ? "#f97316" : "#ef4444"}
+                    cx="50" cy="50" r="42" fill="none"
+                    stroke={sc.ringColor}
                     strokeWidth="4"
-                    strokeDasharray={`${(result.score_maturite / 5) * 220} 220`}
+                    strokeDasharray={`${(result.score_maturite / 5) * 264} 264`}
                     strokeLinecap="round"
-                    transform="rotate(-90 40 40)"
+                    transform="rotate(-90 50 50)"
                     className="transition-all duration-1000"
                   />
-                  <text x="40" y="36" textAnchor="middle" fontSize="18" fontWeight="bold" fill="currentColor">{result.score_maturite}</text>
-                  <text x="40" y="50" textAnchor="middle" fontSize="10" fill="hsl(var(--muted-foreground))">/5</text>
+                  <text x="50" y="44" textAnchor="middle" fontSize="24" fontWeight="bold" fill="currentColor">{result.score_maturite}</text>
+                  <text x="50" y="60" textAnchor="middle" fontSize="11" fill="hsl(var(--muted-foreground))">/5</text>
                 </svg>
               </div>
               {/* Summary */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="font-semibold text-base">Analyse IA</h2>
-                  {renderStars(result.score_maturite)}
+                <div className="flex items-center gap-3 mb-2 flex-wrap">
+                  <h2 className="font-bold text-lg">Analyse IA</h2>
+                  <Badge className={`${sc.color} bg-white/70 border`}>{sc.label}</Badge>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < result.score_maturite ? "fill-amber-400 text-amber-400" : "text-muted/30"}`} />
+                    ))}
+                  </div>
                 </div>
                 <p className="text-sm leading-relaxed text-muted-foreground">{result.resume}</p>
-                <div className="flex gap-2 flex-wrap mt-3">
-                  <Badge variant="outline" className="bg-white/70">{result.objets_count} objets detectes</Badge>
-                  <Badge variant="outline" className="bg-white/70">
-                    {result.score_maturite >= 4 ? "Mature" : result.score_maturite >= 3 ? "En developpement" : result.score_maturite >= 2 ? "Emergent" : "Critique"}
+                <div className="flex gap-2 flex-wrap mt-4">
+                  <Badge variant="outline" className="bg-white/70 text-xs">
+                    <Settings className="w-3 h-3 mr-1" />
+                    {totalObjects} objets detectes
                   </Badge>
+                  <Badge variant="outline" className="bg-white/70 text-xs">
+                    <Zap className="w-3 h-3 mr-1" />
+                    {result.objets.quickwins.length} quick wins
+                  </Badge>
+                  {result.alertes.length > 0 && (
+                    <Badge variant="outline" className="bg-white/70 text-xs text-red-600 border-red-200">
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      {result.alertes.length} alertes
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        {/* Alerts Section */}
         {result.alertes.length > 0 && (
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-destructive" />
                 Alertes detectees
+                <Badge variant="secondary" className="ml-1">{result.alertes.length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {result.alertes.map((alert, i) => (
-                <div key={i} className={`rounded-md border px-3 py-2 text-sm ${alertColor(alert.gravite)}`}>
-                  <p className="font-semibold">{alert.titre}</p>
-                  {alert.description && <p className="mt-1 text-xs opacity-80">{alert.description}</p>}
-                  <Badge variant="outline" className="mt-1 text-xs">{alert.gravite}</Badge>
+                <div key={i} className={`rounded-lg border px-4 py-3 ${alertColor(alert.gravite)}`}>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${alertIcon(alert.gravite)}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-sm">{alert.titre}</p>
+                        <Badge variant="outline" className="text-[10px]">{alert.gravite}</Badge>
+                      </div>
+                      {alert.description && <p className="mt-1 text-xs opacity-80">{alert.description}</p>}
+                    </div>
+                  </div>
                 </div>
               ))}
             </CardContent>
           </Card>
         )}
 
-        {objectSections.map(({ key, label, table, nameField }) => {
+        {/* Object sections with better styling */}
+        {OBJECT_SECTIONS.map(({ key, label, table, nameField, icon: SIcon, bgClass }) => {
           const items = result.objets[key as keyof typeof result.objets] as any[];
           if (items.length === 0) return null;
           return (
             <Card key={key}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center justify-between">
-                  <span>{label}</span>
+                  <span className="flex items-center gap-2">
+                    <SIcon className="w-4 h-4" />
+                    {label}
+                  </span>
                   <Badge variant="secondary">{items.length}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {items.map((item: any) => (
-                  <div key={item.id} className="flex items-start justify-between gap-3 p-2 rounded-md bg-muted/30 border">
+                  <div key={item.id} className={`flex items-start justify-between gap-3 p-3 rounded-lg border ${bgClass}`}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item[nameField]}</p>
-                      {item.type && <p className="text-xs text-muted-foreground">{item.type}</p>}
-                      {item.type_outil && <p className="text-xs text-muted-foreground">{item.type_outil}</p>}
-                      {item.description && <p className="text-xs text-muted-foreground line-clamp-1">{item.description}</p>}
-                      {item.problemes && <p className="text-xs text-muted-foreground line-clamp-1">{item.problemes}</p>}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium">{item[nameField]}</p>
+                        {item.type && <Badge variant="outline" className="text-[10px]">{item.type}</Badge>}
+                        {item.type_outil && <Badge variant="outline" className="text-[10px]">{item.type_outil}</Badge>}
+                        {item.niveau_criticite && (
+                          <Badge className={`text-[10px] ${
+                            item.niveau_criticite === "High" ? "bg-red-100 text-red-800 border-red-200" :
+                            item.niveau_criticite === "Medium" ? "bg-orange-100 text-orange-800 border-orange-200" :
+                            "bg-green-100 text-green-800 border-green-200"
+                          } border`}>
+                            {item.niveau_criticite}
+                          </Badge>
+                        )}
+                        {item.gravite && <Badge className="text-[10px] bg-red-100 text-red-800 border border-red-200">Gravite {item.gravite}/5</Badge>}
+                        {item.double_saisie && <Badge className="text-[10px] bg-orange-100 text-orange-800 border border-orange-200">Double saisie</Badge>}
+                        {item.validated && <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />}
+                      </div>
+                      {item.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>}
+                      {item.problemes && <p className="text-xs text-orange-600 mt-1 line-clamp-2">{item.problemes}</p>}
+                      {item.impact && <p className="text-xs text-muted-foreground mt-1">Impact : {item.impact}</p>}
+                      {item.mission && <p className="text-xs text-muted-foreground mt-1">{item.mission}</p>}
+                      {item.frequence && <p className="text-xs text-muted-foreground mt-1">Frequence : {item.frequence}</p>}
                     </div>
                     <div className="flex gap-1 shrink-0">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-green-600"
-                        onClick={() => handleValidate(table, item.id)}
-                        title="Valider"
-                      >
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600 hover:bg-emerald-50" onClick={() => handleValidate(table, item.id)} title="Valider">
                         <CheckCircle className="w-3.5 h-3.5" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => handleDelete(table, item.id)}
-                        title="Supprimer"
-                      >
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:bg-red-50" onClick={() => handleDelete(table, item.id)} title="Supprimer">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
@@ -391,43 +448,54 @@ const CartPackResults = () => {
           );
         })}
 
+        {/* Quick Wins Section - enhanced */}
         {result.objets.quickwins.length > 0 && (
-          <Card>
+          <Card className="border-amber-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center justify-between">
-                <span>Quick wins</span>
-                <Badge variant="secondary">{result.objets.quickwins.length}</Badge>
+                <span className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  Quick wins
+                </span>
+                <Badge className="bg-amber-100 text-amber-800 border-amber-200 border">{result.objets.quickwins.length}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {result.objets.quickwins.map((qw: any) => (
-                <div key={qw.id} className="flex items-start justify-between gap-3 p-2 rounded-md bg-yellow-50/50 border border-yellow-100">
+                <div key={qw.id} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-amber-50/50 border border-amber-100">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{qw.intitule}</p>
-                    <div className="flex gap-2 mt-1">
-                      {qw.impact && (
-                        <Badge variant="outline" className="text-xs">
-                          Impact : {qw.impact}
-                        </Badge>
-                      )}
-                      {qw.effort && (
-                        <Badge variant="outline" className="text-xs">
-                          Effort : {qw.effort}
-                        </Badge>
-                      )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium">{qw.intitule}</p>
                       {qw.priorite_calculee && (
-                        <Badge className={`text-xs ${qw.priorite_calculee === "Top Priority" ? "bg-green-500" : qw.priorite_calculee === "Important" ? "bg-blue-500" : "bg-gray-400"} text-white`}>
+                        <Badge className={`text-[10px] ${
+                          qw.priorite_calculee === "Top Priority" ? "bg-green-500 text-white" :
+                          qw.priorite_calculee === "Important" ? "bg-blue-500 text-white" :
+                          "bg-gray-400 text-white"
+                        }`}>
                           {qw.priorite_calculee}
                         </Badge>
                       )}
                     </div>
+                    {qw.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{qw.description}</p>}
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {qw.impact && (
+                        <div className="flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Impact : {qw.impact}</span>
+                        </div>
+                      )}
+                      {qw.effort && (
+                        <div className="flex items-center gap-1">
+                          <Settings className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Effort : {qw.effort}</span>
+                        </div>
+                      )}
+                      {qw.categorie && (
+                        <Badge variant="outline" className="text-[10px]">{qw.categorie}</Badge>
+                      )}
+                    </div>
                   </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 text-destructive shrink-0"
-                    onClick={() => handleDelete("cart_quickwins", qw.id)}
-                  >
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive shrink-0 hover:bg-red-50" onClick={() => handleDelete("cart_quickwins", qw.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
@@ -436,11 +504,58 @@ const CartPackResults = () => {
           </Card>
         )}
 
+        {/* SaaS Recommendations for this pack */}
+        {saasRecos.length > 0 && (
+          <Card className="border-cyan-200">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-cyan-500" />
+                  Outils SaaS recommandes pour ce pack
+                </span>
+                <button
+                  onClick={() => setShowSaasRecos(!showSaasRecos)}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {showSaasRecos ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  {saasRecos.length} outils
+                </button>
+              </CardTitle>
+            </CardHeader>
+            {showSaasRecos && (
+              <CardContent className="space-y-2">
+                {saasRecos.slice(0, 6).map((saas) => (
+                  <div key={saas.nom} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-cyan-50/50 border border-cyan-100">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium">{saas.nom}</p>
+                        <Badge variant="outline" className="text-[10px]">{saas.categorie}</Badge>
+                        {saas.origine === "FR" && <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200">FR</Badge>}
+                        {saas.modele_prix === "Freemium" && <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">Gratuit</Badge>}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{saas.description}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">{saas.prix_indicatif}</p>
+                    </div>
+                    <a href={saas.site_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                      <Button size="sm" variant="outline" className="h-7 text-[10px]">
+                        Voir
+                        <ArrowRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    </a>
+                  </div>
+                ))}
+              </CardContent>
+            )}
+          </Card>
+        )}
+
+        <Separator />
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
           {bloc < 10 && (
             <Button
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md"
               onClick={() => navigate(`/cartographie/sessions/${id}/pack/${bloc + 1}`)}
             >
               Pack suivant : {PACK_DEFINITIONS.find(p => p.bloc === bloc + 1)?.title || `Pack ${bloc + 1}`}
@@ -449,10 +564,6 @@ const CartPackResults = () => {
           )}
           <Button variant="outline" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
             Retour au dashboard
-          </Button>
-          <Button variant="ghost" size="sm" onClick={triggerAnalysis} disabled={analyzing}>
-            <Sparkles className="w-4 h-4 mr-1" />
-            Relancer l'analyse
           </Button>
         </div>
       </main>
