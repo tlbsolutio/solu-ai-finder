@@ -81,7 +81,7 @@ const Contact = () => {
         setIsSubmitted(true);
         toast({
           title: "Message envoyé !",
-          description: "Nous vous répondrons dans les plus brefs délais.",
+          description: "Réponse sous 24h.",
         });
       } else {
         throw new Error('Erreur lors de l\'envoi');
@@ -117,7 +117,7 @@ const Contact = () => {
       <div className="min-h-screen bg-gradient-subtle">
         <MetaTags 
           title="Message envoyé - Contact"
-          description="Votre message a été envoyé avec succès. Nous vous répondrons rapidement."
+          description="Votre message a été envoyé avec succès. Réponse rapide garantie."
           noIndex={true}
         />
         <Navigation />
@@ -276,7 +276,7 @@ const Contact = () => {
                   )}
                 </Button>
                 <p id="submit-button-description" className="text-xs text-muted-foreground text-center">
-                  En soumettant ce formulaire, vous acceptez d'être contacté par notre équipe.
+                  En soumettant ce formulaire, vous acceptez d'être contacté par Solutio.
                 </p>
               </form>
             </CardContent>
@@ -356,7 +356,7 @@ const Contact = () => {
                   variant="premium" 
                   size="lg"
                   asChild
-                  aria-label="Réserver un appel de conseil gratuit avec notre équipe"
+                  aria-label="Réserver un appel de conseil gratuit avec Solutio"
                 >
                   <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
                     <Calendar className="h-4 w-4 mr-2" />

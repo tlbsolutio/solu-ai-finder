@@ -26,10 +26,10 @@ const Privacy = () => {
           </div>
 
           <section className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">1) Données que nous collectons</h2>
+            <h2 className="text-2xl font-semibold mb-4">1) Données collectées</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>Données de navigation (après consentement) via Google Analytics 4.</li>
-              <li>Données d'affiliation (clics sur liens CJ Affiliate / Reditus) pour mesurer les ventes et nous rémunérer.</li>
+              <li>Données d'affiliation (clics sur liens CJ Affiliate / Reditus) pour mesurer les ventes et rémunérer le service.</li>
               <li>Données fournies via formulaires (Formspree) et prise de rendez-vous (Calendly).</li>
               <li>Données internes de suivi (Airtable) et logs techniques (sécurité).</li>
             </ul>

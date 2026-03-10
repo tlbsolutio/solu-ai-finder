@@ -123,7 +123,7 @@ export default function CartPricing() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">+200 dirigeants</span> nous font confiance
+              <span className="font-semibold text-foreground">+200 dirigeants</span> font confiance à Solutio
             </p>
           </div>
         </div>
@@ -340,7 +340,7 @@ export default function CartPricing() {
                 ))}
               </div>
               <blockquote className="text-sm sm:text-base text-foreground/90 leading-relaxed mb-4 italic">
-                "La cartographie Solutio nous a permis d'identifier en quelques heures les vrais blocages que nous n'arrivions pas a formaliser depuis des mois. Le plan d'actions priorise a ete le declencheur de notre transformation."
+                "La cartographie Solutio a permis d'identifier en quelques heures les vrais blocages impossibles a formaliser depuis des mois. Le plan d'actions priorise a ete le declencheur d'une transformation concrète."
               </blockquote>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
@@ -379,7 +379,7 @@ export default function CartPricing() {
           <Shield className="w-6 h-6 text-emerald-600 shrink-0" />
           <div>
             <p className="text-sm font-semibold text-emerald-900">Garantie satisfait ou rembourse 30 jours</p>
-            <p className="text-xs text-emerald-700/70">Si le diagnostic ne vous apporte pas de valeur, nous vous remboursons integralement.</p>
+            <p className="text-xs text-emerald-700/70">Si le diagnostic ne vous apporte pas de valeur, remboursement intégral garanti.</p>
           </div>
         </div>
 
@@ -401,15 +401,15 @@ export default function CartPricing() {
             },
             {
               q: "Comment fonctionne la garantie satisfait ou rembourse ?",
-              a: "Si dans les 30 jours suivant votre achat vous estimez que le diagnostic ne vous a pas apporte de valeur, contactez-nous et nous vous remboursons integralement, sans conditions.",
+              a: "Si dans les 30 jours suivant votre achat vous estimez que le diagnostic ne vous a pas apporte de valeur, contactez Solutio pour un remboursement intégral, sans conditions.",
             },
             {
               q: "Mon paiement est-il securise ?",
-              a: "Oui, le paiement est traite par Stripe, leader mondial du paiement en ligne. Vos donnees bancaires ne transitent jamais par nos serveurs. Vous recevez une facture par email.",
+              a: "Oui, le paiement est traite par Stripe, leader mondial du paiement en ligne. Vos donnees bancaires ne transitent jamais par les serveurs Solutio. Vous recevez une facture par email.",
             },
             {
               q: "Mes donnees sont-elles protegees ?",
-              a: "Absolument. Vos donnees sont hebergees en Europe (Supabase Ireland), chiffrees en transit et au repos. Nous ne les partageons jamais avec des tiers.",
+              a: "Absolument. Vos donnees sont hebergees en Europe (Supabase Ireland), chiffrees en transit et au repos. Elles ne sont jamais partagées avec des tiers.",
             },
           ].map(({ q, a }, index) => (
             <div

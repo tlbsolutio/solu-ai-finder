@@ -63,7 +63,7 @@ export default function CartPaymentSuccess() {
                   <div>
                     <p className="text-sm font-medium">RDV strategique</p>
                     <p className="text-xs text-muted-foreground">
-                      Nous vous contactons sous 24h pour planifier votre rendez-vous d'1h avec un expert.
+                      Vous serez contacté sous 24h pour planifier votre rendez-vous d'1h.
                     </p>
                   </div>
                 </div>
@@ -87,7 +87,7 @@ export default function CartPaymentSuccess() {
         <div className="text-center">
           <p className="text-xs text-muted-foreground">
             <Mail className="w-3 h-3 inline mr-1" />
-            Un probleme ? Contactez-nous a{" "}
+            Un probleme ? Ecrivez a{" "}
             <a href="mailto:contact@solutio.work" className="text-primary hover:underline">
               contact@solutio.work
             </a>

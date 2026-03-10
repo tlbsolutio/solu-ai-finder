@@ -432,7 +432,7 @@ const CartQuickScan = () => {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-cyan-600" />
-                  <span className="text-xs text-muted-foreground">+200 dirigeants nous font confiance</span>
+                  <span className="text-xs text-muted-foreground">+200 dirigeants font confiance à Solutio</span>
                 </div>
               </div>
 
@@ -711,7 +711,7 @@ const CartQuickScan = () => {
           {loading && (
             <div className="w-full max-w-sm space-y-2">
               <Progress value={66} className="h-2" />
-              <p className="text-xs text-center text-muted-foreground">Notre IA analyse vos reponses...</p>
+              <p className="text-xs text-center text-muted-foreground">L'IA analyse vos reponses...</p>
             </div>
           )}
         </div>

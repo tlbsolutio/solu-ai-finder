@@ -760,7 +760,7 @@ export function useCartPdfExport() {
       doc.text("1. Priorisez vos quick wins P1 pour un impact immediat", MARGIN + 10, 205);
       doc.text("2. Planifiez les projets P2 sur 3-9 mois", MARGIN + 10, 213);
       doc.text("3. Reservez un RDV strategique : calendly.com/tlb-ov_p/30min", MARGIN + 10, 221);
-      doc.text("4. Contactez-nous : contact@solutio.work", MARGIN + 10, 229);
+      doc.text("4. Contact : contact@solutio.work", MARGIN + 10, 229);
 
       doc.setFontSize(8);
       doc.text(date, MARGIN + 10, 250);

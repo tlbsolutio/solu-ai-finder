@@ -40,7 +40,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
             </CardHeader>
             <CardContent className="space-y-4 text-center">
               <p className="text-muted-foreground">
-                Nous nous excusons pour ce désagrément. Une erreur inattendue s'est produite.
+                Une erreur inattendue s'est produite. Veuillez réessayer.
               </p>
               
               <div className="space-y-2">

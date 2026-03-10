@@ -441,9 +441,9 @@ const CartSessions = () => {
                   <HelpCircle className="w-4 h-4 text-amber-600" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">Accompagnement expert</p>
+                  <p className="text-sm font-medium">Accompagnement</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    Besoin d'un regard expert ? Reservez un RDV strategique de 30 min.
+                    Besoin d'un regard extérieur ? Reservez un RDV strategique de 30 min.
                   </p>
                   <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
                     <ArrowRight className="w-3 h-3" />

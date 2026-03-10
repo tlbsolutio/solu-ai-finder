@@ -348,7 +348,7 @@ const Index = () => {
       desc: 'Transformation accompagnee de A a Z',
       features: [
         'Tout Professionnel +',
-        'Accompagnement expert dedie',
+        'Accompagnement dedie',
         'Ateliers de transformation',
         'Integrations sur mesure',
         'Multi-equipes illimite',
@@ -396,11 +396,11 @@ const Index = () => {
     },
     {
       q: "Comment l'IA genere-t-elle les recommandations ?",
-      a: "Nous utilisons Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
+      a: "Solutio utilise Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
     },
     {
       q: 'Mes donnees sont-elles securisees ?',
-      a: "Absolument. Vos donnees sont chiffrees en transit et au repos (AES-256). Nous sommes conformes RGPD. Vos donnees ne sont jamais utilisees pour entrainer des modeles IA. Vous pouvez demander la suppression complete de vos donnees a tout moment.",
+      a: "Absolument. Vos donnees sont chiffrees en transit et au repos (AES-256). Solutio est conforme RGPD. Vos donnees ne sont jamais utilisees pour entrainer des modeles IA. Vous pouvez demander la suppression complete de vos donnees a tout moment.",
     },
     {
       q: 'Puis-je tester gratuitement avant de m\'engager ?',
@@ -416,7 +416,7 @@ const Index = () => {
     },
     {
       q: 'Comment se passe l\'accompagnement Entreprise ?',
-      a: "Un expert Solutio dedie vous accompagne sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation de vos managers aux outils. C'est un vrai partenariat de transformation.",
+      a: "Solutio vous accompagne sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation de vos managers aux outils. C'est un vrai partenariat de transformation.",
     },
   ];
 

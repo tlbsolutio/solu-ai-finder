@@ -18,11 +18,11 @@ const Cookies = () => {
           
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">Utilisation des cookies</h2>
-            <p>Nous utilisons des cookies et technologies similaires pour :</p>
+            <p>Ce site utilise des cookies et technologies similaires pour :</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li><strong>Essentiels :</strong> fonctionnement et sécurité du site.</li>
               <li><strong>Analytics (GA4) :</strong> mesure d'audience (uniquement après consentement).</li>
-              <li><strong>Affiliation (CJ, Reditus) :</strong> suivi des ventes provenant de nos liens (après consentement).</li>
+              <li><strong>Affiliation (CJ, Reditus) :</strong> suivi des ventes provenant des liens affiliés (après consentement).</li>
               <li><strong>Marketing :</strong> mesure publicitaire et personnalisation (après consentement).</li>
             </ul>
           </section>

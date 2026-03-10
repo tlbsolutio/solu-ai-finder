@@ -34,7 +34,7 @@ const translations = {
     'hero.cta_diagnostic': 'Scanner mon organisation',
     'hero.cta_scan': 'Scanner mon organisation',
     'hero.cta_cartographie': 'Cartographie complète',
-    'hero.cta_expert': 'Parler à un expert',
+    'hero.cta_expert': 'Réserver un appel',
     'home.scan_free_3min': 'Scan gratuit en 3 min',
 
     // Trust indicators
@@ -53,7 +53,7 @@ const translations = {
     'problem.transition': 'Un diagnostic structuré change tout.',
 
     // Services section (NEW - replaces Categories)
-    'services.title': 'Notre offre',
+    'services.title': 'L\'offre',
     'services.subtitle': 'Un accompagnement complet pour réussir votre transformation digitale',
     'services.diagnostic.title': 'Diagnostic IA',
     'services.diagnostic.description': 'Évaluation rapide de votre maturité digitale et identification des axes d\'amélioration prioritaires.',
@@ -66,10 +66,10 @@ const translations = {
     'services.conseil.cta': 'En savoir plus',
     'services.accompagnement.title': 'Accompagnement',
     'services.accompagnement.description': 'Suivi de la mise en œuvre, formation des équipes et mesure des résultats sur la durée.',
-    'services.accompagnement.cta': 'Nous contacter',
+    'services.accompagnement.cta': 'Prendre contact',
 
     // Method section
-    'method.title': 'Notre méthode en 3 étapes',
+    'method.title': 'La méthode en 3 étapes',
     'method.subtitle': 'Un parcours structuré pour transformer votre organisation efficacement',
     'method.step1.title': 'Diagnostic IA rapide',
     'method.step1.description': '5 questions ciblées pour évaluer votre maturité digitale et identifier vos priorités. Gratuit et sans engagement.',
@@ -115,7 +115,7 @@ const translations = {
     'home.response_time': 'pour obtenir votre diagnostic personnalisé',
 
     // Testimonials
-    'testimonial.1.quote': 'Le diagnostic nous a permis de prioriser nos chantiers de transformation. En 3 mois, nous avons gagné 15h/semaine.',
+    'testimonial.1.quote': 'Le diagnostic a permis de prioriser les chantiers de transformation. En 3 mois, 15h/semaine récupérées.',
     'testimonial.1.author': 'M.D.',
     'testimonial.1.role': 'Directrice des opérations',
     'testimonial.1.company': 'PME Services',
@@ -125,9 +125,9 @@ const translations = {
     'testimonial.2.company': 'TechStart',
 
     // Contact page
-    'contact.title': 'Contactez-nous',
-    'contact.subtitle': 'Besoin d\'accompagnement pour votre transformation digitale ? Nos experts sont là pour vous guider.',
-    'contact.form_title': 'Envoyez-nous un message',
+    'contact.title': 'Contact',
+    'contact.subtitle': 'Besoin d\'accompagnement pour votre transformation digitale ? Solutio est là pour vous guider.',
+    'contact.form_title': 'Envoyer un message',
     'contact.name_label': 'Nom complet *',
     'contact.name_placeholder': 'Votre nom',
     'contact.email_label': 'Email *',
@@ -144,7 +144,7 @@ const translations = {
     'contact.message_placeholder': 'Décrivez votre besoin ou votre projet de transformation...',
     'contact.submit_button': 'Envoyer le message',
     'contact.success_title': 'Merci pour votre message !',
-    'contact.success_message': 'Nous avons bien reçu votre demande et vous répondrons dans les plus brefs délais.',
+    'contact.success_message': 'Votre demande a bien été reçue. Réponse sous 24h.',
     'contact.send_another': 'Envoyer un autre message',
     'contact.direct_contact_title': 'Contact direct',
     'contact.email_label_info': 'Email',
@@ -152,7 +152,7 @@ const translations = {
     'contact.hours_label': 'Horaires',
     'contact.hours_value': 'Lun-Ven, 9h-18h',
     'contact.book_call_title': 'Réserver un appel',
-    'contact.book_call_subtitle': 'Planifiez un appel de 30 minutes avec un expert pour discuter de vos besoins.',
+    'contact.book_call_subtitle': 'Planifiez un appel de 30 minutes pour discuter de vos besoins.',
     'contact.book_call_benefit1': 'Diagnostic gratuit de vos processus',
     'contact.book_call_benefit2': 'Recommandations personnalisées',
     'contact.book_call_benefit3': 'Plan d\'action détaillé',
@@ -163,7 +163,7 @@ const translations = {
     'contact.faq_q2': 'Combien de temps pour voir des résultats ?',
     'contact.faq_a2': 'Le diagnostic donne des résultats immédiats. Les premiers gains concrets apparaissent sous 4 à 8 semaines.',
     'contact.faq_q3': 'Vous accompagnez la mise en œuvre ?',
-    'contact.faq_a3': 'Oui, nous proposons un accompagnement complet : de la stratégie à l\'exécution.',
+    'contact.faq_a3': 'Oui, Solutio propose un accompagnement complet : de la stratégie à l\'exécution.',
 
     // Diagnostic page (simplified 5-step version)
     'diagnostic.title': 'Diagnostic de maturité digitale',
@@ -212,7 +212,7 @@ const translations = {
     'diagnostic.next_button': 'Suivant',
     'diagnostic.see_recommendations': 'Voir mon diagnostic',
     'diagnostic.results_title': 'Votre diagnostic de maturité digitale',
-    'diagnostic.results_subtitle': 'Voici votre score et nos recommandations personnalisées',
+    'diagnostic.results_subtitle': 'Voici votre score et les recommandations personnalisées',
     'diagnostic.maturity_score': 'Score de maturité',
     'diagnostic.potential_label': 'Potentiel',
     'diagnostic.time_saved_label': 'Gain estimé',
@@ -225,16 +225,16 @@ const translations = {
     'diagnostic.sector_label_caps': 'SECTEUR',
     'diagnostic.challenges_caps': 'DÉFIS',
     'diagnostic.maturity_caps': 'MATURITÉ',
-    'diagnostic.recommendations_title': 'Nos recommandations',
+    'diagnostic.recommendations_title': 'Recommandations',
     'diagnostic.recommendations_subtitle': 'Actions prioritaires pour votre organisation',
     'diagnostic.cta_cartographie_title': 'Aller plus loin avec la cartographie',
-    'diagnostic.cta_cartographie_subtitle': 'Obtenez une analyse détaillée de chaque domaine de votre organisation avec nos 10 packs d\'analyse.',
+    'diagnostic.cta_cartographie_subtitle': 'Obtenez une analyse détaillée de chaque domaine de votre organisation avec les 10 packs d\'analyse.',
     'diagnostic.cta_cartographie_button': 'Découvrir la cartographie',
     'diagnostic.receive_email_title': 'Recevoir par email',
-    'diagnostic.receive_email_subtitle': 'Recevez ce diagnostic et nos recommandations détaillées',
+    'diagnostic.receive_email_subtitle': 'Recevez ce diagnostic et les recommandations détaillées',
     'diagnostic.send_report': 'Envoyer le rapport',
     'diagnostic.free_consultation_title': 'Consultation gratuite',
-    'diagnostic.free_consultation_subtitle': 'Échangez avec un expert pour affiner votre stratégie',
+    'diagnostic.free_consultation_subtitle': 'Échangez pour affiner votre stratégie',
     'diagnostic.book_slot': 'Réserver un créneau',
     'diagnostic.new_diagnostic': 'Refaire le diagnostic',
 
@@ -405,7 +405,7 @@ const translations = {
     'hero.cta_diagnostic': 'Scan my organization',
     'hero.cta_scan': 'Scan my organization',
     'hero.cta_cartographie': 'Full mapping',
-    'hero.cta_expert': 'Talk to an expert',
+    'hero.cta_expert': 'Book a call',
     'home.scan_free_3min': 'Free 3-min scan',
 
     // Trust indicators
@@ -424,7 +424,7 @@ const translations = {
     'problem.transition': 'A structured diagnosis changes everything.',
 
     // Services section
-    'services.title': 'Our services',
+    'services.title': 'Services',
     'services.subtitle': 'Comprehensive support to succeed in your digital transformation',
     'services.diagnostic.title': 'AI Diagnostic',
     'services.diagnostic.description': 'Quick assessment of your digital maturity and identification of priority improvement areas.',
@@ -437,10 +437,10 @@ const translations = {
     'services.conseil.cta': 'Learn more',
     'services.accompagnement.title': 'Implementation Support',
     'services.accompagnement.description': 'Implementation follow-up, team training and long-term results measurement.',
-    'services.accompagnement.cta': 'Contact us',
+    'services.accompagnement.cta': 'Get in touch',
 
     // Method section
-    'method.title': 'Our 3-step method',
+    'method.title': 'The 3-step method',
     'method.subtitle': 'A structured approach to effectively transform your organization',
     'method.step1.title': 'Quick AI Diagnostic',
     'method.step1.description': '5 targeted questions to assess your digital maturity and identify your priorities. Free, no commitment.',
@@ -496,9 +496,9 @@ const translations = {
     'testimonial.2.company': 'TechStart',
 
     // Contact page
-    'contact.title': 'Contact us',
-    'contact.subtitle': 'Need support for your digital transformation? Our experts are here to guide you.',
-    'contact.form_title': 'Send us a message',
+    'contact.title': 'Contact',
+    'contact.subtitle': 'Need support for your digital transformation? Solutio is here to guide you.',
+    'contact.form_title': 'Send a message',
     'contact.name_label': 'Full name *',
     'contact.name_placeholder': 'Your name',
     'contact.email_label': 'Email *',
@@ -515,7 +515,7 @@ const translations = {
     'contact.message_placeholder': 'Describe your transformation need or project...',
     'contact.submit_button': 'Send message',
     'contact.success_title': 'Thank you for your message!',
-    'contact.success_message': 'We have received your request and will respond as soon as possible.',
+    'contact.success_message': 'Your request has been received. Response within 24h.',
     'contact.send_another': 'Send another message',
     'contact.direct_contact_title': 'Direct contact',
     'contact.email_label_info': 'Email',
@@ -523,7 +523,7 @@ const translations = {
     'contact.hours_label': 'Hours',
     'contact.hours_value': 'Mon-Fri, 9am-6pm',
     'contact.book_call_title': 'Book a call',
-    'contact.book_call_subtitle': 'Schedule a 30-minute call with an expert to discuss your needs.',
+    'contact.book_call_subtitle': 'Schedule a 30-minute call to discuss your needs.',
     'contact.book_call_benefit1': 'Free process diagnostic',
     'contact.book_call_benefit2': 'Personalized recommendations',
     'contact.book_call_benefit3': 'Detailed action plan',
@@ -534,7 +534,7 @@ const translations = {
     'contact.faq_q2': 'How long to see results?',
     'contact.faq_a2': 'The diagnostic gives immediate results. First concrete gains appear within 4 to 8 weeks.',
     'contact.faq_q3': 'Do you support implementation?',
-    'contact.faq_a3': 'Yes, we offer complete support: from strategy to execution.',
+    'contact.faq_a3': 'Yes, Solutio offers complete support: from strategy to execution.',
 
     // Diagnostic page (simplified 5-step version)
     'diagnostic.title': 'Digital Maturity Diagnostic',
@@ -596,16 +596,16 @@ const translations = {
     'diagnostic.sector_label_caps': 'SECTOR',
     'diagnostic.challenges_caps': 'CHALLENGES',
     'diagnostic.maturity_caps': 'MATURITY',
-    'diagnostic.recommendations_title': 'Our recommendations',
+    'diagnostic.recommendations_title': 'Recommendations',
     'diagnostic.recommendations_subtitle': 'Priority actions for your organization',
     'diagnostic.cta_cartographie_title': 'Go further with mapping',
-    'diagnostic.cta_cartographie_subtitle': 'Get a detailed analysis of each area of your organization with our 10 analysis packs.',
+    'diagnostic.cta_cartographie_subtitle': 'Get a detailed analysis of each area of your organization with the 10 analysis packs.',
     'diagnostic.cta_cartographie_button': 'Discover mapping',
     'diagnostic.receive_email_title': 'Receive by email',
-    'diagnostic.receive_email_subtitle': 'Get this diagnostic and our detailed recommendations',
+    'diagnostic.receive_email_subtitle': 'Get this diagnostic and the detailed recommendations',
     'diagnostic.send_report': 'Send report',
     'diagnostic.free_consultation_title': 'Free consultation',
-    'diagnostic.free_consultation_subtitle': 'Talk with an expert to refine your strategy',
+    'diagnostic.free_consultation_subtitle': 'Discuss and refine your strategy',
     'diagnostic.book_slot': 'Book a slot',
     'diagnostic.new_diagnostic': 'Redo diagnostic',
 
