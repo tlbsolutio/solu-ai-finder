@@ -174,7 +174,7 @@ const Index = () => {
       {/* ═══ 2. LE CONSTAT ═══ */}
       <section className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
-          <div className="max-w-3xl mx-auto text-center mb-14">
+          <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.problem_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
               {t('index.problem_title')}
@@ -271,7 +271,7 @@ const Index = () => {
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto">
             <SectionLabel>Accompagnement</SectionLabel>
-            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-12">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
               Un seul interlocuteur,{' '}
               <span className="text-primary">de l'analyse a la mise en production.</span>
             </h2>
@@ -297,12 +297,12 @@ const Index = () => {
       </section>
 
       {/* ═══ 5. OUTILS / PRODUITS ═══ */}
-      <section id="outils" className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
-        <div className="max-w-[1060px] mx-auto">
+      <section id="outils" className="py-20 sm:py-24 bg-muted/30">
+        <div className="container mx-auto px-6 sm:px-10">
           <SectionLabel>{t('index.products_label')}</SectionLabel>
 
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
-            <h2 className="text-3xl sm:text-4xl lg:text-[46px] font-bold leading-[1.1] tracking-tight max-w-xl">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight max-w-xl">
               {t('index.products_title1')}
               <span className="text-primary">{t('index.products_title_highlight')}</span>
             </h2>
@@ -395,12 +395,12 @@ const Index = () => {
       </section>
 
       {/* ═══ 6. RÉALISATIONS ═══ */}
-      <section id="realisations" className="py-20 lg:py-24 px-6 sm:px-10 bg-background">
-        <div className="max-w-[1060px] mx-auto">
+      <section id="realisations" className="py-20 sm:py-24 bg-background">
+        <div className="container mx-auto px-6 sm:px-10">
           <SectionLabel>{t('index.cases_label')}</SectionLabel>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-14">
-            <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold leading-[1.1] tracking-tight">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight">
               {t('index.cases_title1')}
               <span className="text-primary">{t('index.cases_title_highlight')}</span>
             </h2>
@@ -448,15 +448,13 @@ const Index = () => {
         </div>
       </section>
 
-      <div className="h-px w-full bg-border" />
-
       {/* ═══ 7. CONVICTION ═══ */}
       <section id="conviction" className="py-20 sm:py-24 bg-muted/30 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="container mx-auto px-6 sm:px-10 relative">
           <div className="max-w-3xl mx-auto">
             <SectionLabel>Conviction</SectionLabel>
-            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-8">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
               La valeur d'un professionnel se mesure à ce qu'il accomplit.{' '}
               <span className="text-primary">Ce n'est pas une question de temps — c'est une question de maîtrise.</span>
             </h2>
@@ -478,11 +476,11 @@ const Index = () => {
       <ROICalculator />
 
       {/* ═══ 9. FAQ ═══ */}
-      <section className="py-20 sm:py-24 bg-background">
+      <section className="py-20 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-[780px] mx-auto">
             <SectionLabel>{t('index.faq_label')}</SectionLabel>
-            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
               {t('index.faq_title')}
             </h2>
             <div className="border rounded-2xl px-6 sm:px-8 divide-y divide-border/50 bg-background shadow-md hover:shadow-lg transition-shadow">
@@ -512,7 +510,7 @@ const ROICalculator = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <SectionLabel>{t('index.roi_label')}</SectionLabel>
-            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-4">
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
               {t('index.roi_title')}
             </h2>
             <p className="text-muted-foreground">
