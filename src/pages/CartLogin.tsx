@@ -2,18 +2,17 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Map, Loader2, Mail, Lock, User, Sparkles, BarChart3, Zap, FileText, Network, Clock, Shield, ArrowLeft } from "lucide-react";
+import { Map, Loader2, Mail, Lock, User, ArrowLeft } from "lucide-react";
 
 const CartLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [mode, setMode] = useState<"login" | "register">("login");
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -86,254 +85,251 @@ const CartLogin = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/cartographie/sessions` },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel - product showcase (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-b from-cyan-50/80 via-blue-50/30 to-background dark:from-cyan-950/30 dark:via-blue-950/10 dark:to-background">
-        {/* Dot pattern */}
-        <div className="absolute inset-0 opacity-40" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(6,182,212,0.04) 1px, transparent 0)',
-          backgroundSize: '32px 32px',
-        }} />
-        {/* Glow effects */}
-        <div className="absolute top-20 left-1/4 w-[500px] h-[500px] rounded-full opacity-20" style={{
-          background: 'radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%)',
-        }} />
-        <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] rounded-full opacity-15" style={{
-          background: 'radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)',
-        }} />
-
-        <div className="relative z-10 flex flex-col justify-center px-12 xl:px-16 max-w-2xl">
-          {/* Back to cartographie */}
-          <Link to="/cartographie" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-10">
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Retour
-          </Link>
-
-          {/* Product identity */}
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <Map className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-bold text-foreground">Solutio</span>
-                <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Carto</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground -mt-0.5">Diagnostic organisationnel</p>
-            </div>
-          </div>
-
-          <h2 className="text-3xl xl:text-4xl font-extrabold mb-4 leading-tight tracking-tight text-foreground">
-            Diagnostiquez votre organisation.{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">
-              Transformez-la.
-            </span>
-          </h2>
-          <p className="text-muted-foreground mb-10 leading-relaxed text-sm xl:text-base max-w-lg">
-            150 questions, 10 axes d'analyse, une IA qui cartographie vos processus, identifie vos blocages et genere un plan d'action concret.
-          </p>
-
-          {/* Feature list */}
-          <div className="space-y-3 mb-10">
-            {[
-              { icon: BarChart3, text: "Radar de maturite sur 10 dimensions" },
-              { icon: Network, text: "Carte interactive de votre organisation" },
-              { icon: Zap, text: "Quick wins et plan d'actions priorise" },
-              { icon: FileText, text: "Rapport PDF professionnel exportable" },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-lg bg-cyan-50 dark:bg-cyan-950/30 flex items-center justify-center shrink-0">
-                  <Icon className="w-3.5 h-3.5 text-cyan-600" />
-                </div>
-                <span className="text-sm text-muted-foreground">{text}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Trust badges */}
-          <div className="flex flex-wrap gap-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-cyan-500" /> A votre rythme
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Shield className="w-3.5 h-3.5 text-cyan-500" /> Donnees UE
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-cyan-500" /> Sans engagement
-            </span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-slate-50/50 dark:bg-background flex flex-col">
+      {/* Top bar */}
+      <div className="w-full px-6 py-5 flex items-center justify-between">
+        <Link to="/cartographie" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Retour
+        </Link>
+        <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          solutio.work
+        </Link>
       </div>
 
-      {/* Right panel - form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 bg-background">
-        <div className="w-full max-w-sm space-y-6">
-          {/* Mobile product identity */}
-          <div className="lg:hidden text-center mb-2">
-            <Link to="/cartographie" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Retour
-            </Link>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
-                <Map className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-base font-bold">Solutio</span>
-                <span className="text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Carto</span>
-              </div>
+      {/* Centered form */}
+      <div className="flex-1 flex items-center justify-center px-4 pb-16">
+        <div className="w-full max-w-[400px]">
+          {/* Logo */}
+          <div className="flex items-center justify-center gap-2.5 mb-8">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/15">
+              <Map className="w-4.5 h-4.5 text-white" />
             </div>
-            <p className="text-xs text-muted-foreground">Diagnostic organisationnel</p>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg font-bold text-foreground">Solutio</span>
+              <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Carto</span>
+            </div>
           </div>
 
-          <div className="text-center space-y-2">
-            <h1 className="text-xl font-bold">Accedez a votre espace</h1>
-            <p className="text-sm text-muted-foreground">Connectez-vous pour gerer vos diagnostics</p>
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-foreground mb-1.5">
+              {mode === "login" ? "Connectez-vous" : "Creez votre compte"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {mode === "login"
+                ? "Accedez a vos diagnostics organisationnels"
+                : "Commencez votre diagnostic gratuitement"}
+            </p>
           </div>
 
-          <Card className="shadow-sm">
-            <Tabs defaultValue="login">
-              <div className="px-6 pt-5 pb-0">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Connexion</TabsTrigger>
-                  <TabsTrigger value="register">Inscription</TabsTrigger>
-                </TabsList>
-              </div>
-
-              <CardContent className="px-6 pt-5 pb-6">
-                {/* LOGIN */}
-                <TabsContent value="login" className="mt-0">
-                  {magicLinkSent ? (
-                    <div className="text-center py-6 space-y-3">
-                      <div className="w-14 h-14 rounded-full bg-cyan-500/10 flex items-center justify-center mx-auto">
-                        <Mail className="w-7 h-7 text-cyan-600" />
-                      </div>
-                      <h3 className="font-semibold">Lien de connexion envoye</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Consultez votre boite email ({loginEmail}) et cliquez sur le lien pour vous connecter.
-                      </p>
-                      <Button variant="outline" size="sm" onClick={() => setMagicLinkSent(false)}>Retour</Button>
+          {/* Card */}
+          <div className="bg-background rounded-2xl border border-border/40 shadow-sm p-6 sm:p-8 space-y-5">
+            {mode === "login" ? (
+              <>
+                {magicLinkSent ? (
+                  <div className="text-center py-4 space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-cyan-50 dark:bg-cyan-950/30 flex items-center justify-center mx-auto">
+                      <Mail className="w-6 h-6 text-cyan-600" />
                     </div>
-                  ) : (
+                    <h3 className="font-semibold text-foreground">Lien de connexion envoye</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Consultez votre boite email ({loginEmail}) et cliquez sur le lien pour vous connecter.
+                    </p>
+                    <button
+                      onClick={() => setMagicLinkSent(false)}
+                      className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+                    >
+                      Retour
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Google OAuth */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-11 text-sm font-medium"
+                      onClick={handleGoogleLogin}
+                      disabled={loading}
+                    >
+                      <svg className="w-4 h-4 mr-2.5" viewBox="0 0 24 24">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                      </svg>
+                      Continuer avec Google
+                    </Button>
+
+                    {/* Separator */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-border/60" />
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="bg-background px-3 text-xs text-muted-foreground">ou</span>
+                      </div>
+                    </div>
+
+                    {/* Email/password form */}
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div className="space-y-1.5">
-                        <Label htmlFor="login-email" className="text-xs font-medium">Email</Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground/60" />
-                          <Input
-                            id="login-email"
-                            type="email"
-                            value={loginEmail}
-                            onChange={(e) => setLoginEmail(e.target.value)}
-                            placeholder="votre@email.com"
-                            className="pl-10 h-10"
-                            required
-                          />
-                        </div>
+                        <Label htmlFor="login-email" className="text-sm font-medium">Email</Label>
+                        <Input
+                          id="login-email"
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => setLoginEmail(e.target.value)}
+                          placeholder="votre@email.com"
+                          className="h-11"
+                          required
+                        />
                       </div>
                       <div className="space-y-1.5">
-                        <Label htmlFor="login-password" className="text-xs font-medium">Mot de passe</Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground/60" />
-                          <Input
-                            id="login-password"
-                            type="password"
-                            value={loginPassword}
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            placeholder="Votre mot de passe"
-                            className="pl-10 h-10"
-                            required
-                          />
-                        </div>
+                        <Label htmlFor="login-password" className="text-sm font-medium">Mot de passe</Label>
+                        <Input
+                          id="login-password"
+                          type="password"
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="Votre mot de passe"
+                          className="h-11"
+                          required
+                        />
                       </div>
-                      <Button type="submit" variant="hero" className="w-full h-10 shadow-lg shadow-cyan-500/20" disabled={loading}>
+                      <Button type="submit" className="w-full h-11 bg-foreground text-background hover:bg-foreground/90 font-medium" disabled={loading}>
                         {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                         Se connecter
                       </Button>
-                      <div className="relative">
-                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-                        <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">ou</span></div>
-                      </div>
-                      <Button type="button" variant="outline" className="w-full h-10" onClick={handleMagicLink} disabled={loading}>
-                        <Mail className="w-4 h-4 mr-2" />
-                        Connexion par lien email
-                      </Button>
                     </form>
-                  )}
-                </TabsContent>
 
-                {/* REGISTER */}
-                <TabsContent value="register" className="mt-0">
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="reg-name" className="text-xs font-medium">Nom complet</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground/60" />
-                        <Input
-                          id="reg-name"
-                          type="text"
-                          value={regName}
-                          onChange={(e) => setRegName(e.target.value)}
-                          placeholder="Jean Dupont"
-                          className="pl-10 h-10"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="reg-email" className="text-xs font-medium">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground/60" />
-                        <Input
-                          id="reg-email"
-                          type="email"
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          placeholder="votre@email.com"
-                          className="pl-10 h-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="reg-password" className="text-xs font-medium">Mot de passe</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground/60" />
-                        <Input
-                          id="reg-password"
-                          type="password"
-                          value={regPassword}
-                          onChange={(e) => setRegPassword(e.target.value)}
-                          placeholder="Min. 6 caracteres"
-                          className="pl-10 h-10"
-                          minLength={6}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <Button type="submit" variant="hero" className="w-full h-10 shadow-lg shadow-cyan-500/20" disabled={loading}>
-                      {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                      Creer mon compte gratuit
-                    </Button>
-                  </form>
-                </TabsContent>
-              </CardContent>
-            </Tabs>
-          </Card>
+                    {/* Magic link */}
+                    <button
+                      type="button"
+                      onClick={handleMagicLink}
+                      disabled={loading}
+                      className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                    >
+                      Recevoir un lien de connexion par email
+                    </button>
+                  </>
+                )}
+              </>
+            ) : (
+              /* REGISTER */
+              <form onSubmit={handleRegister} className="space-y-4">
+                {/* Google OAuth */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-11 text-sm font-medium"
+                  onClick={handleGoogleLogin}
+                  disabled={loading}
+                >
+                  <svg className="w-4 h-4 mr-2.5" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                  </svg>
+                  Continuer avec Google
+                </Button>
 
-          <div className="text-center space-y-3">
-            <p className="text-[11px] text-muted-foreground">
-              En vous connectant, vous acceptez nos{" "}
-              <Link to="/legal" className="underline hover:text-foreground transition-colors">mentions legales</Link> et notre{" "}
-              <Link to="/privacy" className="underline hover:text-foreground transition-colors">politique de confidentialite</Link>.
-            </p>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              solutio.work
-            </Link>
+                {/* Separator */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border/60" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-background px-3 text-xs text-muted-foreground">ou</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-name" className="text-sm font-medium">Nom complet</Label>
+                  <Input
+                    id="reg-name"
+                    type="text"
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    placeholder="Jean Dupont"
+                    className="h-11"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-email" className="text-sm font-medium">Email</Label>
+                  <Input
+                    id="reg-email"
+                    type="email"
+                    value={regEmail}
+                    onChange={(e) => setRegEmail(e.target.value)}
+                    placeholder="votre@email.com"
+                    className="h-11"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="reg-password" className="text-sm font-medium">Mot de passe</Label>
+                  <Input
+                    id="reg-password"
+                    type="password"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    placeholder="Min. 6 caracteres"
+                    className="h-11"
+                    minLength={6}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full h-11 bg-foreground text-background hover:bg-foreground/90 font-medium" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Creer mon compte
+                </Button>
+              </form>
+            )}
           </div>
+
+          {/* Toggle login/register */}
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            {mode === "login" ? (
+              <>
+                Pas encore de compte ?{" "}
+                <button onClick={() => setMode("register")} className="text-foreground font-medium hover:underline">
+                  Creer un compte
+                </button>
+              </>
+            ) : (
+              <>
+                Deja un compte ?{" "}
+                <button onClick={() => setMode("login")} className="text-foreground font-medium hover:underline">
+                  Se connecter
+                </button>
+              </>
+            )}
+          </p>
+
+          {/* Legal */}
+          <p className="text-center text-[11px] text-muted-foreground/70 mt-4">
+            En continuant, vous acceptez les{" "}
+            <Link to="/legal" className="underline hover:text-muted-foreground transition-colors">mentions legales</Link> et la{" "}
+            <Link to="/privacy" className="underline hover:text-muted-foreground transition-colors">politique de confidentialite</Link>.
+          </p>
         </div>
       </div>
     </div>
