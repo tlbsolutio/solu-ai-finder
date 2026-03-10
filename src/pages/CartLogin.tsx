@@ -88,7 +88,7 @@ const CartLogin = () => {
       });
       if (error) throw error;
     } catch (err: any) {
-      toast({ title: "Google non configure", description: "Utilisez l'email et le mot de passe pour vous connecter.", variant: "destructive" });
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
     }
   };
 
@@ -163,13 +163,11 @@ const CartLogin = () => {
                   Continuer avec Google
                 </Button>
 
-                {/* Separator */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
                   <div className="relative flex justify-center"><span className="bg-white dark:bg-background px-4 text-xs text-muted-foreground uppercase tracking-wider">ou</span></div>
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleLogin} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="text-sm">Email</Label>
@@ -385,7 +383,7 @@ const CartLogin = () => {
               <img
                 src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
                 alt="Solutio"
-                className="h-5 w-auto opacity-60"
+                className="h-5 w-auto opacity-60 brightness-0 invert"
               />
               <span className="text-[11px] text-white/30">Un produit Solutio</span>
             </div>
