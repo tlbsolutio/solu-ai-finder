@@ -53,8 +53,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </div>
       </div>
-      <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-
       <footer className="bg-slate-950 text-white">
         <div className="container mx-auto px-6 sm:px-10 py-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
