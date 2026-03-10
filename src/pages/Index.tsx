@@ -387,24 +387,24 @@ const Index = () => {
   /* ── FAQs ── */
   const faqs = [
     {
-      q: "Qu'est-ce que la cartographie organisationnelle Solutio ?",
-      a: "C'est un diagnostic complet de votre entreprise base sur 150 questions couvrant 10 axes strategiques (strategie, processus, technologie, RH, data, culture, finance, client, innovation, operations). L'IA analyse vos reponses et genere une cartographie visuelle de votre organisation avec des recommandations actionables.",
+      q: "Qu'est-ce que Solutio exactement ?",
+      a: "Solutio est un business partner tech : diagnostic organisationnel, développement d'outils sur mesure et accompagnement jusqu'à l'adoption. L'outil de cartographie organisationnelle est gratuit pour commencer.",
     },
     {
       q: 'Combien de temps prend le diagnostic ?',
       a: "Le questionnaire prend environ 25 a 35 minutes. L'analyse IA est generee en quelques minutes. Vous recevez votre radar de maturite, votre carte organisationnelle et vos premiers quick wins dans l'heure qui suit.",
     },
     {
-      q: "Comment l'IA genere-t-elle les recommandations ?",
-      a: "Solutio utilise Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
+      q: "Combien coute un projet sur mesure ?",
+      a: "Cela dépend de la complexité. Un outil simple peut démarrer autour de quelques milliers d'euros, une plateforme complète sera plus conséquente. Le diagnostic gratuit permet de cadrer le besoin avant toute proposition de devis.",
     },
     {
-      q: 'Mes donnees sont-elles securisees ?',
-      a: "Absolument. Vos donnees sont chiffrees en transit et au repos (AES-256). Solutio est conforme RGPD. Vos donnees ne sont jamais utilisees pour entrainer des modeles IA. Vous pouvez demander la suppression complete de vos donnees a tout moment.",
+      q: 'A qui s\'adresse Solutio ?',
+      a: "Indépendants, équipes de 5, structures de 50+ — la taille n'est pas le critère. Le point commun : l'ambition de mieux s'organiser et la volonté de changer ce qui ne fonctionne pas. Cabinets de conseil, agences, entreprises industrielles, ESS.",
     },
     {
-      q: 'Puis-je tester gratuitement avant de m\'engager ?',
-      a: "Oui, le plan Decouverte est entierement gratuit et sans engagement. Il inclut le diagnostic complet, le radar de maturite et une synthese IA de base. Vous pouvez passer au plan Professionnel a tout moment pour debloquer l'analyse approfondie.",
+      q: 'Quelle est la différence avec un consultant classique ?',
+      a: "Pas de PowerPoint de 200 slides. Le diagnostic utilise un outil IA concret, les recommandations sont priorisées avec ROI estimé, et si besoin les outils sont construits sur mesure. Du diagnostic à l'implémentation, un seul interlocuteur.",
     },
     {
       q: "Le diagnostic est-il adapte a mon secteur d'activite ?",
@@ -598,12 +598,13 @@ const Index = () => {
         <div className="max-w-[1100px] mx-auto">
           <SectionLabel>Le probleme</SectionLabel>
           <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold leading-[1.08] tracking-tight mb-5 max-w-3xl">
-            Chaque jour, vos equipes perdent des heures sur des{' '}
-            <span className="text-primary">processus inefficaces.</span>
+            Les pertes de temps dans une organisation sont rarement{' '}
+            <span className="text-primary">là où on les cherche.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mb-14 leading-relaxed">
-            Et le pire ? Vous ne savez pas exactement ou, ni combien ca vous coute.
-            Sans vision claire, impossible de prioriser les bons chantiers.
+            Des tâches qui s'accumulent, des outils qui ne se parlent pas,
+            des processus jamais formalisés. L'organisation fonctionne —
+            mais pas à ce qu'elle pourrait.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -611,7 +612,7 @@ const Index = () => {
               {
                 icon: <Clock className="w-7 h-7" />,
                 title: 'Temps gaspille',
-                desc: 'Vos equipes passent 30% de leur temps sur des taches repetitives, des validations inutiles et des recherches d\'information dispersee.',
+                desc: 'Les vrais blocages s\'accumulent en silence. Tâches dupliquées, validations manuelles, informations dispersées — chacun compense individuellement sans que la cause soit jamais adressée.',
                 stat: '30%',
                 statLabel: 'du temps de travail perdu',
                 color: 'red',
@@ -619,7 +620,7 @@ const Index = () => {
               {
                 icon: <Layers className="w-7 h-7" />,
                 title: 'Chaos des outils',
-                desc: 'Excel, Notion, Slack, mails, papier... L\'information est eparpillee. Personne n\'a la meme version. Les decisions se prennent a l\'aveugle.',
+                desc: 'Excel ici, un CRM là, Notion pour certains, emails pour le reste. Chaque équipe a construit son propre système. Résultat : aucune vue consolidée, et du temps perdu à faire le lien.',
                 stat: '8+',
                 statLabel: 'outils non connectes en moyenne',
                 color: 'amber',
@@ -627,7 +628,7 @@ const Index = () => {
               {
                 icon: <Eye className="w-7 h-7" />,
                 title: 'Goulots invisibles',
-                desc: 'Les blocages se cachent dans les zones grises de l\'organisation. Sans cartographie, ils grossissent silencieusement jusqu\'a la crise.',
+                desc: 'Dans chaque organisation, des heures récupérables existent. Automatisations simples, processus à clarifier, outils à connecter. Il faut savoir où regarder.',
                 stat: '67%',
                 statLabel: 'des blocages sont invisibles au dirigeant',
                 color: 'violet',
