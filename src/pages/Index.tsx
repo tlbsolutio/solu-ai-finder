@@ -9,13 +9,11 @@ import {
   ChevronDown,
   Plus,
   Zap,
-  Brain,
   Target,
   BarChart3,
   Shield,
   Sparkles,
   Map,
-  ListChecks,
   Calendar,
   Building2,
   Lightbulb,
@@ -29,38 +27,6 @@ import MetaTags from '@/components/seo/MetaTags';
 import StructuredData from '@/components/seo/StructuredData';
 
 const HERO_IMG = '/lovable-uploads/c8143545-6b97-49dd-85ba-65b954b9e501.png';
-
-/* ── Mini Radar ── */
-const MiniRadarChart = ({ size = 200 }: { size?: number }) => {
-  const axes = [
-    { label: 'Strategie', v: 0.8 }, { label: 'Process', v: 0.5 },
-    { label: 'Tech', v: 0.65 }, { label: 'RH', v: 0.45 },
-    { label: 'Data', v: 0.7 }, { label: 'Culture', v: 0.55 },
-    { label: 'Finance', v: 0.75 }, { label: 'Client', v: 0.6 },
-    { label: 'Innovation', v: 0.4 }, { label: 'Ops', v: 0.85 },
-  ];
-  const half = size / 2, maxR = half * 0.72, n = axes.length;
-  const pt = (i: number, r: number) => {
-    const a = (Math.PI * 2 * i) / n - Math.PI / 2;
-    return { x: half + r * Math.cos(a), y: half + r * Math.sin(a) };
-  };
-  const dp = axes.map((a, i) => pt(i, maxR * a.v));
-  const path = dp.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ') + 'Z';
-  const line = 'rgba(255,255,255,0.08)';
-  return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" role="img" aria-label="Radar de maturite organisationnelle sur 10 axes">
-      {[0.25, 0.5, 0.75, 1].map((l) => {
-        const pts = Array.from({ length: n }, (_, i) => pt(i, maxR * l));
-        return <path key={l} d={pts.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ') + 'Z'} fill="none" stroke={line} strokeWidth="1" />;
-      })}
-      {axes.map((_, i) => { const p = pt(i, maxR); return <line key={i} x1={half} y1={half} x2={p.x} y2={p.y} stroke={line} strokeWidth="1" />; })}
-      <path d={path} fill="url(#rGrad)" stroke="rgba(6,182,212,0.7)" strokeWidth="2"><animate attributeName="opacity" from="0" to="1" dur="1.5s" fill="freeze" /></path>
-      {dp.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="3" fill="#06b6d4" stroke="#fff" strokeWidth="1.5"><animate attributeName="r" from="0" to="3" dur="1s" begin={`${i * 0.08}s`} fill="freeze" /></circle>)}
-      {axes.map((a, i) => { const p = pt(i, maxR + 16); return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="fill-white/40 text-[6px] font-semibold uppercase tracking-wider">{a.label}</text>; })}
-      <defs><linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="rgba(6,182,212,0.3)" /><stop offset="100%" stopColor="rgba(59,130,246,0.2)" /></linearGradient></defs>
-    </svg>
-  );
-};
 
 /* ── FAQ Accordion ── */
 const FAQItem = ({ q, a }: { q: string; a: string }) => {
@@ -118,22 +84,18 @@ const Index = () => {
     },
   ];
 
-  const caseStudies = [
+  const realisations = [
     {
-      sector: 'Cabinet de conseil — 25 consultants',
-      icon: Building2,
-      tags: ['Suivi de mission', 'Portail consultant', 'Reporting auto'],
-      before: 'Tout gere manuellement : saisies redondantes, coordination dispersee, reporting hebdomadaire de 4h. Le temps administratif depassait le temps terrain.',
-      after: 'Une plateforme sur mesure avec 5 outils metier integres. Missions, activite, livrables — tout centralise. Reporting automatise, coordination fluide.',
-      result: '85% de temps de reporting en moins',
+      sector: t('home.real1_sector'), icon: Building2,
+      tags: [t('home.real1_tag1'), t('home.real1_tag2'), t('home.real1_tag3')],
+      metric: t('home.real1_metric'), metricLabel: t('home.real1_metric_label'),
+      before: t('home.real1_before'), after: t('home.real1_after'),
     },
     {
-      sector: "Agence marketing d'affiliation — 6 clients",
-      icon: LineChart,
-      tags: ['SaaS Platform', 'Automatisation', 'Multi-client'],
-      before: 'Rapports manuels sur 3 reseaux (Rakuten, Impact, Awin). 2 jours par semaine perdus en copier-coller et mise en forme.',
-      after: 'SaaS full-stack avec import automatique multi-reseau, dashboards temps reel et alertes. Scalable de 6 a 30+ clients.',
-      result: '2 jours/semaine recuperes par consultant',
+      sector: t('home.real2_sector'), icon: LineChart,
+      tags: [t('home.real2_tag1'), t('home.real2_tag2'), t('home.real2_tag3')],
+      metric: t('home.real2_metric'), metricLabel: t('home.real2_metric_label'),
+      before: t('home.real2_before'), after: t('home.real2_after'),
     },
   ];
 
@@ -208,7 +170,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 2. PROBLEM STATEMENT — concret, pas de stats vagues ═══ */}
+      {/* ═══ 2. LE CONSTAT ═══ */}
       <section className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto text-center mb-14">
@@ -238,7 +200,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 3. SERVICES — 3 Pillars ═══ */}
+      {/* ═══ 3. SERVICES ═══ */}
       <section id="accompagnement" className="py-20 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto text-center mb-12">
@@ -302,8 +264,37 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 4. OUTILS — V0 3-card grid style ═══ */}
-      <section id="outils" className="py-20 lg:py-24 px-6 sm:px-10">
+      {/* ═══ 4. ACCOMPAGNEMENT ═══ */}
+      <section className="py-20 sm:py-24 bg-background">
+        <div className="container mx-auto px-6 sm:px-10">
+          <div className="max-w-[1060px] mx-auto">
+            <SectionLabel>Accompagnement</SectionLabel>
+            <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
+              Un seul interlocuteur, de l'analyse à la mise en production.
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {[
+                { n: '01', title: 'Diagnostic', desc: "Comprendre comment l'organisation fonctionne réellement — flux, outils, pertes de temps, irritants. On cartographie ce qui existe avant de proposer quoi que ce soit." },
+                { n: '02', title: 'Conception', desc: "Définir précisément ce qu'il faut construire, configurer ou changer. Architecture technique, choix d'outils, périmètre — tout est cadré avant de commencer." },
+                { n: '03', title: 'Construction', desc: "Développement sur mesure, configuration, intégrations, automatisations. Le livrable peut être un outil, un système, un document, une formation — ce qui résout le problème." },
+                { n: '04', title: 'Adoption', desc: "Former les équipes, ajuster ce qui doit l'être, s'assurer que ce qui a été livré est réellement utilisé au quotidien. Pas de livraison sans suivi." },
+              ].map((s) => (
+                <div key={s.n} className="flex gap-4 p-5 bg-muted/50 rounded-xl border transition-colors hover:border-primary/20">
+                  <span className="text-[13px] font-extrabold text-primary flex-shrink-0 pt-0.5">{s.n}</span>
+                  <div>
+                    <p className="text-sm font-bold mb-1">{s.title}</p>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 5. OUTILS / PRODUITS ═══ */}
+      <section id="outils" className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
         <div className="max-w-[1060px] mx-auto">
           <SectionLabel>{t('home.outils_label')}</SectionLabel>
 
@@ -400,50 +391,49 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 5. REALISATIONS — V0 before/after style with concrete data ═══ */}
-      <section id="realisations" className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
+      {/* ═══ 6. RÉALISATIONS / DEV SUR MESURE ═══ */}
+      <section id="realisations" className="py-20 lg:py-24 px-6 sm:px-10 bg-background">
         <div className="max-w-[1060px] mx-auto">
-          <SectionLabel>Cas concrets</SectionLabel>
+          <SectionLabel>{t('home.real_label')}</SectionLabel>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold leading-[1.1] tracking-tight">
-              Des resultats mesurables,{' '}
-              <span className="text-primary">pas des promesses.</span>
+              {t('home.real_title')}{' '}
+              <span className="text-primary">{t('home.real_title_accent')}</span>
             </h2>
-            <p className="text-base text-muted-foreground leading-relaxed">
-              Projets reels, resultats verifiables. Voici comment on a aide des entreprises comme la votre a reprendre le controle.
-            </p>
+            <p className="text-base text-muted-foreground leading-relaxed">{t('home.real_sub')}</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {caseStudies.map((cs, i) => (
+            {realisations.map((r, i) => (
               <Card key={i} className="border-border/50 hover:shadow-md hover:border-primary/20 transition-all duration-300">
                 <CardContent className="p-7">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <cs.icon className="w-5 h-5 text-primary" />
+                      <r.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold">{cs.sector}</p>
+                      <p className="text-sm font-bold">{r.sector}</p>
                       <div className="flex flex-wrap gap-1.5 mt-1">
-                        {cs.tags.map((tag) => (
+                        {r.tags.map((tag) => (
                           <Badge key={tag} variant="secondary" className="text-[10px] px-2 py-0.5 font-medium">{tag}</Badge>
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-lg px-4 py-3 mb-5 border border-emerald-200/50 dark:border-emerald-800/30">
-                    <p className="text-base sm:text-lg font-extrabold text-emerald-700 dark:text-emerald-400 leading-snug">{cs.result}</p>
+                  <div className="bg-primary/5 rounded-lg px-4 py-3 mb-5">
+                    <p className="text-lg sm:text-xl font-extrabold text-primary leading-snug">{r.metric}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-wide uppercase mt-1">{r.metricLabel}</p>
                   </div>
 
                   <div className="pb-4 mb-4 border-b">
-                    <p className="text-[11px] font-bold tracking-wider text-red-500/70 uppercase mb-1.5">Avant</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{cs.before}</p>
+                    <p className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase mb-1.5">{t('home.real_before_label')}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{r.before}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold tracking-wider text-primary uppercase mb-1.5">Apres</p>
-                    <p className="text-sm text-foreground font-medium leading-relaxed">{cs.after}</p>
+                    <p className="text-[11px] font-bold tracking-wider text-primary uppercase mb-1.5">{t('home.real_after_label')}</p>
+                    <p className="text-sm text-foreground font-medium leading-relaxed">{r.after}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -460,28 +450,42 @@ const Index = () => {
           <div className="max-w-3xl mx-auto">
             <SectionLabel>Notre conviction</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-8">
-              La transformation digitale ne devrait pas etre un projet a 500K EUR qui echoue.
+              Moins de production, plus de réflexion — c'est là que se crée la vraie valeur.
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-base">
               <p>
-                La plupart des entreprises n'ont pas besoin d'une "strategie digitale" de 200 pages.
-                Elles ont besoin de comprendre ou elles perdent du temps, de l'argent et de l'energie —
-                puis d'agir sur les bonnes priorites.
+                Un expert-comptable qui passe 3 heures à recopier des données d'un logiciel à un autre.
+                Un consultant qui reconstitue ses reportings client chaque semaine dans Excel.
+                Un dirigeant qui gère ses équipes par email parce qu'aucun outil existant ne correspond
+                vraiment à son fonctionnement.
               </p>
               <p>
-                C'est ce qu'on fait chez Solutio. On commence par un diagnostic concret (pas un audit de 3 mois),
-                on identifie les quick wins (pas des recommandations vagues), et si besoin, on construit
-                les outils qui manquent (pas du sur-engineering).
+                Ce n'est pas un problème de compétence — c'est un problème d'environnement de travail.
+                Ces professionnels connaissent leur métier mieux que personne. Mais leur quotidien est
+                engorgé par des tâches qui ne mobilisent ni leur intelligence, ni leur expérience,
+                ni leur capacité de jugement.
+              </p>
+              <p>
+                Il existe des milliers d'outils SaaS sur le marché. Le problème, c'est qu'aucun n'a été
+                pensé pour <em>votre</em> contexte. Alors on empile les licences, on bricole des passerelles,
+                et au final on passe autant de temps à gérer les outils qu'à faire le travail lui-même.
+              </p>
+              <p>
+                Solutio existe pour résoudre exactement ça. On part de la réalité terrain — pas d'un
+                catalogue — et on construit ce qui manque. L'objectif : libérer du temps pour que chaque
+                professionnel puisse se concentrer sur ce qui fait vraiment sa valeur — réfléchir,
+                analyser, décider, transmettre.
               </p>
               <p className="text-foreground font-semibold">
-                Notre objectif : que chaque euro investi dans votre transformation vous rapporte un resultat mesurable.
+                La technologie n'est pas une fin en soi. C'est le levier qui permet à chacun de
+                travailler à la hauteur de son intelligence.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ 8. ROI CALCULATOR ═══ */}
+      {/* ═══ 8. CALCULATEUR ═══ */}
       <ROICalculator />
 
       {/* ═══ 9. FAQ ═══ */}
@@ -501,33 +505,33 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 10. FINAL CTA ═══ */}
+      {/* ═══ 10. CTA FINAL ═══ */}
       <section className="py-20 sm:py-24" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' }}>
         <div className="container mx-auto px-6 sm:px-10 text-center">
-          <Sparkles className="w-10 h-10 text-cyan-400 mx-auto mb-6" />
+          <Badge className="mb-6 bg-cyan-500/10 text-cyan-300 border-cyan-500/20 text-xs font-semibold px-3 py-1.5">
+            Prêt à passer à l'action ?
+          </Badge>
           <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5 max-w-2xl mx-auto text-white">
-            Pret a voir ce que votre entreprise peut vraiment faire ?
+            Transformez votre organisation, concrètement.
           </h2>
           <p className="text-white/60 text-lg max-w-xl mx-auto mb-8">
-            Commencez par un echange gratuit ou lancez votre diagnostic organisationnel.
+            Diagnostic gratuit sur 10 axes, outils sur mesure et accompagnement expert.
+            Un seul objectif : des résultats mesurables.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg font-semibold w-full sm:w-auto">
-                <Calendar className="w-4 h-4 mr-2" />
-                Reserver un echange gratuit
-              </Button>
-            </a>
             <Link to="/cartographie">
-              <Button size="lg" variant="outline" className="h-12 px-8 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto">
+              <Button size="lg" className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg font-semibold w-full sm:w-auto">
                 Lancer le diagnostic
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
+            <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="outline" className="h-12 px-8 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto">
+                <Calendar className="w-4 h-4 mr-2" />
+                Réserver un échange
+              </Button>
+            </a>
           </div>
-          <p className="text-white/30 text-xs mt-8">
-            Gratuit — Sans engagement — Donnees hebergees en Europe
-          </p>
         </div>
       </section>
     </div>
