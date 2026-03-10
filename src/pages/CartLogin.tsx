@@ -322,8 +322,8 @@ const CartLogin = () => {
 
           <div className="text-center space-y-3">
             <p className="text-[11px] text-muted-foreground">
-              En vous connectant, vous acceptez les{" "}
-              <Link to="/legal" className="underline hover:text-foreground transition-colors">mentions legales</Link> et la{" "}
+              En vous connectant, vous acceptez nos{" "}
+              <Link to="/legal" className="underline hover:text-foreground transition-colors">mentions legales</Link> et notre{" "}
               <Link to="/privacy" className="underline hover:text-foreground transition-colors">politique de confidentialite</Link>.
             </p>
             <Link

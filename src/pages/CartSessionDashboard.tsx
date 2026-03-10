@@ -280,33 +280,33 @@ const CartSessionDashboard = () => {
 
   // ========== SIDEBAR COMPONENT ==========
   const Sidebar = () => (
-    <aside className={`hidden lg:flex flex-col border-r border-white/10 bg-gradient-to-b from-slate-900 to-slate-950 transition-all duration-200 ${sidebarCollapsed ? "w-14" : "w-56"}`}>
+    <aside className={`hidden lg:flex flex-col border-r bg-card/50 transition-all duration-200 ${sidebarCollapsed ? "w-14" : "w-56"}`}>
       {/* Session header */}
-      <div className="p-3 border-b border-white/10">
+      <div className="p-3 border-b">
         {!sidebarCollapsed ? (
           <div className="flex items-start justify-between gap-1">
             <div className="min-w-0">
-              <h2 className="text-xs font-semibold truncate text-white/90">{session.nom}</h2>
+              <h2 className="text-xs font-semibold truncate">{session.nom}</h2>
               <div className="flex items-center gap-2 mt-1">
-                <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style={{ width: `${(packsCompleted / 10) * 100}%` }} />
                 </div>
-                <span className="text-[10px] text-white/40 font-medium">{packsCompleted}/10</span>
+                <span className="text-[10px] text-muted-foreground font-medium">{packsCompleted}/10</span>
               </div>
               {avgScore && (
                 <div className="flex items-center gap-1.5 mt-1.5">
-                  <span className="text-[10px] text-white/40">Score moyen</span>
+                  <span className="text-[10px] text-muted-foreground">Score moyen</span>
                   <span className={`text-xs font-bold ${parseFloat(avgScore) >= 3.5 ? "text-emerald-600" : parseFloat(avgScore) >= 2.5 ? "text-amber-600" : "text-red-600"}`}>{avgScore}/5</span>
                 </div>
               )}
             </div>
-            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-white/10 rounded shrink-0 mt-0.5">
-              <ChevronLeft className="w-3.5 h-3.5 text-white/40" />
+            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-muted rounded shrink-0 mt-0.5">
+              <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </div>
         ) : (
-          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-white/10 rounded">
-            <ChevronRight className="w-3.5 h-3.5 text-white/40" />
+          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-muted rounded">
+            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
       </div>
@@ -317,11 +317,11 @@ const CartSessionDashboard = () => {
           <div key={group.group} className={gi > 0 ? "mt-2" : ""}>
             {!sidebarCollapsed ? (
               <div className="flex items-center gap-2 px-3 py-1.5 mb-0.5">
-                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">{group.group}</p>
-                <div className="flex-1 h-px bg-white/10" />
+                <p className="text-[10px] font-bold text-muted-foreground/70 uppercase tracking-widest">{group.group}</p>
+                <div className="flex-1 h-px bg-border/60" />
               </div>
             ) : (
-              <div className="mx-2 my-1.5 h-px bg-white/10" />
+              <div className="mx-2 my-1.5 h-px bg-border/60" />
             )}
             {group.items.map((item) => {
               const isActive = activeSection === item.id;
@@ -334,15 +334,15 @@ const CartSessionDashboard = () => {
                   onClick={() => handleSectionClick(item.id, item.free)}
                   className={`w-full flex items-center gap-2.5 px-3 py-1.5 text-xs transition-colors relative ${
                     isActive
-                      ? "bg-cyan-500/10 text-cyan-400 font-medium border-r-2 border-cyan-400"
+                      ? "bg-cyan-50 text-cyan-700 font-medium border-r-2 border-cyan-500"
                       : isLocked
-                      ? "text-white/20 hover:bg-white/5"
-                      : "text-white/50 hover:bg-white/10 hover:text-white/80"
+                      ? "text-muted-foreground/50 hover:bg-muted/50"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   } ${sidebarCollapsed ? "justify-center px-0" : ""}`}
                   title={sidebarCollapsed ? item.label : undefined}
                 >
                   <div className="relative shrink-0">
-                    <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-400" : ""}`} />
+                    <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-600" : ""}`} />
                     {isComplete && !isLocked && !sidebarCollapsed && (
                       <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
                     )}
@@ -355,9 +355,9 @@ const CartSessionDashboard = () => {
                       <span className="truncate">{item.label}</span>
                       <div className="ml-auto flex items-center gap-1">
                         {count !== undefined && count > 0 && !isLocked && (
-                          <span className="text-[10px] text-white/40 bg-white/10 rounded-full px-1.5 py-0.5 leading-none">{count}</span>
+                          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 leading-none">{count}</span>
                         )}
-                        {isLocked && <Lock className="w-3 h-3 text-white/20" />}
+                        {isLocked && <Lock className="w-3 h-3 text-muted-foreground/40" />}
                       </div>
                     </>
                   )}
@@ -370,7 +370,7 @@ const CartSessionDashboard = () => {
 
       {/* Sidebar footer: actions */}
       {isFinalGenerated && !sidebarCollapsed && (
-        <div className="p-3 border-t border-white/10 space-y-1.5">
+        <div className="p-3 border-t space-y-1.5">
           {isPaid && (
             <Button
               size="sm"
@@ -402,7 +402,7 @@ const CartSessionDashboard = () => {
 
   // ========== MOBILE NAV ==========
   const MobileNav = () => (
-    <div className="lg:hidden overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b border-slate-200 bg-white">
+    <div className="lg:hidden overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b bg-card/50">
       <div className="flex gap-0.5 py-1.5 w-max">
         {SECTIONS.map((group, gi) => (
           <div key={group.group} className="flex items-center gap-0.5">
@@ -452,29 +452,29 @@ const CartSessionDashboard = () => {
   const renderOverview = () => (
     <div className="space-y-5">
       {/* Quick Stats Banner */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 text-sm text-white">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
         <div className="flex items-center gap-1.5">
           <Settings className="w-3.5 h-3.5 text-blue-500" />
           <span className="font-semibold">{processus.length}</span>
-          <span className="text-white/50 text-xs">processus detectes</span>
+          <span className="text-muted-foreground text-xs">processus detectes</span>
         </div>
-        <div className="w-px h-4 bg-white/20 hidden sm:block" />
+        <div className="w-px h-4 bg-border hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <Layers className="w-3.5 h-3.5 text-emerald-500" />
           <span className="font-semibold">{outils.length}</span>
-          <span className="text-white/50 text-xs">outils recenses</span>
+          <span className="text-muted-foreground text-xs">outils recenses</span>
         </div>
-        <div className="w-px h-4 bg-white/20 hidden sm:block" />
+        <div className="w-px h-4 bg-border hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
           <span className="font-semibold">{irritants.length}</span>
-          <span className="text-white/50 text-xs">irritants identifies</span>
+          <span className="text-muted-foreground text-xs">irritants identifies</span>
         </div>
-        <div className="w-px h-4 bg-white/20 hidden sm:block" />
+        <div className="w-px h-4 bg-border hidden sm:block" />
         <div className="flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-amber-500" />
           <span className="font-semibold">{quickwins.length}</span>
-          <span className="text-white/50 text-xs">quick wins disponibles</span>
+          <span className="text-muted-foreground text-xs">quick wins disponibles</span>
         </div>
       </div>
 
@@ -540,8 +540,7 @@ const CartSessionDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-1 overflow-hidden">
-          <div className="h-1 w-full bg-gradient-to-r from-cyan-500 to-blue-500" />
+        <Card className="lg:col-span-1">
           <CardHeader className="pb-2 px-4 pt-4">
             <CardTitle className="text-sm flex items-center gap-1.5">
               <Target className="w-4 h-4 text-cyan-500" />
@@ -629,7 +628,7 @@ const CartSessionDashboard = () => {
             const packScore = pr?.score_maturite;
             const isDone = status === "done";
             return (
-              <Card key={packDef.bloc} className={`transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${isDone ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
+              <Card key={packDef.bloc} className={`transition-all hover:shadow-md ${isDone ? "border-emerald-200 bg-emerald-50/30" : ""}`}>
                 <CardContent className="p-3 flex flex-col items-center text-center gap-2">
                   {/* Circular progress ring */}
                   <div className="relative">
@@ -1238,31 +1237,31 @@ const CartSessionDashboard = () => {
           </div>
         )}
         {/* Quick Stats Banner */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 border border-white/10 text-sm text-white">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
           <div className="flex items-center gap-1.5">
             <Settings className="w-3.5 h-3.5 text-blue-500" />
             <span className="font-semibold">{processus.length}</span>
             <span className="text-muted-foreground text-xs">processus</span>
           </div>
-          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="w-px h-4 bg-border hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Layers className="w-3.5 h-3.5 text-emerald-500" />
             <span className="font-semibold">{outils.length}</span>
             <span className="text-muted-foreground text-xs">outils</span>
           </div>
-          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="w-px h-4 bg-border hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
             <span className="font-semibold">{irritants.length}</span>
             <span className="text-muted-foreground text-xs">irritants</span>
           </div>
-          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="w-px h-4 bg-border hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span className="font-semibold">{quickwins.length}</span>
             <span className="text-muted-foreground text-xs">quick wins</span>
           </div>
-          <div className="w-px h-4 bg-white/20 hidden sm:block" />
+          <div className="w-px h-4 bg-border hidden sm:block" />
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-muted-foreground text-xs">{estimatedTimeRemaining > 0 ? `~${estimatedTimeRemaining} min restant` : "Complete"}</span>

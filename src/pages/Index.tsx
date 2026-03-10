@@ -345,10 +345,10 @@ const Index = () => {
       name: 'Entreprise',
       price: 'Sur mesure',
       period: '',
-      desc: 'Transformation accompagnee de A a Z',
+      desc: 'Transformation accompagnee par nos experts',
       features: [
         'Tout Professionnel +',
-        'Accompagnement dedie',
+        'Accompagnement expert dedie',
         'Ateliers de transformation',
         'Integrations sur mesure',
         'Multi-equipes illimite',
@@ -365,21 +365,21 @@ const Index = () => {
   /* ── Testimonials ── */
   const testimonials = [
     {
-      quote: "En 2 semaines, Solutio a revele des inefficacites soupconnees depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
-      name: 'M.D.',
-      role: 'CEO, industrie manufacturiere (45 salaries)',
+      quote: "En 2 semaines, Solutio nous a revele des inefficacites que nous soupconnions depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
+      name: 'Marie Deschamps',
+      role: 'CEO, FactoryLab (industrie, 45 salaries)',
       metric: '-40% de temps perdu sur les processus internes',
     },
     {
-      quote: "Le rapport PDF genere par Solutio a ete presente au comite de direction. En 30 minutes, tout le monde etait aligne sur les priorites. Une premiere.",
-      name: 'T.B.',
-      role: 'DG, cabinet de conseil (28 salaries)',
+      quote: "J'ai presente le rapport PDF genere par Solutio a mon comite de direction. En 30 minutes, tout le monde etait aligne sur les priorites. C'est la premiere fois que ca arrive.",
+      name: 'Thomas Berger',
+      role: 'DG, Nexus Consulting (conseil, 28 salaries)',
       metric: '3x plus rapide pour prendre des decisions strategiques',
     },
     {
-      quote: "Le radar de maturite a ete un electrochoc. L'equipe pensait etre mature sur le digital — 3/10 sur la data. Solutio a fourni une feuille de route claire pour progresser.",
-      name: 'S.L.',
-      role: 'Fondatrice, ESS (60 salaries)',
+      quote: "Le radar de maturite a ete un electrochoc. On pensait etre matures sur le digital, on etait a 3/10 sur la data. Solutio nous a donne une feuille de route claire pour progresser.",
+      name: 'Sophie Laurent',
+      role: 'Fondatrice, GreenScale (ESS, 60 salaries)',
       metric: 'De 3/10 a 7/10 en maturite data en 6 mois',
     },
   ];
@@ -387,24 +387,24 @@ const Index = () => {
   /* ── FAQs ── */
   const faqs = [
     {
-      q: "Qu'est-ce que Solutio exactement ?",
-      a: "Solutio est un business partner tech : diagnostic organisationnel, développement d'outils sur mesure et accompagnement jusqu'à l'adoption. L'outil de cartographie organisationnelle est gratuit pour commencer.",
+      q: "Qu'est-ce que la cartographie organisationnelle Solutio ?",
+      a: "C'est un diagnostic complet de votre entreprise base sur 150 questions couvrant 10 axes strategiques (strategie, processus, technologie, RH, data, culture, finance, client, innovation, operations). L'IA analyse vos reponses et genere une cartographie visuelle de votre organisation avec des recommandations actionables.",
     },
     {
       q: 'Combien de temps prend le diagnostic ?',
       a: "Le questionnaire prend environ 25 a 35 minutes. L'analyse IA est generee en quelques minutes. Vous recevez votre radar de maturite, votre carte organisationnelle et vos premiers quick wins dans l'heure qui suit.",
     },
     {
-      q: "Combien coute un projet sur mesure ?",
-      a: "Cela dépend de la complexité. Un outil simple peut démarrer autour de quelques milliers d'euros, une plateforme complète sera plus conséquente. Le diagnostic gratuit permet de cadrer le besoin avant toute proposition de devis.",
+      q: "Comment l'IA genere-t-elle les recommandations ?",
+      a: "Nous utilisons Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
     },
     {
-      q: 'A qui s\'adresse Solutio ?',
-      a: "Indépendants, équipes de 5, structures de 50+ — la taille n'est pas le critère. Le point commun : l'ambition de mieux s'organiser et la volonté de changer ce qui ne fonctionne pas. Cabinets de conseil, agences, entreprises industrielles, ESS.",
+      q: 'Mes donnees sont-elles securisees ?',
+      a: "Absolument. Vos donnees sont chiffrees en transit et au repos (AES-256). Nous sommes conformes RGPD. Vos donnees ne sont jamais utilisees pour entrainer des modeles IA. Vous pouvez demander la suppression complete de vos donnees a tout moment.",
     },
     {
-      q: 'Quelle est la différence avec un consultant classique ?',
-      a: "Pas de PowerPoint de 200 slides. Le diagnostic utilise un outil IA concret, les recommandations sont priorisées avec ROI estimé, et si besoin les outils sont construits sur mesure. Du diagnostic à l'implémentation, un seul interlocuteur.",
+      q: 'Puis-je tester gratuitement avant de m\'engager ?',
+      a: "Oui, le plan Decouverte est entierement gratuit et sans engagement. Il inclut le diagnostic complet, le radar de maturite et une synthese IA de base. Vous pouvez passer au plan Professionnel a tout moment pour debloquer l'analyse approfondie.",
     },
     {
       q: "Le diagnostic est-il adapte a mon secteur d'activite ?",
@@ -416,7 +416,7 @@ const Index = () => {
     },
     {
       q: 'Comment se passe l\'accompagnement Entreprise ?',
-      a: "Solutio vous accompagne sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation de vos managers aux outils. C'est un vrai partenariat de transformation.",
+      a: "Un expert Solutio dedie vous accompagne sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation de vos managers aux outils. C'est un vrai partenariat de transformation.",
     },
   ];
 
@@ -486,19 +486,19 @@ const Index = () => {
               </Badge>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[68px] font-extrabold text-white leading-[1.05] tracking-tight mb-4">
-                Ce qui peut être automatisé{' '}
+                Votre entreprise merite mieux qu'un fonctionnement{' '}
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
                     backgroundImage: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%)',
                   }}
                 >
-                  ne devrait plus être fait à la main.
+                  approximatif.
                 </span>
               </h1>
 
               <p className="text-xl sm:text-2xl text-blue-300/80 font-semibold mb-6 tracking-tight">
-                Diagnostic organisationnel, développement sur mesure, accompagnement jusqu'à l'adoption — un seul interlocuteur.
+                Cartographiez, diagnostiquez, transformez.
               </p>
 
               <p className="text-base sm:text-lg text-white/45 max-w-xl leading-relaxed mb-10">
@@ -598,13 +598,12 @@ const Index = () => {
         <div className="max-w-[1100px] mx-auto">
           <SectionLabel>Le probleme</SectionLabel>
           <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold leading-[1.08] tracking-tight mb-5 max-w-3xl">
-            Les pertes de temps dans une organisation sont rarement{' '}
-            <span className="text-primary">là où on les cherche.</span>
+            Chaque jour, vos equipes perdent des heures sur des{' '}
+            <span className="text-primary">processus inefficaces.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mb-14 leading-relaxed">
-            Des tâches qui s'accumulent, des outils qui ne se parlent pas,
-            des processus jamais formalisés. L'organisation fonctionne —
-            mais pas à ce qu'elle pourrait.
+            Et le pire ? Vous ne savez pas exactement ou, ni combien ca vous coute.
+            Sans vision claire, impossible de prioriser les bons chantiers.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -612,7 +611,7 @@ const Index = () => {
               {
                 icon: <Clock className="w-7 h-7" />,
                 title: 'Temps gaspille',
-                desc: 'Les vrais blocages s\'accumulent en silence. Tâches dupliquées, validations manuelles, informations dispersées — chacun compense individuellement sans que la cause soit jamais adressée.',
+                desc: 'Vos equipes passent 30% de leur temps sur des taches repetitives, des validations inutiles et des recherches d\'information dispersee.',
                 stat: '30%',
                 statLabel: 'du temps de travail perdu',
                 color: 'red',
@@ -620,7 +619,7 @@ const Index = () => {
               {
                 icon: <Layers className="w-7 h-7" />,
                 title: 'Chaos des outils',
-                desc: 'Excel ici, un CRM là, Notion pour certains, emails pour le reste. Chaque équipe a construit son propre système. Résultat : aucune vue consolidée, et du temps perdu à faire le lien.',
+                desc: 'Excel, Notion, Slack, mails, papier... L\'information est eparpillee. Personne n\'a la meme version. Les decisions se prennent a l\'aveugle.',
                 stat: '8+',
                 statLabel: 'outils non connectes en moyenne',
                 color: 'amber',
@@ -628,7 +627,7 @@ const Index = () => {
               {
                 icon: <Eye className="w-7 h-7" />,
                 title: 'Goulots invisibles',
-                desc: 'Dans chaque organisation, des heures récupérables existent. Automatisations simples, processus à clarifier, outils à connecter. Il faut savoir où regarder.',
+                desc: 'Les blocages se cachent dans les zones grises de l\'organisation. Sans cartographie, ils grossissent silencieusement jusqu\'a la crise.',
                 stat: '67%',
                 statLabel: 'des blocages sont invisibles au dirigeant',
                 color: 'violet',
@@ -1060,8 +1059,8 @@ const Index = () => {
           </h2>
 
           <p className="text-lg text-white/40 leading-relaxed mb-10 max-w-lg mx-auto">
-            Diagnostic gratuit sur 10 axes, outils sur mesure
-            et accompagnement jusqu'à l'adoption. Un seul interlocuteur.
+            Rejoignez +200 dirigeants qui ont deja cartographie leur organisation.
+            Diagnostic gratuit. Premiers resultats en moins d'une heure.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">

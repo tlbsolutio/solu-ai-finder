@@ -59,7 +59,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* App header */}
-      <header className="sticky top-0 z-50 h-12 border-b border-white/10 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800 backdrop-blur-xl px-3 sm:px-5 flex items-center justify-between gap-2">
+      <header className="sticky top-0 z-50 h-12 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 sm:px-5 flex items-center justify-between gap-2">
         {/* Left: Product identity + Breadcrumbs */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link to="/cartographie/sessions" className="flex items-center gap-2 shrink-0 group">
@@ -67,23 +67,23 @@ export default function CartLayout({ children }: CartLayoutProps) {
               <Network className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="hidden sm:flex items-baseline gap-1">
-              <span className="text-sm font-bold tracking-tight text-white">Solutio</span>
-              <span className="text-sm font-bold tracking-tight text-cyan-400">Carto</span>
+              <span className="text-sm font-bold tracking-tight text-foreground">Solutio</span>
+              <span className="text-sm font-bold tracking-tight text-cyan-600">Carto</span>
             </div>
           </Link>
 
           {crumbs.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1 text-xs text-white/60 min-w-0">
-              <ChevronRight className="w-3 h-3 shrink-0 text-white/40" />
+            <div className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+              <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground/40" />
               {crumbs.map((crumb, i) => (
                 <React.Fragment key={i}>
-                  {i > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-white/40" />}
+                  {i > 0 && <ChevronRight className="w-3 h-3 shrink-0 text-muted-foreground/40" />}
                   {crumb.path ? (
-                    <Link to={crumb.path} className="hover:text-white transition-colors truncate max-w-[100px]">
+                    <Link to={crumb.path} className="hover:text-foreground transition-colors truncate max-w-[100px]">
                       {crumb.label}
                     </Link>
                   ) : (
-                    <span className="text-white/90 font-medium truncate max-w-[140px]">{crumb.label}</span>
+                    <span className="text-foreground font-medium truncate max-w-[140px]">{crumb.label}</span>
                   )}
                 </React.Fragment>
               ))}
@@ -92,7 +92,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
 
           {/* Mobile: show only current page */}
           <div className="flex sm:hidden items-center gap-1.5 min-w-0">
-            <span className="text-xs font-medium truncate text-white/90">
+            <span className="text-xs font-medium truncate">
               {crumbs[crumbs.length - 1]?.label || "Carto"}
             </span>
           </div>
@@ -102,10 +102,10 @@ export default function CartLayout({ children }: CartLayoutProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-cyan-400" />
+              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-cyan-600" />
               </div>
-              <span className="hidden sm:inline text-xs text-white/50 max-w-[120px] truncate">
+              <span className="hidden sm:inline text-xs text-muted-foreground max-w-[120px] truncate">
                 {userName || userEmail || "Compte"}
               </span>
             </Button>
