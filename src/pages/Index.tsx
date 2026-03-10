@@ -468,9 +468,9 @@ const Index = () => {
                 à investir intelligemment dans son outil de production.
               </p>
               <p>
-                L'IA ne remplacera jamais celui qui pense, qui crée, qui a l'intuition. Elle remplace le copier-coller,
-                le reporting manuel, la coordination inutile. Les grandes organisations non agiles vont avoir du mal.
-                Les petites structures qui misent sur leurs outils vont les dépasser.
+                L'IA ne remplacera jamais celui qui pense, qui crée, qui a l'intuition. Elle absorbe la complexité —
+                l'analyse de données massives, la génération de contenu, l'aide à la décision. Les grandes organisations
+                non agiles vont avoir du mal. Les petites structures qui misent sur leurs outils vont les dépasser.
               </p>
               <p className="text-foreground font-medium">
                 Solutio existe pour ça : transformer l'environnement de travail pour que chaque professionnel
