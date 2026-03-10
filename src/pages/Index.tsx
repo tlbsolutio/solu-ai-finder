@@ -476,7 +476,21 @@ const Index = () => {
                 Vision, stratégie, exécution — c'est là que se crée ce qu'aucun système ne peut remplacer.
                 Tout le reste peut et devrait être pris en charge par la technologie. Quand les outils sont
                 construits pour un contexte précis, ils absorbent ce qui n'aurait jamais dû requérir
-                d'attention humaine.
+                d'attention humaine. Ce temps revient là où il a de la valeur.
+              </p>
+              <p>
+                Ce qui change aujourd'hui, c'est que les petites équipes ont accès aux mêmes capacités
+                que les grandes structures — développement sur mesure, IA intégrée, outils taillés pour
+                leur réalité. L'avantage n'est plus à celui qui a le plus de moyens, mais à celui qui
+                investit intelligemment dans son outil de production. Des équipes agiles de 5 personnes
+                surpassent des départements de 50 quand l'environnement de travail est conçu pour ça.
+              </p>
+              <p>
+                L'IA ne remplacera jamais celui qui pense, qui crée, qui a l'intuition. Elle remplace
+                l'assistant, le copier-coller, le reporting manuel, la coordination inutile. C'est le
+                retour de l'entrepreneuriat — des équipes réduites, rapides, libérées de la lourdeur
+                opérationnelle. Les grandes organisations non agiles vont avoir du mal. Les petites
+                structures qui investissent dans leurs outils vont les dépasser.
               </p>
               <p className="text-foreground font-medium">
                 Solutio existe pour résoudre exactement ça. Le point de départ, c'est la réalité terrain —
@@ -487,7 +501,8 @@ const Index = () => {
 
             <div className="mt-10 border-l-4 border-cyan-500 pl-6">
               <p className="text-xl font-bold text-foreground leading-snug">
-                La technologie n'est pas une fin en soi. C'est le levier qui permet à chacun de travailler à la hauteur de son intelligence.
+                La technologie n'est pas une fin en soi. C'est le levier qui permet à chacun de travailler
+                à la hauteur de son intelligence — et aux petites équipes de rivaliser avec les plus grandes.
               </p>
             </div>
           </div>
