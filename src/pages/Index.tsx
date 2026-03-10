@@ -9,11 +9,13 @@ import {
   ChevronDown,
   Plus,
   Zap,
+  Brain,
   Target,
   BarChart3,
   Shield,
   Sparkles,
   Map,
+  ListChecks,
   Calendar,
   Building2,
   Lightbulb,
@@ -46,7 +48,7 @@ const MiniRadarChart = ({ size = 200 }: { size?: number }) => {
   const path = dp.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ') + 'Z';
   const line = 'rgba(255,255,255,0.08)';
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" role="img" aria-label="Radar de maturité organisationnelle sur 10 axes">
+    <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full" role="img" aria-label="Radar de maturite organisationnelle sur 10 axes">
       {[0.25, 0.5, 0.75, 1].map((l) => {
         const pts = Array.from({ length: n }, (_, i) => pt(i, maxR * l));
         return <path key={l} d={pts.map((p, i) => `${i ? 'L' : 'M'}${p.x},${p.y}`).join(' ') + 'Z'} fill="none" stroke={line} strokeWidth="1" />;
@@ -98,61 +100,61 @@ const Index = () => {
   const services = [
     {
       icon: Search, title: 'Conseil & Diagnostic', subtitle: "Comprendre avant d'agir",
-      description: "Audit complet de l'organisation : processus, outils, équipes, coûts. Identification de ce qui freine la croissance et plan d'action concret.",
-      features: ['Cartographie des processus existants', "Identification des pertes de temps", 'Plan de transformation priorisé', "Estimation du ROI par action"],
-      cta: 'Demander un diagnostic', ctaLink: '/cartographie/login',
+      description: "Audit complet de votre organisation : processus, outils, equipes, couts. On identifie ce qui freine votre croissance et on vous donne un plan d'action concret.",
+      features: ['Cartographie de vos processus et flux', "Identification des goulots d'etranglement", 'Analyse des couts caches et inefficacites', "Plan d'action priorise avec ROI estime"],
+      cta: 'Demander un diagnostic', ctaLink: '/cartographie',
     },
     {
-      icon: Code2, title: 'Outils sur mesure', subtitle: "Quand rien n'existe sur le marché",
-      description: "Les outils SaaS sont conçus pour être généralistes — c'est ce qui leur permet d'adresser le plus grand nombre. Ce n'est pas un défaut, c'est un choix de marché. Aujourd'hui, construire un outil taillé pour un contexte précis est accessible. Il n'y a plus de raison de s'adapter à un outil qui n'a pas été pensé pour vous.",
-      features: ['Plateformes SaaS internes ou client', 'Automatisation de processus répétitifs', 'Intégrations multi-outils (API, CRM, ERP)', 'Tableaux de bord et reporting sur mesure'],
-      cta: 'Discuter du projet', ctaLink: '/contact',
+      icon: Code2, title: 'Outils sur mesure', subtitle: "Quand rien n'existe sur le marche",
+      description: "Developpement de plateformes et outils metier adaptes a vos besoins reels. Pas de SaaS generique : des solutions pensees pour votre facon de travailler.",
+      features: ['Plateformes SaaS internes ou client', 'Automatisation de processus repetitifs', 'Integrations multi-outils (API, CRM, ERP)', 'Tableaux de bord et reporting sur mesure'],
+      cta: 'Discuter de votre projet', ctaLink: '/contact',
     },
     {
-      icon: TrendingUp, title: 'Accompagnement', subtitle: 'Du diagnostic à la transformation',
-      description: "Suivi de la mise en œuvre, formation des équipes, mesure des résultats. Un seul interlocuteur jusqu'à ce que les changements soient ancrés.",
-      features: ['Feuille de route sur 30/60/90 jours', 'Coaching équipes et conduite du changement', 'Suivi KPIs et ajustements', 'Transfert de compétences'],
-      cta: 'Réserver un échange', ctaLink: 'https://calendly.com/tlb-ov_p/30min',
+      icon: TrendingUp, title: 'Accompagnement', subtitle: 'Du diagnostic a la transformation',
+      description: "Suivi de la mise en oeuvre, formation de vos equipes, mesure des resultats. On reste a vos cotes jusqu'a ce que les changements soient ancres.",
+      features: ['Feuille de route sur 30/60/90 jours', 'Coaching equipes et conduite du changement', 'Suivi KPIs et ajustements', 'Transfert de competences'],
+      cta: 'Reserver un echange', ctaLink: 'https://calendly.com/tlb-ov_p/30min',
     },
   ];
 
   const caseStudies = [
     {
-      sector: 'Cabinet de conseil — 25+ consultants',
+      sector: 'Cabinet de conseil — 25 consultants',
       icon: Building2,
       tags: ['Suivi de mission', 'Portail consultant', 'Reporting auto'],
-      before: "Cabinet de conseil, 25+ consultants. Saisies redondantes, coordination dispersée, aucune vision consolidée. La production de livrables et le pilotage du réseau consommaient l'essentiel du temps opérationnel — au détriment du terrain.",
-      after: "Plateforme sur mesure : 5 outils métiers intégrés et une plateforme de gestion centralisée. Missions, activité, livrables, pilotage réseau — tout en un seul endroit. La structure tourne de façon autonome, sans intervention manuelle.",
-      result: '5 outils métiers intégrés + plateforme centralisée',
+      before: 'Tout gere manuellement : saisies redondantes, coordination dispersee, reporting hebdomadaire de 4h. Le temps administratif depassait le temps terrain.',
+      after: 'Une plateforme sur mesure avec 5 outils metier integres. Missions, activite, livrables — tout centralise. Reporting automatise, coordination fluide.',
+      result: '85% de temps de reporting en moins',
     },
     {
       sector: "Agence marketing d'affiliation — 6 clients",
       icon: LineChart,
       tags: ['SaaS Platform', 'Automatisation', 'Multi-client'],
-      before: "Agence marketing — gestion de 6 clients d'affiliation. Exports manuels depuis des plateformes différentes pour chaque client (Rakuten, Impact, Awin), recompilation dans Excel, envoi manuel des rapports. 2h par client chaque semaine, uniquement pour produire et transmettre les rapports. Aucun suivi structuré des tâches et deadlines.",
-      after: "Plateforme SaaS métier complète — interface unique couvrant l'ensemble des opérations clients : import automatique multi-réseau, dashboard analytics temps réel, envoi automatique de rapports hebdomadaires et mensuels, suivi des tâches administratives et deadlines intégré. Intégration ClickUp. Sur la seule activité de reporting : 15 minutes par client au lieu de 2h — dès la première semaine d'implémentation. 11h récupérées par semaine sur 6 clients existants. Gain reproductible à chaque nouveau client ajouté.",
-      result: '-90% temps de reporting',
+      before: 'Rapports manuels sur 3 reseaux (Rakuten, Impact, Awin). 2 jours par semaine perdus en copier-coller et mise en forme.',
+      after: 'SaaS full-stack avec import automatique multi-reseau, dashboards temps reel et alertes. Scalable de 6 a 30+ clients.',
+      result: '2 jours/semaine recuperes par consultant',
     },
   ];
 
   const faqs = [
-    { q: "C'est quoi exactement Solutio ?", a: "Solutio est un business partner tech : diagnostic organisationnel, développement d'outils sur mesure et accompagnement jusqu'à l'adoption. L'outil de cartographie organisationnelle est gratuit pour commencer." },
-    { q: 'Le diagnostic est vraiment gratuit ?', a: "Oui. Le questionnaire complet (10 packs) est entièrement gratuit. Vous obtenez une vue d'ensemble, un radar de maturité et une carte interactive sans rien payer. Les analyses IA approfondies et le plan d'action détaillé sont disponibles à partir de 349 EUR." },
-    { q: 'Combien coûte un projet de développement sur mesure ?', a: "Cela dépend de la complexité. Un outil simple peut démarrer autour de quelques milliers d'euros, une plateforme complète sera plus conséquente. Le diagnostic gratuit permet de cadrer le besoin avant toute proposition de devis." },
-    { q: "Vous travaillez avec quels types d'entreprises ?", a: "Indépendants, équipes de 5, structures de 50+ — la taille n'est pas le critère. Le point commun : l'ambition de mieux s'organiser et la volonté de changer ce qui ne fonctionne pas. Cabinets de conseil, agences, entreprises industrielles, ESS." },
-    { q: "En quoi c'est différent d'un cabinet de conseil classique ?", a: "Pas de PowerPoint de 200 slides. Le diagnostic utilise un outil IA concret, les recommandations sont priorisées avec ROI estimé, et si besoin les outils sont construits sur mesure. Du diagnostic à l'implémentation, un seul interlocuteur." },
-    { q: 'Mes données sont-elles protégées ?', a: "Les données sont hébergées en Europe, chiffrées en transit et au repos. Aucun partage avec des tiers." },
+    { q: "C'est quoi exactement Solutio ?", a: "Solutio est un cabinet de conseil en transformation digitale. On aide les entreprises a comprendre ce qui freine leur croissance (diagnostic), a construire les outils qu'il leur faut (developpement sur mesure), et a mettre en oeuvre les changements (accompagnement). Notre outil de cartographie organisationnelle est gratuit pour commencer." },
+    { q: 'Le diagnostic est vraiment gratuit ?', a: "Oui. Le questionnaire complet (10 packs) est entierement gratuit. Vous obtenez une vue d'ensemble, un radar de maturite et une carte interactive sans rien payer. Les analyses IA approfondies et le plan d'action detaille sont disponibles a partir de 349 EUR." },
+    { q: 'Combien coute un projet de developpement sur mesure ?', a: "Cela depend de la complexite. Un outil simple peut demarrer autour de quelques milliers d'euros, une plateforme complete sera plus consequente. On commence toujours par un diagnostic gratuit pour cadrer le besoin avant de proposer un devis." },
+    { q: "Vous travaillez avec quels types d'entreprises ?", a: "Principalement des PME et ETI de 10 a 500 collaborateurs, tous secteurs. Nos cas les plus frequents : cabinets de conseil, agences, entreprises industrielles, ESS. Le point commun : des dirigeants qui veulent transformer leur organisation sans se perdre." },
+    { q: "En quoi vous etes differents d'un cabinet de conseil classique ?", a: "On ne fait pas de PowerPoint de 200 slides. On diagnostique avec un outil IA concret, on recommande des actions priorisees avec ROI estime, et si besoin on construit les outils. Du diagnostic a l'implementation, un seul interlocuteur." },
+    { q: 'Mes donnees sont-elles protegees ?', a: "Absolument. Vos donnees sont hebergees en Europe (Supabase Ireland), chiffrees en transit et au repos. Nous ne les partageons jamais avec des tiers. Vous pouvez supprimer vos donnees a tout moment." },
   ];
 
   return (
     <div className="relative">
       <MetaTags
         title="Solutio — Conseil en transformation digitale & outils sur mesure"
-        description="Diagnostic organisationnel, développement d'outils sur mesure et accompagnement jusqu'à l'adoption. Solutio aide les dirigeants à transformer leur entreprise."
+        description="Diagnostic IA gratuit, cartographie organisationnelle, developpement d'outils metier et accompagnement. Solutio aide les dirigeants a transformer leur entreprise."
         keywords="transformation digitale, conseil, diagnostic, cartographie organisationnelle, outils sur mesure, PME"
       />
       <StructuredData type="FAQPage" data={{ questions: faqs.map((f) => ({ question: f.q, answer: f.a })) }} />
-      <StructuredData type="ProfessionalService" data={{ name: "Solutio", description: "Business partner tech — diagnostic organisationnel, outils sur mesure et accompagnement." }} />
+      <StructuredData type="ProfessionalService" data={{ name: "Solutio", description: "Cabinet de conseil en transformation digitale : diagnostic IA, outils sur mesure et accompagnement." }} />
 
       {/* ═══ 1. HERO ═══ */}
       <section className="relative min-h-[100vh] flex items-end overflow-hidden">
@@ -166,35 +168,35 @@ const Index = () => {
           </Badge>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.08] tracking-tight mb-6">
-            Ce qui peut être{' '}
+            Votre entreprise peut faire{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-              automatisé
+              beaucoup mieux
             </span>
-            {' '}
+            .{' '}
             <br className="hidden sm:block" />
-            <span className="text-white/90">ne devrait plus être fait à la main.</span>
+            <span className="text-white/90">On vous montre comment.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/80 leading-relaxed mb-9 max-w-2xl">
-            Diagnostic organisationnel, développement sur mesure, accompagnement
-            jusqu'à l'adoption — un seul interlocuteur.
+            Diagnostic IA gratuit, cartographie de vos processus, construction d'outils sur mesure
+            et accompagnement concret. Un seul objectif : que votre organisation fonctionne vraiment.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
             <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
               <Button size="lg" className="h-12 px-8 w-full sm:w-auto bg-white text-gray-900 hover:bg-gray-100 shadow-lg shadow-white/10 font-semibold">
                 <Calendar className="w-4 h-4 mr-2" />
-                Réserver un échange
+                Reserver un echange
               </Button>
             </a>
             <Button size="lg" variant="outline" onClick={() => scrollTo('outils')} className="h-12 px-8 border-white/25 text-white bg-white/5 hover:bg-white/10 backdrop-blur-sm">
-              Découvrir les outils
+              Decouvrir nos outils
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
 
           <div className="flex flex-wrap gap-5 text-sm text-white/60">
-            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-cyan-400/70" /> Données hébergées en Europe</span>
+            <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-cyan-400/70" /> Donnees hebergees en Europe</span>
             <span className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-cyan-400/70" /> Diagnostic gratuit sur 10 axes</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 text-cyan-400/70" /> Sans engagement</span>
           </div>
@@ -206,25 +208,25 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 2. LE CONSTAT ═══ */}
+      {/* ═══ 2. PROBLEM STATEMENT — concret, pas de stats vagues ═══ */}
       <section className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto text-center mb-14">
             <SectionLabel>Le constat</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Les pertes de temps dans une organisation sont rarement là où on les cherche.
+              Vous le voyez tous les jours, mais vous n'avez pas le temps de le mesurer
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
-              Des tâches qui s'accumulent, des outils qui ne se parlent pas, des processus jamais formalisés.
-              L'organisation fonctionne — mais pas à ce qu'elle pourrait.
+              Des processus qui ralentissent, des outils qui ne se parlent pas, des equipes qui compensent
+              a la main. Le resultat : du temps perdu, de l'energie gaspillee, et un potentiel sous-exploite.
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
             {[
-              { icon: Target, title: 'Des irritants invisibles', desc: "Les vrais blocages s'accumulent en silence. Tâches dupliquées, validations manuelles, informations dispersées — chacun compense individuellement sans que la cause soit jamais adressée." },
-              { icon: BarChart3, title: 'Des outils empilés', desc: "Excel ici, un CRM là, Notion pour certains, emails pour le reste. Chaque équipe a construit son propre système. Résultat : aucune vue consolidée, et du temps perdu à faire le lien." },
-              { icon: Lightbulb, title: 'Des quick wins ignorés', desc: "Dans chaque organisation, des heures récupérables existent. Automatisations simples, processus à clarifier, outils à connecter. Il faut savoir où regarder." },
+              { icon: Target, title: 'Des irritants invisibles', desc: "Les vrais blocages ne sont pas toujours la ou on les cherche. Sans cartographie, on traite les symptomes, pas les causes." },
+              { icon: BarChart3, title: 'Des outils empiles', desc: "Excel ici, un CRM la, Notion pour certains, emails pour le reste. Aucune vue consolidee, chaque equipe a son propre systeme." },
+              { icon: Lightbulb, title: 'Des quick wins ignores', desc: "Des gains rapides (souvent quelques heures/semaine) existent dans toute organisation. Encore faut-il savoir ou regarder." },
             ].map((item) => (
               <Card key={item.title} className="p-6 border-border/50 hover:shadow-md hover:border-primary/20 transition-all duration-300">
                 <item.icon className="w-8 h-8 text-primary mb-4" />
@@ -236,16 +238,16 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 3. SERVICES ═══ */}
+      {/* ═══ 3. SERVICES — 3 Pillars ═══ */}
       <section id="accompagnement" className="py-20 sm:py-24 bg-muted/30">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto text-center mb-12">
-            <SectionLabel>Services</SectionLabel>
+            <SectionLabel>Nos services</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Du diagnostic à la transformation, un seul interlocuteur
+              Du diagnostic a la transformation, un seul interlocuteur
             </h2>
             <p className="text-muted-foreground text-lg">
-              Diagnostic, construction, accompagnement — jusqu'aux résultats.
+              Pas de consulting theorique. On diagnostique, on construit, on accompagne — jusqu'aux resultats.
             </p>
           </div>
 
@@ -300,7 +302,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 4. OUTILS ═══ */}
+      {/* ═══ 4. OUTILS — V0 3-card grid style ═══ */}
       <section id="outils" className="py-20 lg:py-24 px-6 sm:px-10">
         <div className="max-w-[1060px] mx-auto">
           <SectionLabel>{t('home.outils_label')}</SectionLabel>
@@ -341,7 +343,7 @@ const Index = () => {
                     </li>
                   ))}
                 </ul>
-                <Link to="/cartographie/login">
+                <Link to="/cartographie">
                   <Button className="w-full font-semibold shadow-md shadow-primary/20">{t('home.carto_btn')}</Button>
                 </Link>
               </div>
@@ -398,20 +400,18 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 5. RÉALISATIONS ═══ */}
+      {/* ═══ 5. REALISATIONS — V0 before/after style with concrete data ═══ */}
       <section id="realisations" className="py-20 lg:py-24 px-6 sm:px-10 bg-muted/30">
         <div className="max-w-[1060px] mx-auto">
           <SectionLabel>Cas concrets</SectionLabel>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold leading-[1.1] tracking-tight">
-              Quand aucun outil existant ne correspond exactement à votre{' '}
-              <span className="text-primary">façon de travailler.</span>
+              Des resultats mesurables,{' '}
+              <span className="text-primary">pas des promesses.</span>
             </h2>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Conception et développement de systèmes applicatifs taillés pour un contexte précis.
-              Architecture, intégrations, interfaces : tout est pensé pour l'organisation réelle —
-              pas pour un cas d'usage générique.
+              Projets reels, resultats verifiables. Voici comment on a aide des entreprises comme la votre a reprendre le controle.
             </p>
           </div>
 
@@ -442,7 +442,7 @@ const Index = () => {
                     <p className="text-sm text-muted-foreground leading-relaxed">{cs.before}</p>
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold tracking-wider text-primary uppercase mb-1.5">Après</p>
+                    <p className="text-[11px] font-bold tracking-wider text-primary uppercase mb-1.5">Apres</p>
                     <p className="text-sm text-foreground font-medium leading-relaxed">{cs.after}</p>
                   </div>
                 </CardContent>
@@ -454,42 +454,43 @@ const Index = () => {
 
       <div className="h-px w-full bg-border" />
 
-      {/* ═══ 6. CONVICTION ═══ */}
+      {/* ═══ 7. CONVICTION ═══ */}
       <section id="conviction" className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto">
-            <SectionLabel>Conviction</SectionLabel>
+            <SectionLabel>Notre conviction</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-8">
-              La valeur d'un professionnel se mesure à ce qu'il accomplit.
-              Une heure du bon professionnel vaut deux semaines d'un autre.
-              Ce n'est pas une question de temps — c'est une question de maîtrise.
+              La transformation digitale ne devrait pas etre un projet a 500K EUR qui echoue.
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-base">
               <p>
-                Vision, stratégie, exécution — c'est là que se crée ce qu'aucun
-                système ne peut remplacer. Tout le reste peut et devrait être pris
-                en charge par la technologie.
+                La plupart des entreprises n'ont pas besoin d'une "strategie digitale" de 200 pages.
+                Elles ont besoin de comprendre ou elles perdent du temps, de l'argent et de l'energie —
+                puis d'agir sur les bonnes priorites.
               </p>
               <p>
-                Quand les outils sont construits pour un contexte précis, ils absorbent
-                ce qui n'aurait jamais dû requérir de l'attention humaine. Ce temps
-                revient là où il a de la valeur.
+                C'est ce qu'on fait chez Solutio. On commence par un diagnostic concret (pas un audit de 3 mois),
+                on identifie les quick wins (pas des recommandations vagues), et si besoin, on construit
+                les outils qui manquent (pas du sur-engineering).
+              </p>
+              <p className="text-foreground font-semibold">
+                Notre objectif : que chaque euro investi dans votre transformation vous rapporte un resultat mesurable.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ 7. CALCULATEUR ═══ */}
+      {/* ═══ 8. ROI CALCULATOR ═══ */}
       <ROICalculator />
 
-      {/* ═══ 8. FAQ ═══ */}
+      {/* ═══ 9. FAQ ═══ */}
       <section className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-[780px] mx-auto">
             <SectionLabel>FAQ</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
-              Questions fréquentes
+              Questions frequentes
             </h2>
             <div className="border rounded-2xl px-6 sm:px-8 divide-y divide-border/50 bg-background shadow-sm">
               {faqs.map((f, i) => (
@@ -500,24 +501,24 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ═══ 9. CTA FINAL ═══ */}
+      {/* ═══ 10. FINAL CTA ═══ */}
       <section className="py-20 sm:py-24" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)' }}>
         <div className="container mx-auto px-6 sm:px-10 text-center">
           <Sparkles className="w-10 h-10 text-cyan-400 mx-auto mb-6" />
           <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5 max-w-2xl mx-auto text-white">
-            Transformez votre organisation, concrètement.
+            Pret a voir ce que votre entreprise peut vraiment faire ?
           </h2>
           <p className="text-white/60 text-lg max-w-xl mx-auto mb-8">
-            Diagnostic gratuit sur 10 axes, outils sur mesure et accompagnement jusqu'à l'adoption. Un seul interlocuteur.
+            Commencez par un echange gratuit ou lancez votre diagnostic organisationnel.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="h-12 px-8 bg-white text-gray-900 hover:bg-gray-100 shadow-lg font-semibold w-full sm:w-auto">
                 <Calendar className="w-4 h-4 mr-2" />
-                Réserver un échange
+                Reserver un echange gratuit
               </Button>
             </a>
-            <Link to="/cartographie/login">
+            <Link to="/cartographie">
               <Button size="lg" variant="outline" className="h-12 px-8 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto">
                 Lancer le diagnostic
                 <ArrowRight className="w-4 h-4 ml-1" />
@@ -525,7 +526,7 @@ const Index = () => {
             </Link>
           </div>
           <p className="text-white/30 text-xs mt-8">
-            Gratuit — Sans engagement — Données hébergées en Europe
+            Gratuit — Sans engagement — Donnees hebergees en Europe
           </p>
         </div>
       </section>
@@ -548,10 +549,10 @@ const ROICalculator = () => {
           <div className="text-center mb-12">
             <SectionLabel>Calculateur</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-4">
-              Combien coûtent les inefficacités chaque mois ?
+              Combien vous coutent vos inefficacites ?
             </h2>
             <p className="text-muted-foreground">
-              Estimation basée sur un coût horaire moyen de 45 EUR/h charges comprises.
+              Estimation basee sur un cout horaire moyen de 45 EUR/h charges comprises.
             </p>
           </div>
 
@@ -561,7 +562,7 @@ const ROICalculator = () => {
                 <div className="space-y-8">
                   <div>
                     <label className="flex items-center justify-between text-sm font-medium mb-3">
-                      <span>Taille de l'équipe</span>
+                      <span>Taille de l'equipe</span>
                       <span className="text-primary font-bold">{team} personnes</span>
                     </label>
                     <input type="range" min="2" max="100" value={team} onChange={(e) => setTeam(Number(e.target.value))} className="w-full accent-primary" />
@@ -576,12 +577,12 @@ const ROICalculator = () => {
                     <div className="flex justify-between text-xs text-muted-foreground mt-1"><span>1h</span><span>20h</span></div>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Ajustez les curseurs selon votre réalité.
+                    Ajustez les curseurs selon votre realite. La moyenne observee chez nos clients est de 4 a 8h/semaine de temps perdu par collaborateur.
                   </p>
                 </div>
 
                 <div className="flex flex-col items-center justify-center text-center p-6 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-200/50 dark:border-red-800/30">
-                  <p className="text-xs uppercase tracking-wider text-red-500 font-bold mb-2">Coût estimé des inefficacités</p>
+                  <p className="text-xs uppercase tracking-wider text-red-500 font-bold mb-2">Cout estime des inefficacites</p>
                   <p className="text-4xl sm:text-5xl font-black text-red-600 dark:text-red-500">
                     {monthlyLoss.toLocaleString('fr-FR')} EUR
                   </p>
@@ -591,7 +592,7 @@ const ROICalculator = () => {
                     {yearlyLoss.toLocaleString('fr-FR')} EUR/an
                   </p>
                   <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-                    Un diagnostic à 349 EUR peut identifier comment récupérer une partie significative de cette somme.
+                    Un diagnostic a 349 EUR peut identifier comment recuperer une partie significative de cette somme.
                   </p>
                 </div>
               </div>
