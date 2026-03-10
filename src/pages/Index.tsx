@@ -345,10 +345,10 @@ const Index = () => {
       name: 'Entreprise',
       price: 'Sur mesure',
       period: '',
-      desc: 'Transformation accompagnee par nos experts',
+      desc: 'Transformation accompagnee et suivie',
       features: [
         'Tout Professionnel +',
-        'Accompagnement expert dedie',
+        'Accompagnement dedie',
         'Ateliers de transformation',
         'Integrations sur mesure',
         'Multi-equipes illimite',
@@ -365,21 +365,21 @@ const Index = () => {
   /* ── Testimonials ── */
   const testimonials = [
     {
-      quote: "En 2 semaines, Solutio nous a revele des inefficacites que nous soupconnions depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
-      name: 'Marie Deschamps',
-      role: 'CEO, FactoryLab (industrie, 45 salaries)',
+      quote: "En 2 semaines, Solutio a revele des inefficacites soupconnees depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
+      name: 'M.D.',
+      role: 'CEO, PME industrielle (45 salaries)',
       metric: '-40% de temps perdu sur les processus internes',
     },
     {
       quote: "J'ai presente le rapport PDF genere par Solutio a mon comite de direction. En 30 minutes, tout le monde etait aligne sur les priorites. C'est la premiere fois que ca arrive.",
-      name: 'Thomas Berger',
-      role: 'DG, Nexus Consulting (conseil, 28 salaries)',
+      name: 'T.B.',
+      role: 'DG, Cabinet de conseil (28 salaries)',
       metric: '3x plus rapide pour prendre des decisions strategiques',
     },
     {
-      quote: "Le radar de maturite a ete un electrochoc. On pensait etre matures sur le digital, on etait a 3/10 sur la data. Solutio nous a donne une feuille de route claire pour progresser.",
-      name: 'Sophie Laurent',
-      role: 'Fondatrice, GreenScale (ESS, 60 salaries)',
+      quote: "Le radar de maturite a ete un electrochoc. L'equipe pensait etre mature sur le digital, le score etait a 3/10 sur la data. Solutio a fourni une feuille de route claire pour progresser.",
+      name: 'S.L.',
+      role: 'Fondatrice, Entreprise ESS (60 salaries)',
       metric: 'De 3/10 a 7/10 en maturite data en 6 mois',
     },
   ];
@@ -396,11 +396,11 @@ const Index = () => {
     },
     {
       q: "Comment l'IA genere-t-elle les recommandations ?",
-      a: "Nous utilisons Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
+      a: "Solutio utilise Claude AI d'Anthropic, l'un des modeles de langage les plus avances. Il analyse vos reponses en les croisant avec des milliers de patterns organisationnels pour identifier les leviers de transformation les plus pertinents pour votre contexte specifique.",
     },
     {
       q: 'Mes donnees sont-elles securisees ?',
-      a: "Absolument. Vos donnees sont chiffrees en transit et au repos (AES-256). Nous sommes conformes RGPD. Vos donnees ne sont jamais utilisees pour entrainer des modeles IA. Vous pouvez demander la suppression complete de vos donnees a tout moment.",
+      a: "Absolument. Les donnees sont chiffrees en transit et au repos (AES-256). Solutio est conforme RGPD. Les donnees ne sont jamais utilisees pour entrainer des modeles IA. La suppression complete peut etre demandee a tout moment.",
     },
     {
       q: 'Puis-je tester gratuitement avant de m\'engager ?',
@@ -416,7 +416,7 @@ const Index = () => {
     },
     {
       q: 'Comment se passe l\'accompagnement Entreprise ?',
-      a: "Un expert Solutio dedie vous accompagne sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation de vos managers aux outils. C'est un vrai partenariat de transformation.",
+      a: "Un interlocuteur Solutio dedie accompagne l'entreprise sur la duree : ateliers de diagnostic en equipe, definition de la feuille de route, suivi mensuel des KPIs de transformation, formation des managers aux outils. Un vrai partenariat de transformation.",
     },
   ];
 

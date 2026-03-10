@@ -71,7 +71,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
                 "@type": "Offer",
                 itemOffered: {
                   "@type": "SoftwareApplication",
-                  name: "Cartographie Orga",
+                  name: "Cartographie Organisationnelle",
                   applicationCategory: "BusinessApplication",
                   description: "Outil de cartographie organisationnelle — scan gratuit en 5 minutes, radar de maturite, plan d'action priorise."
                 }
