@@ -345,7 +345,7 @@ const Index = () => {
       name: 'Entreprise',
       price: 'Sur mesure',
       period: '',
-      desc: 'Transformation accompagnee par nos experts',
+      desc: 'Transformation accompagnee de A a Z',
       features: [
         'Tout Professionnel +',
         'Accompagnement expert dedie',
@@ -365,21 +365,21 @@ const Index = () => {
   /* ── Testimonials ── */
   const testimonials = [
     {
-      quote: "En 2 semaines, Solutio nous a revele des inefficacites que nous soupconnions depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
-      name: 'Marie Deschamps',
-      role: 'CEO, FactoryLab (industrie, 45 salaries)',
+      quote: "En 2 semaines, Solutio a revele des inefficacites soupconnees depuis des mois sans pouvoir les quantifier. Le plan d'actions genere par l'IA etait bluffant de pertinence.",
+      name: 'M.D.',
+      role: 'CEO, industrie manufacturiere (45 salaries)',
       metric: '-40% de temps perdu sur les processus internes',
     },
     {
-      quote: "J'ai presente le rapport PDF genere par Solutio a mon comite de direction. En 30 minutes, tout le monde etait aligne sur les priorites. C'est la premiere fois que ca arrive.",
-      name: 'Thomas Berger',
-      role: 'DG, Nexus Consulting (conseil, 28 salaries)',
+      quote: "Le rapport PDF genere par Solutio a ete presente au comite de direction. En 30 minutes, tout le monde etait aligne sur les priorites. Une premiere.",
+      name: 'T.B.',
+      role: 'DG, cabinet de conseil (28 salaries)',
       metric: '3x plus rapide pour prendre des decisions strategiques',
     },
     {
-      quote: "Le radar de maturite a ete un electrochoc. On pensait etre matures sur le digital, on etait a 3/10 sur la data. Solutio nous a donne une feuille de route claire pour progresser.",
-      name: 'Sophie Laurent',
-      role: 'Fondatrice, GreenScale (ESS, 60 salaries)',
+      quote: "Le radar de maturite a ete un electrochoc. L'equipe pensait etre mature sur le digital — 3/10 sur la data. Solutio a fourni une feuille de route claire pour progresser.",
+      name: 'S.L.',
+      role: 'Fondatrice, ESS (60 salaries)',
       metric: 'De 3/10 a 7/10 en maturite data en 6 mois',
     },
   ];
@@ -486,19 +486,19 @@ const Index = () => {
               </Badge>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-[68px] font-extrabold text-white leading-[1.05] tracking-tight mb-4">
-                Votre entreprise merite mieux qu'un fonctionnement{' '}
+                Ce qui peut être automatisé{' '}
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
                     backgroundImage: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%)',
                   }}
                 >
-                  approximatif.
+                  ne devrait plus être fait à la main.
                 </span>
               </h1>
 
               <p className="text-xl sm:text-2xl text-blue-300/80 font-semibold mb-6 tracking-tight">
-                Cartographiez, diagnostiquez, transformez.
+                Diagnostic organisationnel, développement sur mesure, accompagnement jusqu'à l'adoption — un seul interlocuteur.
               </p>
 
               <p className="text-base sm:text-lg text-white/45 max-w-xl leading-relaxed mb-10">
@@ -1059,8 +1059,8 @@ const Index = () => {
           </h2>
 
           <p className="text-lg text-white/40 leading-relaxed mb-10 max-w-lg mx-auto">
-            Rejoignez +200 dirigeants qui ont deja cartographie leur organisation.
-            Diagnostic gratuit. Premiers resultats en moins d'une heure.
+            Diagnostic gratuit sur 10 axes, outils sur mesure
+            et accompagnement jusqu'à l'adoption. Un seul interlocuteur.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
