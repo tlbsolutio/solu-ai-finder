@@ -647,6 +647,10 @@ const translations = {
     'carto.preview_strength_label': 'Force identifiee',
     'carto.preview_strength_text': 'Equipe technique proactive — bonne base pour accompagner la transformation',
 
+    // Carto — White label
+    'carto.whitelabel_product': 'Un produit Solutio',
+    'carto.whitelabel_cta': 'Disponible en marque blanche — Contactez-nous',
+
     // Carto — Metrics bar
     'carto.metrics_packs': '10 packs',
     'carto.metrics_packs_desc': 'axes d\'analyse',
@@ -1364,6 +1368,10 @@ const translations = {
     'carto.preview_quickwin_text': 'Connect HubSpot and Notion via Zapier — estimated gain: 4h/week, setup: 1 day',
     'carto.preview_strength_label': 'Identified strength',
     'carto.preview_strength_text': 'Proactive technical team — good foundation for transformation support',
+
+    // Carto — White label
+    'carto.whitelabel_product': 'A Solutio product',
+    'carto.whitelabel_cta': 'Available as white label — Contact us',
 
     // Carto — Metrics bar
     'carto.metrics_packs': '10 packs',

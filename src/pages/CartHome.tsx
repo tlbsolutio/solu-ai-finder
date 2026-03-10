@@ -1184,6 +1184,29 @@ const CartHome = () => {
           </div>
         </div>
       </section>
+
+      {/* ════════════════ WHITE LABEL / SOLUTIO BRANDING ════════════════ */}
+      <section className="py-16 border-t border-border/20">
+        <div className="container mx-auto px-6 sm:px-10">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+            <div className="flex items-center gap-3">
+              <img
+                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+                alt="Solutio"
+                className="h-6 w-auto opacity-50"
+              />
+              <span className="text-sm text-muted-foreground">{t("carto.whitelabel_product")}</span>
+            </div>
+            <span className="hidden sm:block text-muted-foreground/30">|</span>
+            <Link
+              to="/contact"
+              className="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors"
+            >
+              {t("carto.whitelabel_cta")}
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

@@ -373,10 +373,28 @@ const CartLogin = () => {
           </div>
 
           {/* Trust */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25 mb-10">
             <span>Donnees chiffrees</span>
             <span>Hebergement UE</span>
             <span>Conforme RGPD</span>
+          </div>
+
+          {/* Solutio branding */}
+          <div className="border-t border-white/10 pt-6">
+            <div className="flex items-center gap-2.5 mb-2">
+              <img
+                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+                alt="Solutio"
+                className="h-5 w-auto opacity-60"
+              />
+              <span className="text-[11px] text-white/30">Un produit Solutio</span>
+            </div>
+            <p className="text-[11px] text-white/20 leading-relaxed">
+              Disponible en marque blanche.{" "}
+              <Link to="/contact" className="text-cyan-400/50 hover:text-cyan-400/80 underline transition-colors">
+                Contactez-nous
+              </Link>
+            </p>
           </div>
         </div>
       </div>

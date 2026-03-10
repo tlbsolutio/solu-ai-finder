@@ -477,12 +477,6 @@ const Index = () => {
                 se concentre sur ce qui fait vraiment sa valeur — réfléchir, analyser, décider, transmettre.
               </p>
             </div>
-
-            <div className="mt-10 border-l-4 border-cyan-500 pl-6">
-              <p className="text-xl font-bold text-foreground leading-snug">
-                La technologie n'est pas une fin en soi. C'est le levier qui rend l'entrepreneuriat à nouveau possible — à n'importe quelle échelle.
-              </p>
-            </div>
           </div>
         </div>
       </section>
