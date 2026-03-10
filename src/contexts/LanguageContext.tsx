@@ -245,10 +245,10 @@ const translations = {
     'home.hero_line2': 'ne devrait plus être fait à la main.',
     'home.hero_sub': 'Diagnostic organisationnel, développement sur mesure, accompagnement jusqu\'à l\'adoption — un seul interlocuteur.',
     'home.hero_btn_tools': 'Voir les outils',
-    'home.hero_btn_work': 'Travailler avec Solutio',
-    'home.hero_pill1': '2 outils en production',
-    'home.hero_pill2': 'Systèmes sur mesure',
-    'home.hero_pill3': 'Accompagnement conseil',
+    'home.hero_btn_work': 'Réserver un échange',
+    'home.hero_pill1': 'Données hébergées en Europe',
+    'home.hero_pill2': 'Diagnostic gratuit sur 10 axes',
+    'home.hero_pill3': 'Sans engagement',
     'home.hero_scroll': 'Défiler',
 
     // Outils
@@ -616,10 +616,10 @@ const translations = {
     'home.hero_line2': 'Their environment should be too.',
     'home.hero_sub': 'Solutio exists so professionals can focus on what earns them money — not on what costs them.',
     'home.hero_btn_tools': 'See our tools',
-    'home.hero_btn_work': 'Work with us',
-    'home.hero_pill1': '2 tools in production',
-    'home.hero_pill2': 'Custom-built systems',
-    'home.hero_pill3': 'Consulting support',
+    'home.hero_btn_work': 'Book a call',
+    'home.hero_pill1': 'Data hosted in Europe',
+    'home.hero_pill2': 'Free diagnostic on 10 axes',
+    'home.hero_pill3': 'No commitment',
     'home.hero_scroll': 'Scroll',
 
     // Outils
