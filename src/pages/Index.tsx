@@ -464,7 +464,12 @@ const Index = () => {
               <p>
                 {t('index.conviction_p1')}
               </p>
-              <p className="text-foreground font-medium">
+              {t('index.conviction_p2') && (
+                <p className="text-foreground font-semibold">
+                  {t('index.conviction_p2')}
+                </p>
+              )}
+              <p className="text-foreground/80 font-medium italic">
                 {t('index.conviction_quote')}
               </p>
             </div>
