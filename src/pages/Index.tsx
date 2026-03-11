@@ -151,15 +151,17 @@ const Index = () => {
                 <ArrowRight className="w-4 h-4 ml-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </Button>
             </a>
-            <Button size="lg" variant="outline" onClick={() => scrollTo('outils')} className="h-[3.25rem] px-8 border-white/20 text-white/80 bg-white/5 hover:bg-white/10 hover:border-white/30 backdrop-blur-sm transition-all">
-              {t('index.hero_cta_tools')}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <Link to="/cartographie">
+              <Button size="lg" variant="outline" className="h-[3.25rem] px-8 w-full sm:w-auto border-white/20 text-white/80 bg-white/5 hover:bg-white/10 hover:border-white/30 backdrop-blur-sm transition-all">
+                <Map className="w-4 h-4 mr-2" />
+                {t('index.hero_cta_tools')}
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
           </div>
 
           <div className="flex flex-wrap gap-6 text-sm text-white/50">
             <span className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-cyan-400/60" /> {t('index.hero_trust_data')}</span>
-            <span className="flex items-center gap-2"><Zap className="w-3.5 h-3.5 text-cyan-400/60" /> {t('index.hero_trust_diag')}</span>
             <span className="flex items-center gap-2"><CircleCheckBig className="w-3.5 h-3.5 text-cyan-400/60" /> {t('index.hero_trust_free')}</span>
           </div>
         </div>
