@@ -177,8 +177,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.problem_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Les pertes de temps dans une organisation sont{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">rarement là où on les cherche.</span>
+              L'efficacité d'un expert n'est plus corrélée{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">à son temps de travail.</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
               {t('index.problem_desc')}
@@ -200,6 +200,7 @@ const Index = () => {
               </Card>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground/60 text-center mt-8">Sources : McKinsey Global Institute, 2023 — Deloitte & PwC, études sectorielles.</p>
         </div>
       </section>
 
@@ -209,8 +210,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.services_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Trois expertises,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">un seul parcours</span>
+              Trois étapes pour{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">maximiser vos résultats.</span>
             </h2>
             <p className="text-muted-foreground text-lg">
               {t('index.services_desc')}
@@ -457,20 +458,19 @@ const Index = () => {
           <div className="max-w-3xl mx-auto">
             <SectionLabel>Conviction</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Les petites équipes peuvent désormais rivaliser avec les plus grandes.{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">Le vrai enjeu, c'est la créativité.</span>
+              La performance ne se mesure plus au temps passé,{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">mais au résultat.</span>
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
               <p>
-                Le développement sur mesure, l'IA, l'automatisation — tout ce qui était réservé aux grandes structures
-                est aujourd'hui accessible à une équipe de 5 personnes. Les ressources sont devenues quasi infinies.
-                Ce qui fait la différence, ce n'est plus la taille — c'est l'agilité, la vision, et la capacité
-                à investir intelligemment dans son outil de production.
+                La technologie actuelle permet à chaque professionnel de démultiplier son impact sans travailler plus.
+                L'IA, l'automatisation, les outils sur mesure — ce ne sont plus des projets à 500K€.
+                Ce sont des leviers accessibles, aujourd'hui, à toute structure qui veut produire mieux.
               </p>
               <p>
-                Les grandes organisations non agiles vont avoir du mal. Les petites structures qui misent sur leurs
-                outils vont les dépasser — parce qu'elles peuvent bouger plus vite, décider plus vite, et adapter
-                leur environnement de travail en continu.
+                L'enjeu n'est pas de remplacer l'humain. C'est de lui rendre son temps : celui qu'il passe
+                à chercher une information, à ressaisir une donnée, à relancer un process.
+                Ce temps-là n'est pas productif. Il est subi.
               </p>
               <p className="text-foreground font-medium">
                 Solutio existe pour ça : transformer l'environnement de travail pour que chaque professionnel
