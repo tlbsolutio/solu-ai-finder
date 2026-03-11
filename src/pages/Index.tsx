@@ -129,7 +129,7 @@ const Index = () => {
             {t('index.hero_badge')}
           </Badge>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.08] tracking-tight mb-6">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-[1.1] tracking-tight mb-6">
             {t('index.hero_title1')}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300">
               {t('index.hero_title_highlight')}
@@ -139,7 +139,7 @@ const Index = () => {
             <span className="text-white/90">{t('index.hero_title2')}</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/70 leading-relaxed mb-10 max-w-2xl">
+          <p className="text-base sm:text-lg text-white/70 leading-relaxed mb-10 max-w-2xl">
             {t('index.hero_description')}
           </p>
 
