@@ -177,8 +177,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.problem_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              L'efficacité d'un expert n'est plus corrélée{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">à son temps de travail.</span>
+              {t('index.problem_title_1')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.problem_title_highlight')}</span>
             </h2>
           </div>
 
@@ -207,8 +207,8 @@ const Index = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <SectionLabel>{t('index.services_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              Trois étapes pour{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">maximiser vos résultats.</span>
+              {t('index.services_title_1')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.services_title_highlight')}</span>
             </h2>
             <p className="text-muted-foreground text-lg">
               {t('index.services_desc')}
@@ -270,18 +270,18 @@ const Index = () => {
       <section id="methode" className="py-20 sm:py-24 bg-background">
         <div className="container mx-auto px-6 sm:px-10">
           <div className="max-w-3xl mx-auto">
-            <SectionLabel>Accompagnement</SectionLabel>
+            <SectionLabel>{t('index.accompagnement_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-10">
-              Un seul interlocuteur,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">de l'analyse a la mise en production.</span>
+              {t('index.accompagnement_title_1')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.accompagnement_title_highlight')}</span>
             </h2>
 
             <div className="space-y-8">
               {[
-                { num: '01', title: 'Diagnostic', desc: "Comprendre comment l'organisation fonctionne réellement — flux, outils, pertes de temps, irritants. Cartographier ce qui existe avant de proposer quoi que ce soit." },
-                { num: '02', title: 'Conception', desc: "Definir precisement ce qu'il faut construire, configurer ou changer. Architecture technique, choix d'outils, perimetre — tout est cadre avant de commencer." },
-                { num: '03', title: 'Construction', desc: "Développement sur mesure, configuration, intégrations, automatisations. Le livrable peut être un outil, un système, une formation — ce qui résout le problème." },
-                { num: '04', title: 'Adoption', desc: "Former les equipes, ajuster ce qui doit l'etre, s'assurer que ce qui a ete livre est reellement utilise au quotidien. Pas de livraison sans suivi." },
+                { num: '01', title: t('index.accompagnement_step1_title'), desc: t('index.accompagnement_step1_desc') },
+                { num: '02', title: t('index.accompagnement_step2_title'), desc: t('index.accompagnement_step2_desc') },
+                { num: '03', title: t('index.accompagnement_step3_title'), desc: t('index.accompagnement_step3_desc') },
+                { num: '04', title: t('index.accompagnement_step4_title'), desc: t('index.accompagnement_step4_desc') },
               ].map((s) => (
                 <div key={s.num} className="flex gap-5 items-start">
                   <span className="text-2xl font-black text-primary/20 shrink-0 w-10">{s.num}</span>
@@ -453,20 +453,17 @@ const Index = () => {
         <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
         <div className="container mx-auto px-6 sm:px-10 relative">
           <div className="max-w-3xl mx-auto">
-            <SectionLabel>Conviction</SectionLabel>
+            <SectionLabel>{t('index.conviction_label')}</SectionLabel>
             <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight mb-5">
-              La performance ne se mesure plus au temps passé,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">mais au résultat.</span>
+              {t('index.conviction_title_1')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">{t('index.conviction_title_highlight')}</span>
             </h2>
-            <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
+            <div className="space-y-5 text-muted-foreground leading-relaxed text-sm sm:text-[15px]">
               <p>
-                L'émancipation technologique annule les limites logistiques et financières.
-                L'enjeu n'est plus la taille de votre structure, mais votre capacité à automatiser
-                le superflu pour libérer votre puissance de travail.
+                {t('index.conviction_p1')}
               </p>
               <p className="text-foreground font-medium">
-                Solutio transforme votre environnement de travail&nbsp;: l'outil devient invisible,
-                votre expertise devient votre seul levier de croissance.
+                {t('index.conviction_quote')}
               </p>
             </div>
           </div>
