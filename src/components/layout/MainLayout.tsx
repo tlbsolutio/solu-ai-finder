@@ -145,17 +145,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/60">Légal</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link to="/legal" className="text-sm text-white/35 hover:text-white/60 transition-colors">
-                    Mentions légales
+                  <Link to={language === 'en' ? '/legal-en' : '/legal'} className="text-sm text-white/35 hover:text-white/60 transition-colors">
+                    {language === 'en' ? 'Legal notice' : 'Mentions légales'}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/privacy" className="text-sm text-white/35 hover:text-white/60 transition-colors">
-                    Confidentialité
+                  <Link to={language === 'en' ? '/privacy-en' : '/privacy'} className="text-sm text-white/35 hover:text-white/60 transition-colors">
+                    {language === 'en' ? 'Privacy policy' : 'Confidentialité'}
                   </Link>
                 </li>
                 <li>
-                  <Link to="/cookies" className="text-sm text-white/35 hover:text-white/60 transition-colors">
+                  <Link to={language === 'en' ? '/cookies-en' : '/cookies'} className="text-sm text-white/35 hover:text-white/60 transition-colors">
                     Cookies
                   </Link>
                 </li>
