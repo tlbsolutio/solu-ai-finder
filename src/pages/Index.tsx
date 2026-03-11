@@ -180,16 +180,13 @@ const Index = () => {
               L'efficacité d'un expert n'est plus corrélée{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-500">à son temps de travail.</span>
             </h2>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              {t('index.problem_desc')}
-            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
             {[
-              { icon: Target, title: t('index.problem1_title'), desc: t('index.problem1_desc'), color: 'from-red-500/10 to-rose-500/10 text-red-500' },
-              { icon: ChartColumn, title: t('index.problem2_title'), desc: t('index.problem2_desc'), color: 'from-amber-500/10 to-orange-500/10 text-amber-600' },
-              { icon: Lightbulb, title: t('index.problem3_title'), desc: t('index.problem3_desc'), color: 'from-cyan-500/10 to-blue-500/10 text-cyan-600' },
+              { icon: Target, title: t('index.problem1_title'), desc: t('index.problem1_desc'), source: t('index.problem1_source'), color: 'from-red-500/10 to-rose-500/10 text-red-500' },
+              { icon: ChartColumn, title: t('index.problem2_title'), desc: t('index.problem2_desc'), source: '', color: 'from-amber-500/10 to-orange-500/10 text-amber-600' },
+              { icon: Lightbulb, title: t('index.problem3_title'), desc: t('index.problem3_desc'), source: t('index.problem3_source'), color: 'from-cyan-500/10 to-blue-500/10 text-cyan-600' },
             ].map((item) => (
               <Card key={item.title} className="group p-6 border-border/50 hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 transition-all duration-300">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
@@ -197,10 +194,10 @@ const Index = () => {
                 </div>
                 <h3 className="text-base font-bold mb-2">{item.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                {item.source && <p className="text-xs text-muted-foreground/50 mt-3 italic">{item.source}</p>}
               </Card>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground/60 text-center mt-8">Sources : McKinsey Global Institute, 2023 — Deloitte & PwC, études sectorielles.</p>
         </div>
       </section>
 
@@ -463,18 +460,13 @@ const Index = () => {
             </h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed text-[15px]">
               <p>
-                La technologie actuelle permet à chaque professionnel de démultiplier son impact sans travailler plus.
-                L'IA, l'automatisation, les outils sur mesure — ce ne sont plus des projets à 500K€.
-                Ce sont des leviers accessibles, aujourd'hui, à toute structure qui veut produire mieux.
-              </p>
-              <p>
-                L'enjeu n'est pas de remplacer l'humain. C'est de lui rendre son temps : celui qu'il passe
-                à chercher une information, à ressaisir une donnée, à relancer un process.
-                Ce temps-là n'est pas productif. Il est subi.
+                L'émancipation technologique annule les limites logistiques et financières.
+                L'enjeu n'est plus la taille de votre structure, mais votre capacité à automatiser
+                le superflu pour libérer votre puissance de travail.
               </p>
               <p className="text-foreground font-medium">
-                Solutio existe pour ça : transformer l'environnement de travail pour que chaque professionnel
-                se concentre sur ce qui fait vraiment sa valeur — réfléchir, analyser, décider, transmettre.
+                Solutio transforme votre environnement de travail&nbsp;: l'outil devient invisible,
+                votre expertise devient votre seul levier de croissance.
               </p>
             </div>
           </div>
