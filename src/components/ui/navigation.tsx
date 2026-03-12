@@ -75,15 +75,6 @@ const Navigation = () => {
             <Languages className="h-3.5 w-3.5 mr-1" />
             {language === 'fr' ? 'EN' : 'FR'}
           </Button>
-          <Link to="/cartographie/scan">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 px-4 text-[13px] font-semibold border-primary/30 text-primary hover:bg-primary/5"
-            >
-              Diagnostic gratuit
-            </Button>
-          </Link>
           <a href="https://calendly.com/tlb-ov_p/30min" target="_blank" rel="noopener noreferrer">
             <Button
               size="sm"
