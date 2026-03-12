@@ -344,17 +344,24 @@ const CartLogin = () => {
           background: "radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)",
         }} />
 
-        <div className="relative z-10 flex flex-col justify-center p-12 xl:p-14 w-full">
-          <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight mb-4">
+        <div className="relative z-10 flex flex-col justify-center items-center p-12 xl:p-14 w-full">
+          {/* Grand logo */}
+          <img
+            src="/logos/logo_simple.svg"
+            alt="Solutio"
+            className="w-40 h-40 xl:w-48 xl:h-48 mb-10 opacity-20 brightness-0 invert"
+          />
+
+          <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight mb-4 text-center">
             Diagnostiquez votre organisation.{" "}
             <span className="text-cyan-400">Transformez-la.</span>
           </h2>
-          <p className="text-white/40 text-[13px] leading-relaxed mb-10 max-w-sm">
+          <p className="text-white/40 text-[13px] leading-relaxed mb-10 max-w-sm text-center">
             150 questions, 10 axes d'analyse, une IA qui cartographie vos processus et genere un plan d'action concret.
           </p>
 
           {/* Key points */}
-          <div className="space-y-5 mb-12">
+          <div className="space-y-5 mb-12 w-full max-w-sm">
             {[
               { num: "01", title: "Questionnaire gratuit", desc: "150 questions, 10 packs, a votre rythme" },
               { num: "02", title: "Analyse IA", desc: "Radar, irritants, quick wins, plan d'actions" },
@@ -371,23 +378,22 @@ const CartLogin = () => {
           </div>
 
           {/* Trust */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25 mb-10">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25 mb-10 justify-center">
             <span>Donnees chiffrees</span>
             <span>Hebergement UE</span>
             <span>Conforme RGPD</span>
           </div>
 
           {/* Solutio branding */}
-          <div className="border-t border-white/10 pt-6">
-            <div className="flex items-center gap-2.5 mb-2">
+          <div className="border-t border-white/10 pt-6 w-full">
+            <div className="flex items-center gap-2.5 mb-2 justify-center">
               <img
-                src="/logos/logo_simple.svg"
+                src="/logos/logo_solutio.svg"
                 alt="Solutio"
-                className="h-5 w-auto opacity-60 brightness-0 invert"
+                className="h-5 w-auto opacity-40 brightness-0 invert"
               />
-              <span className="text-[11px] text-white/30">Un produit Solutio</span>
             </div>
-            <p className="text-[11px] text-white/20 leading-relaxed">
+            <p className="text-[11px] text-white/20 leading-relaxed text-center">
               Disponible en marque blanche.{" "}
               <Link to="/contact" className="text-cyan-400/50 hover:text-cyan-400/80 underline transition-colors">
                 Contactez-nous
