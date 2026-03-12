@@ -38,7 +38,7 @@ const MobileNav = () => {
         <SheetHeader>
           <SheetTitle className="text-left">
             <img
-              src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+              src="/logos/logo_solutio.svg"
               alt="Solutio"
               className="h-8 w-auto"
             />
