@@ -59,7 +59,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             {/* Logo + tagline + social */}
             <div className="lg:col-span-2 space-y-4">
               <img
-                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+                src="/logos/logo_solutio.svg"
                 alt="Solutio"
                 className="h-7 w-auto brightness-[10] opacity-60"
               />
