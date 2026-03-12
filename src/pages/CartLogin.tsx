@@ -346,11 +346,15 @@ const CartLogin = () => {
 
         <div className="relative z-10 flex flex-col justify-center items-center p-12 xl:p-14 w-full">
           {/* Logo complet */}
-          <div className="mb-12">
+          <div className="mb-14 relative group">
+            {/* Glow behind logo */}
+            <div className="absolute -inset-10 rounded-full opacity-0 animate-fadeGlow" style={{
+              background: "radial-gradient(ellipse, rgba(226,195,137,0.08) 0%, transparent 70%)",
+            }} />
             <img
               src="/logo-solutio-full.svg"
               alt="Solutio"
-              className="h-12 xl:h-14 w-auto opacity-70"
+              className="h-16 xl:h-[4.5rem] 2xl:h-20 w-auto relative opacity-0 animate-fadeSlideUp drop-shadow-[0_0_35px_rgba(226,195,137,0.12)]"
               style={{ filter: "brightness(0) invert(1)" }}
             />
           </div>
