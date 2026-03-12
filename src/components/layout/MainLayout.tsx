@@ -61,7 +61,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <img
                 src="/logo-solutio-full.svg"
                 alt="Solutio"
-                className="h-9 w-auto brightness-[10] opacity-60"
+                className="h-9 xl:h-11 w-auto brightness-[10] opacity-60"
               />
               <p className="text-sm text-white/40 leading-relaxed max-w-xs">
                 Conseil en transformation digitale. Diagnostic, outils sur mesure et accompagnement.

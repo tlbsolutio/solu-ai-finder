@@ -336,30 +336,24 @@ const CartLogin = () => {
           backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
           backgroundSize: "24px 24px",
         }} />
-        {/* Watermark logo */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img
-            src="/logo-solutio-icon.svg"
-            alt=""
-            className="w-[340px] h-[340px] opacity-[0.04]"
-            style={{ filter: "brightness(0) invert(1) blur(1px)" }}
-          />
-        </div>
         {/* Glows */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full" style={{
-          background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)",
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full" style={{
+          background: "radial-gradient(circle, rgba(6,182,212,0.10) 0%, transparent 70%)",
         }} />
-        <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] rounded-full" style={{
-          background: "radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)",
+        <div className="absolute bottom-1/4 left-1/3 w-[350px] h-[350px] rounded-full" style={{
+          background: "radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%)",
         }} />
 
         <div className="relative z-10 flex flex-col justify-center items-center p-12 xl:p-14 w-full">
-          {/* Grand logo */}
-          <img
-            src="/logo-solutio-icon.svg"
-            alt="Solutio"
-            className="w-40 h-40 xl:w-48 xl:h-48 mb-10 opacity-20 brightness-0 invert"
-          />
+          {/* Logo complet */}
+          <div className="mb-12">
+            <img
+              src="/logo-solutio-full.svg"
+              alt="Solutio"
+              className="h-12 xl:h-14 w-auto opacity-70"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
+          </div>
 
           <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight mb-4 text-center">
             Diagnostiquez votre organisation.{" "}
@@ -387,32 +381,15 @@ const CartLogin = () => {
           </div>
 
           {/* Trust */}
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25 mb-10 justify-center">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-white/25 mb-8 justify-center">
             <span>Donnees chiffrees</span>
             <span>Hebergement UE</span>
             <span>Conforme RGPD</span>
           </div>
 
-          {/* Solutio branding */}
-          <div className="border-t border-white/10 pt-6 w-full">
-            <div className="flex items-center gap-3 mb-2 justify-center">
-              <img
-                src="/logo-solutio-icon.svg"
-                alt="Solutio"
-                className="h-7 w-7 opacity-40"
-                style={{ filter: "brightness(0) invert(1)" }}
-              />
-              <div>
-                <img
-                  src="/logo-solutio-full.svg"
-                  alt="Solutio"
-                  className="h-4 w-auto opacity-50"
-                  style={{ filter: "brightness(0) invert(1)" }}
-                />
-                <span className="block text-[10px] text-white/25 mt-0.5">Un produit Solutio</span>
-              </div>
-            </div>
-            <p className="text-[11px] text-white/20 leading-relaxed text-center">
+          {/* Bottom branding */}
+          <div className="border-t border-white/8 pt-5 w-full text-center">
+            <p className="text-[11px] text-white/20 leading-relaxed">
               Disponible en marque blanche.{" "}
               <Link to="/contact" className="text-cyan-400/50 hover:text-cyan-400/80 underline transition-colors">
                 Contactez-nous
