@@ -1191,7 +1191,7 @@ const CartHome = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
             <div className="flex items-center gap-3">
               <img
-                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+                src="/logo-solutio-full.svg"
                 alt="Solutio"
                 className="h-6 w-auto opacity-50"
               />

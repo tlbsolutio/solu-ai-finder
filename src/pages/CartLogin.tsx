@@ -381,7 +381,7 @@ const CartLogin = () => {
           <div className="border-t border-white/10 pt-6">
             <div className="flex items-center gap-2.5 mb-2">
               <img
-                src="/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png"
+                src="/logo-solutio-full.svg"
                 alt="Solutio"
                 className="h-5 w-auto opacity-60 brightness-0 invert"
               />

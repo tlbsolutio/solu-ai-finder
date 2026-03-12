@@ -19,7 +19,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
         return {
           ...baseData,
           url: "https://solutio.work",
-          logo: "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
+          logo: "https://solutio.work/logo-solutio-full.png",
           contactPoint: {
             "@type": "ContactPoint",
             email: "contact@solutio.work",
@@ -52,7 +52,7 @@ const StructuredData: React.FC<StructuredDataProps> = ({ type, data }) => {
         return {
           ...baseData,
           url: "https://solutio.work",
-          logo: "https://solutio.work/lovable-uploads/876ba1fd-d1e8-4a94-939e-0a2357028335.png",
+          logo: "https://solutio.work/logo-solutio-full.png",
           serviceType: [
             "Transformation digitale",
             "Developpement logiciel sur mesure",
