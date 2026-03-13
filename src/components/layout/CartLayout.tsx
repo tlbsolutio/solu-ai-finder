@@ -6,6 +6,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle } from "lucide-react";
+import { CartoLogo } from "@/components/cartographie/CartoLogo";
+
 interface Crumb {
   label: string;
   path?: string;
@@ -61,15 +63,12 @@ export default function CartLayout({ children }: CartLayoutProps) {
       <header className="sticky top-0 z-50 h-12 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 sm:px-5 flex items-center justify-between gap-2">
         {/* Left: Product identity + Breadcrumbs */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link to="/cartographie/sessions" className="flex items-center gap-2 shrink-0 group">
-            <img
-              src="/logo-solutio-icon.svg"
-              alt="Solutio"
-              className="h-8 w-8 object-contain"
-            />
-            <span className="hidden sm:inline text-sm font-bold tracking-tight" style={{ color: "#3b8ad9" }}>
-              Solutio
-            </span>
+          <Link to="/cartographie/sessions" className="flex items-center gap-1.5 shrink-0 group">
+            <CartoLogo size={30} />
+            <div className="hidden sm:flex items-baseline gap-1">
+              <span className="text-sm font-bold tracking-tight" style={{ color: "#3b8ad9" }}>Solutio</span>
+              <span className="text-xs font-semibold text-muted-foreground/70">Carto</span>
+            </div>
           </Link>
 
           {crumbs.length > 0 && (
