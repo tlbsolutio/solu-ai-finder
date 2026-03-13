@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CartoLogo } from '@/components/cartographie/CartoLogo';
 import {
   ArrowRight,
   ChevronDown,
@@ -319,7 +320,7 @@ const Index = () => {
               <div className="p-7 pb-5 bg-gradient-to-br from-blue-50/80 to-primary/5 dark:from-blue-950/20 dark:to-primary/5">
                 <div className="flex justify-between items-start mb-5">
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center">
-                    <Map className="w-5 h-5 text-primary" />
+                    <CartoLogo size={28} />
                   </div>
                   <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800 text-[10px]">
                     {t('index.product_carto_badge')}
