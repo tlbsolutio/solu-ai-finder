@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MetaTags from "@/components/seo/MetaTags";
+import { CartoLogo } from "@/components/cartographie/CartoLogo";
 import {
   ArrowRight,
   Brain,
@@ -136,8 +137,8 @@ const HeroPreview = ({ t }: { t: (k: string) => string }) => (
     <div className="flex">
       {/* Sidebar */}
       <div className="hidden sm:flex w-12 bg-slate-50/80 dark:bg-slate-800/40 border-r border-border/20 flex-col items-center py-3 gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-          <Map className="w-3.5 h-3.5 text-white" />
+        <div className="w-7 h-7 flex items-center justify-center">
+          <CartoLogo size={24} />
         </div>
         <div className="w-6 h-[1px] bg-border/30" />
         {[ChartColumn, FileText, Target, Settings].map((Icon, i) => (
@@ -439,10 +440,11 @@ const CartHome = () => {
             {/* Left column */}
             <div className="max-w-xl">
               <div className="flex items-center gap-2.5 mb-6">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <Map className="w-4.5 h-4.5 text-white" />
+                <CartoLogo size={38} />
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm font-bold tracking-tight" style={{ color: "#3b8ad9" }}>Solutio</span>
+                  <span className="text-xs font-semibold text-muted-foreground/70">Carto</span>
                 </div>
-                <span className="text-sm font-bold text-foreground tracking-tight">{t("carto.hero_brand")}</span>
                 <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200/60 text-[10px] ml-1">
                   {t("carto.hero_badge_free")}
                 </Badge>

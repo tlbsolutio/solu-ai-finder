@@ -5,11 +5,13 @@ interface CartoLogoProps {
 }
 
 /**
- * Solutio Carto logo — organizational mapping icon
- * Same visual language as the Solutio viking ship: blue line art with connected nodes
- * Represents: network/cartography of teams, processes, tools
+ * Solutio Carto logo — organizational cartography icon
+ * Refined network graph with layered depth: gradient fills, soft glows,
+ * curved connections, and a hexagonal center hub evoking structure & mapping.
  */
 export function CartoLogo({ size = 32, className = "", color = "#3b8ad9" }: CartoLogoProps) {
+  const id = `carto-${Math.random().toString(36).slice(2, 8)}`;
+
   return (
     <svg
       width={size}
@@ -19,55 +21,102 @@ export function CartoLogo({ size = 32, className = "", color = "#3b8ad9" }: Cart
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Connecting lines — network edges */}
-      <line x1="32" y1="16" x2="16" y2="32" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="32" y1="16" x2="48" y2="28" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="16" y1="32" x2="24" y2="48" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="16" y1="32" x2="48" y2="28" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="48" y1="28" x2="44" y2="48" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="24" y1="48" x2="44" y2="48" stroke={color} strokeWidth="2" strokeLinecap="round" />
-      <line x1="32" y1="16" x2="32" y2="36" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 2" />
-      <line x1="32" y1="36" x2="24" y2="48" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 2" />
-      <line x1="32" y1="36" x2="44" y2="48" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeDasharray="3 2" />
+      <defs>
+        {/* Radial glow behind center */}
+        <radialGradient id={`${id}-glow`} cx="50%" cy="53%" r="40%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </radialGradient>
+        {/* Gradient for primary connections */}
+        <linearGradient id={`${id}-edge`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.25" />
+        </linearGradient>
+        {/* Node fill gradient */}
+        <radialGradient id={`${id}-node`} cx="40%" cy="35%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.06" />
+        </radialGradient>
+        {/* Hub fill gradient */}
+        <radialGradient id={`${id}-hub`} cx="45%" cy="40%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.08" />
+        </radialGradient>
+      </defs>
 
-      {/* Central hub node — larger */}
-      <circle cx="32" cy="36" r="4" fill={color} fillOpacity="0.15" stroke={color} strokeWidth="2" />
-      <circle cx="32" cy="36" r="1.5" fill={color} />
+      {/* Background glow */}
+      <circle cx="32" cy="34" r="26" fill={`url(#${id}-glow)`} />
 
-      {/* Primary nodes — teams/processes */}
-      <circle cx="32" cy="16" r="5" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="2" />
-      <circle cx="32" cy="16" r="2" fill={color} />
+      {/* ── Curved connections (outer ring) ── */}
+      <path d="M32 13 Q22 20 14 30" stroke={`url(#${id}-edge)`} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M32 13 Q42 18 50 26" stroke={`url(#${id}-edge)`} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M14 30 Q14 42 22 50" stroke={`url(#${id}-edge)`} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M50 26 Q52 40 44 50" stroke={`url(#${id}-edge)`} strokeWidth="1.8" strokeLinecap="round" fill="none" />
+      <path d="M22 50 Q33 54 44 50" stroke={`url(#${id}-edge)`} strokeWidth="1.8" strokeLinecap="round" fill="none" />
 
-      <circle cx="16" cy="32" r="4.5" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="2" />
-      <circle cx="16" cy="32" r="1.8" fill={color} />
+      {/* ── Inner connections to hub ── */}
+      <line x1="32" y1="13" x2="32" y2="28" stroke={color} strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
+      <line x1="14" y1="30" x2="26" y2="34" stroke={color} strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
+      <line x1="50" y1="26" x2="38" y2="32" stroke={color} strokeWidth="1.4" strokeLinecap="round" opacity="0.5" />
+      <line x1="22" y1="50" x2="28" y2="40" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity="0.4" />
+      <line x1="44" y1="50" x2="36" y2="40" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity="0.4" />
 
-      <circle cx="48" cy="28" r="4.5" fill={color} fillOpacity="0.12" stroke={color} strokeWidth="2" />
-      <circle cx="48" cy="28" r="1.8" fill={color} />
+      {/* ── Cross connections (mesh depth) ── */}
+      <line x1="14" y1="30" x2="50" y2="26" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.15" strokeDasharray="4 3" />
+      <line x1="32" y1="13" x2="22" y2="50" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.12" strokeDasharray="4 3" />
+      <line x1="32" y1="13" x2="44" y2="50" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.12" strokeDasharray="4 3" />
 
-      {/* Secondary nodes — tools/outputs */}
-      <circle cx="24" cy="48" r="3.5" fill={color} fillOpacity="0.1" stroke={color} strokeWidth="1.5" />
-      <circle cx="24" cy="48" r="1.3" fill={color} />
+      {/* ── Center hub — hexagonal shape ── */}
+      <polygon
+        points="32,28 38,31.5 38,38.5 32,42 26,38.5 26,31.5"
+        fill={`url(#${id}-hub)`}
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      {/* Hub inner dot */}
+      <circle cx="32" cy="35" r="2.2" fill={color} opacity="0.8" />
 
-      <circle cx="44" cy="48" r="3.5" fill={color} fillOpacity="0.1" stroke={color} strokeWidth="1.5" />
-      <circle cx="44" cy="48" r="1.3" fill={color} />
+      {/* ── Primary nodes (5 outer) ── */}
+      {/* Top */}
+      <circle cx="32" cy="13" r="5.5" fill={`url(#${id}-node)`} stroke={color} strokeWidth="1.8" />
+      <circle cx="32" cy="13" r="2.2" fill={color} opacity="0.85" />
 
-      {/* Tiny satellite nodes — like the Solutio ship's circuit dots */}
-      <circle cx="10" cy="20" r="2" fill={color} fillOpacity="0.3" />
-      <line x1="10" y1="20" x2="16" y2="32" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.4" />
+      {/* Left */}
+      <circle cx="14" cy="30" r="5" fill={`url(#${id}-node)`} stroke={color} strokeWidth="1.8" />
+      <circle cx="14" cy="30" r="2" fill={color} opacity="0.85" />
 
-      <circle cx="54" cy="16" r="2" fill={color} fillOpacity="0.3" />
-      <line x1="54" y1="16" x2="48" y2="28" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.4" />
+      {/* Right */}
+      <circle cx="50" cy="26" r="5" fill={`url(#${id}-node)`} stroke={color} strokeWidth="1.8" />
+      <circle cx="50" cy="26" r="2" fill={color} opacity="0.85" />
 
-      <circle cx="52" cy="54" r="1.5" fill={color} fillOpacity="0.25" />
-      <line x1="52" y1="54" x2="44" y2="48" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.3" />
+      {/* Bottom-left */}
+      <circle cx="22" cy="50" r="4" fill={`url(#${id}-node)`} stroke={color} strokeWidth="1.5" />
+      <circle cx="22" cy="50" r="1.6" fill={color} opacity="0.8" />
 
-      <circle cx="14" cy="50" r="1.5" fill={color} fillOpacity="0.25" />
-      <line x1="14" y1="50" x2="24" y2="48" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.3" />
+      {/* Bottom-right */}
+      <circle cx="44" cy="50" r="4" fill={`url(#${id}-node)`} stroke={color} strokeWidth="1.5" />
+      <circle cx="44" cy="50" r="1.6" fill={color} opacity="0.8" />
 
-      {/* Subtle compass/orientation mark — top right, evokes cartography */}
-      <path d="M56 8 L58 4 L60 8 L58 7 Z" fill={color} fillOpacity="0.35" />
-      <line x1="58" y1="4" x2="58" y2="11" stroke={color} strokeWidth="0.8" opacity="0.3" />
-      <line x1="55" y1="7.5" x2="61" y2="7.5" stroke={color} strokeWidth="0.8" opacity="0.3" />
+      {/* ── Satellite micro-nodes (peripheral depth) ── */}
+      <circle cx="8" cy="18" r="1.8" fill={color} opacity="0.2" />
+      <line x1="8" y1="18" x2="14" y2="30" stroke={color} strokeWidth="0.8" opacity="0.2" strokeLinecap="round" />
+
+      <circle cx="56" cy="14" r="1.8" fill={color} opacity="0.2" />
+      <line x1="56" y1="14" x2="50" y2="26" stroke={color} strokeWidth="0.8" opacity="0.2" strokeLinecap="round" />
+
+      <circle cx="10" cy="52" r="1.4" fill={color} opacity="0.15" />
+      <line x1="10" y1="52" x2="22" y2="50" stroke={color} strokeWidth="0.7" opacity="0.15" strokeLinecap="round" />
+
+      <circle cx="54" cy="56" r="1.4" fill={color} opacity="0.15" />
+      <line x1="54" y1="56" x2="44" y2="50" stroke={color} strokeWidth="0.7" opacity="0.15" strokeLinecap="round" />
+
+      {/* ── Compass mark — top-right (cartography feel) ── */}
+      <g opacity="0.4">
+        <path d="M57 6 L58.5 2 L60 6 L58.5 5.2 Z" fill={color} />
+        <line x1="58.5" y1="2" x2="58.5" y2="9" stroke={color} strokeWidth="0.7" />
+        <line x1="55.5" y1="5.5" x2="61.5" y2="5.5" stroke={color} strokeWidth="0.7" />
+      </g>
     </svg>
   );
 }
