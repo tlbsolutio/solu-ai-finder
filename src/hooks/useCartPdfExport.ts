@@ -17,22 +17,23 @@ export interface CartDataForPdf {
   quickwins: CartQuickwinV2[];
 }
 
-// Design system
+// ─── Solutio Brand System ───────────────────────────────────────────
 const C = {
-  primary: [0, 180, 216] as [number, number, number],     // cyan-500
-  primaryDark: [0, 139, 167] as [number, number, number],  // cyan-600
-  dark: [15, 23, 42] as [number, number, number],          // slate-900
-  text: [30, 41, 59] as [number, number, number],          // slate-800
-  textLight: [100, 116, 139] as [number, number, number],  // slate-500
-  white: [255, 255, 255] as [number, number, number],
-  bg: [248, 250, 252] as [number, number, number],         // slate-50
-  border: [226, 232, 240] as [number, number, number],     // slate-200
-  red: [239, 68, 68] as [number, number, number],
-  orange: [249, 115, 22] as [number, number, number],
-  green: [34, 197, 94] as [number, number, number],
-  yellow: [234, 179, 8] as [number, number, number],
-  purple: [139, 92, 246] as [number, number, number],
-  blue: [59, 130, 246] as [number, number, number],
+  blue:      [59, 130, 246] as [number, number, number],    // #3B82F6 — primary
+  blueLight: [96, 165, 250] as [number, number, number],    // #60A5FA
+  blueDark:  [30, 109, 209] as [number, number, number],    // #1E6DD1
+  navy:      [2, 6, 23]     as [number, number, number],    // #020617 — footer/dark
+  text:      [52, 66, 86]   as [number, number, number],    // #344256
+  textMuted: [100, 116, 139] as [number, number, number],   // #64748B
+  white:     [255, 255, 255] as [number, number, number],
+  bg:        [240, 244, 255] as [number, number, number],   // #F0F4FF — muted
+  bgLight:   [248, 250, 252] as [number, number, number],   // #F8FAFC
+  border:    [197, 212, 232] as [number, number, number],   // #C5D4E8
+  red:       [220, 38, 38]   as [number, number, number],
+  orange:    [234, 88, 12]   as [number, number, number],
+  green:     [22, 163, 74]   as [number, number, number],
+  amber:     [161, 98, 7]    as [number, number, number],
+  purple:    [124, 58, 237]  as [number, number, number],
 };
 
 const PACK_NAMES: Record<number, string> = {
@@ -44,59 +45,104 @@ const PACK_NAMES: Record<number, string> = {
 
 const PAGE_W = 210;
 const PAGE_H = 297;
-const MARGIN = 20;
-const CONTENT_W = PAGE_W - MARGIN * 2;
+const ML = 22; // left margin
+const MR = 18; // right margin
+const CONTENT_W = PAGE_W - ML - MR;
 
-function addPageFooter(doc: jsPDF, pageNum: number, totalPages: number) {
-  doc.setFillColor(...C.bg);
-  doc.rect(0, PAGE_H - 14, PAGE_W, 14, "F");
-  doc.setFontSize(7);
-  doc.setTextColor(...C.textLight);
-  doc.text("solutio.work", MARGIN, PAGE_H - 6);
-  doc.text(`${pageNum} / ${totalPages}`, PAGE_W - MARGIN, PAGE_H - 6, { align: "right" });
+// ─── Drawing helpers ────────────────────────────────────────────────
+
+/** Thin blue accent stripe on the left of every content page */
+function drawPageChrome(doc: jsPDF) {
+  // Left accent bar
+  doc.setFillColor(...C.blue);
+  doc.rect(0, 0, 4, PAGE_H, "F");
+  // Top thin line
+  doc.setFillColor(...C.blue);
+  doc.rect(0, 0, PAGE_W, 1.2, "F");
 }
 
-function drawSectionHeader(doc: jsPDF, y: number, title: string, color: [number, number, number] = C.primary): number {
-  doc.setFillColor(...color);
-  doc.roundedRect(MARGIN, y, CONTENT_W, 10, 2, 2, "F");
-  doc.setFontSize(11);
+function addPageFooter(doc: jsPDF, pageNum: number, totalPages: number, sessionName: string) {
+  // Footer separator
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+  doc.line(ML, PAGE_H - 16, PAGE_W - MR, PAGE_H - 16);
+  // Left: brand
+  doc.setFontSize(7);
+  doc.setTextColor(...C.blue);
+  doc.setFont("helvetica", "bold");
+  doc.text("SOLUTIO", ML, PAGE_H - 10);
+  doc.setTextColor(...C.textMuted);
+  doc.setFont("helvetica", "normal");
+  doc.text(" CARTO", ML + doc.getTextWidth("SOLUTIO"), PAGE_H - 10);
+  // Center: session name (truncated)
+  const truncName = sessionName.length > 40 ? sessionName.slice(0, 40) + "..." : sessionName;
+  doc.setFontSize(6);
+  doc.setTextColor(...C.textMuted);
+  doc.text(truncName, PAGE_W / 2, PAGE_H - 10, { align: "center" });
+  // Right: page number
+  doc.setFontSize(7);
+  doc.setTextColor(...C.text);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${pageNum}`, PAGE_W - MR, PAGE_H - 10, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...C.textMuted);
+  doc.text(` / ${totalPages}`, PAGE_W - MR + doc.getTextWidth(` / ${totalPages}`) - doc.getTextWidth(` / ${totalPages}`), PAGE_H - 10);
+  // Simpler page num
+  doc.setFontSize(7);
+  doc.setTextColor(...C.textMuted);
+  doc.text(`${pageNum} / ${totalPages}`, PAGE_W - MR, PAGE_H - 10, { align: "right" });
+}
+
+function drawSectionHeader(doc: jsPDF, y: number, title: string, accent: [number, number, number] = C.blue): number {
+  // Accent left bar + navy background
+  doc.setFillColor(...C.navy);
+  doc.roundedRect(ML, y, CONTENT_W, 11, 1.5, 1.5, "F");
+  doc.setFillColor(...accent);
+  doc.rect(ML, y, 3.5, 11, "F");
+  // Title text
+  doc.setFontSize(9.5);
   doc.setTextColor(...C.white);
   doc.setFont("helvetica", "bold");
-  doc.text(title.toUpperCase(), MARGIN + 5, y + 7);
-  return y + 16;
+  doc.text(title.toUpperCase(), ML + 8, y + 7.5);
+  return y + 17;
 }
 
-function drawMetricCard(doc: jsPDF, x: number, y: number, w: number, label: string, value: string, color: [number, number, number]) {
+function drawSubHeader(doc: jsPDF, y: number, title: string): number {
+  doc.setFillColor(...C.bg);
+  doc.rect(ML, y, CONTENT_W, 8, "F");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...C.blue);
+  doc.setFont("helvetica", "bold");
+  doc.text("— " + title.toUpperCase(), ML + 4, y + 5.5);
+  return y + 12;
+}
+
+function drawMetricCard(doc: jsPDF, x: number, y: number, w: number, label: string, value: string, accent: [number, number, number]) {
+  // Card bg
   doc.setFillColor(...C.white);
   doc.setDrawColor(...C.border);
-  doc.roundedRect(x, y, w, 22, 2, 2, "FD");
-  doc.setFillColor(...color);
-  doc.roundedRect(x, y, 3, 22, 1.5, 0, "F");
-  doc.setFontSize(16);
-  doc.setTextColor(...C.dark);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(x, y, w, 24, 2, 2, "FD");
+  // Left accent
+  doc.setFillColor(...accent);
+  doc.rect(x, y + 2, 2.5, 20, "F");
+  // Value
+  doc.setFontSize(18);
+  doc.setTextColor(...C.navy);
   doc.setFont("helvetica", "bold");
-  doc.text(value, x + 10, y + 10);
-  doc.setFontSize(7);
-  doc.setTextColor(...C.textLight);
-  doc.setFont("helvetica", "normal");
-  doc.text(label, x + 10, y + 17);
-}
-
-function drawTag(doc: jsPDF, x: number, y: number, text: string, bgColor: [number, number, number], textColor: [number, number, number] = C.white): number {
-  const w = doc.getTextWidth(text) + 6;
-  doc.setFillColor(...bgColor);
-  doc.roundedRect(x, y - 3.5, w, 5.5, 1.5, 1.5, "F");
+  doc.text(value, x + 9, y + 12);
+  // Label
   doc.setFontSize(6.5);
-  doc.setTextColor(...textColor);
-  doc.setFont("helvetica", "bold");
-  doc.text(text, x + 3, y);
-  return w + 2;
+  doc.setTextColor(...C.textMuted);
+  doc.setFont("helvetica", "normal");
+  doc.text(label.toUpperCase(), x + 9, y + 19);
 }
 
 function ensureSpace(doc: jsPDF, y: number, needed: number): number {
-  if (y + needed > PAGE_H - 20) {
+  if (y + needed > PAGE_H - 22) {
     doc.addPage();
-    return 24;
+    drawPageChrome(doc);
+    return 16;
   }
   return y;
 }
@@ -113,54 +159,49 @@ function normalizeAiText(raw: unknown): string {
   } else {
     text = String(raw);
   }
-  // Replace chars that jsPDF Helvetica can't render
   return text
-    .replace(/[\u2018\u2019]/g, "'")  // smart quotes
-    .replace(/[\u201C\u201D]/g, '"')  // smart double quotes
-    .replace(/\u2026/g, "...")         // ellipsis
-    .replace(/\u2013/g, "-")          // en-dash
-    .replace(/\u2014/g, " - ")        // em-dash
-    .replace(/\u2022/g, "- ")         // bullet
-    .replace(/\u00A0/g, " ")          // nbsp
-    .replace(/[\u2192\u2794\u27A1]/g, "->")  // arrows
-    .replace(/[\u2713\u2714]/g, "[x]")       // checkmarks
-    .replace(/[\u2717\u2718]/g, "[ ]");      // crossmarks
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/\u2013/g, "-")
+    .replace(/\u2014/g, " - ")
+    .replace(/\u2022/g, "- ")
+    .replace(/\u00A0/g, " ")
+    .replace(/[\u2192\u2794\u27A1]/g, "->")
+    .replace(/[\u2713\u2714]/g, "[x]")
+    .replace(/[\u2717\u2718]/g, "[ ]");
 }
 
 function drawWrappedText(doc: jsPDF, text: string, x: number, y: number, maxW: number, lineH: number = 4.5): number {
   if (!text) return y;
-  // Clean markdown but preserve numbers and punctuation
   const clean = text
-    .replace(/\*\*/g, "")       // bold markers
-    .replace(/^#{1,6}\s*/gm, "") // heading markers
-    .replace(/\n{3,}/g, "\n\n"); // excessive newlines
+    .replace(/\*\*/g, "")
+    .replace(/^#{1,6}\s*/gm, "")
+    .replace(/\n{3,}/g, "\n\n");
 
-  // Split by paragraphs for better spacing
   const paragraphs = clean.split(/\n\n+/);
   for (const para of paragraphs) {
     const trimmed = para.trim();
     if (!trimmed) continue;
 
-    // Check if paragraph starts with a numbered item (e.g. "1." "2.")
     const isNumbered = /^\d+[.)]\s/.test(trimmed);
     const isBullet = /^[-*]\s/.test(trimmed);
 
     if (isNumbered || isBullet) {
-      // Bold the first line of numbered/bullet items
       doc.setFont("helvetica", "bold");
     }
 
     const lines = doc.splitTextToSize(trimmed, maxW);
     for (let i = 0; i < lines.length; i++) {
       y = ensureSpace(doc, y, lineH + 2);
-      if (y < 30) y = 24;
+      if (y < 20) y = 16;
       doc.text(lines[i], x, y);
       y += lineH;
       if (i === 0 && (isNumbered || isBullet)) {
         doc.setFont("helvetica", "normal");
       }
     }
-    y += 1.5; // paragraph spacing
+    y += 1.5;
   }
   return y;
 }
@@ -175,10 +216,10 @@ function drawRadarChart(doc: jsPDF, cx: number, cy: number, radius: number, scor
     return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
   };
 
-  // Grid
+  // Grid rings
   for (let lvl = 1; lvl <= levels; lvl++) {
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.2);
+    doc.setDrawColor(...(lvl === levels ? C.border : C.bgLight));
+    doc.setLineWidth(lvl === levels ? 0.3 : 0.15);
     const pts = Array.from({ length: numAxes }, (_, i) => getPoint(i, lvl));
     for (let i = 0; i < pts.length; i++) {
       const next = pts[(i + 1) % pts.length];
@@ -186,71 +227,106 @@ function drawRadarChart(doc: jsPDF, cx: number, cy: number, radius: number, scor
     }
   }
 
-  // Axes
+  // Axis lines
   for (let i = 0; i < numAxes; i++) {
     const [x, y] = getPoint(i, levels);
     doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.15);
+    doc.setLineWidth(0.12);
     doc.line(cx, cy, x, y);
   }
 
-  // Filled area
+  // Data polygon outline
   const validEntries = Object.entries(scores).filter(([, v]) => v !== null && v !== undefined);
   if (validEntries.length > 0) {
     const fillPts = Array.from({ length: numAxes }, (_, i) => {
       const s = scores[i + 1];
       return getPoint(i, s ?? 0);
     });
-    doc.setFillColor(0, 180, 216);
-    doc.setGState(doc.GState({ opacity: 0.15 }));
-    const polyX = fillPts.map((p) => p[0]);
-    const polyY = fillPts.map((p) => p[1]);
-    // Draw polygon manually
-    doc.setDrawColor(...C.primary);
-    doc.setLineWidth(0.8);
-    doc.setGState(doc.GState({ opacity: 1 }));
+
+    // Polygon border
+    doc.setDrawColor(...C.blue);
+    doc.setLineWidth(1);
     for (let i = 0; i < fillPts.length; i++) {
       const next = fillPts[(i + 1) % fillPts.length];
       doc.line(fillPts[i][0], fillPts[i][1], next[0], next[1]);
     }
 
-    // Dots
+    // Data dots
     for (let i = 0; i < numAxes; i++) {
       const s = scores[i + 1];
       if (s !== null && s !== undefined) {
         const [px, py] = getPoint(i, s);
-        doc.setFillColor(...C.primary);
+        doc.setFillColor(...C.blue);
         doc.circle(px, py, 1.5, "F");
       }
     }
   }
 
-  // Labels
+  // Axis labels
   for (let i = 0; i < numAxes; i++) {
     const angle = (Math.PI * 2 * i) / numAxes - Math.PI / 2;
-    const labelR = radius + 8;
+    const labelR = radius + 9;
     const lx = cx + labelR * Math.cos(angle);
     const ly = cy + labelR * Math.sin(angle);
-    doc.setFontSize(6);
+    doc.setFontSize(5.5);
     doc.setTextColor(...C.text);
     doc.setFont("helvetica", "normal");
     doc.text(PACK_NAMES[i + 1] || "", lx, ly, { align: "center" });
   }
 
-  // Center score
+  // Center score circle
   const validScores = Object.values(scores).filter((s): s is number => s !== null && s !== undefined);
   if (validScores.length > 0) {
     const avg = (validScores.reduce((a, b) => a + b, 0) / validScores.length).toFixed(1);
-    doc.setFillColor(...C.primary);
-    doc.circle(cx, cy, 7, "F");
-    doc.setFontSize(9);
+    doc.setFillColor(...C.blue);
+    doc.circle(cx, cy, 8, "F");
+    doc.setFontSize(10);
     doc.setTextColor(...C.white);
     doc.setFont("helvetica", "bold");
-    doc.text(avg, cx, cy - 1, { align: "center" });
+    doc.text(avg, cx, cy, { align: "center" });
     doc.setFontSize(5);
-    doc.text("/5", cx, cy + 3, { align: "center" });
+    doc.text("/5", cx, cy + 4, { align: "center" });
   }
 }
+
+/** Draw simplified CartoLogo (shield + network) */
+function drawCartoLogo(doc: jsPDF, cx: number, cy: number, size: number) {
+  const s = size / 56; // scale factor from viewBox 56
+  doc.setDrawColor(...C.white);
+  doc.setLineWidth(1.2 * s);
+  // Outer circle
+  doc.circle(cx, cy, 26 * s);
+  // Inner circle
+  doc.setLineWidth(0.8 * s);
+  doc.circle(cx, cy, 21.5 * s);
+  // Boss
+  doc.setLineWidth(1 * s);
+  doc.circle(cx, cy, 4 * s);
+  doc.setFillColor(...C.white);
+  doc.circle(cx, cy, 1.5 * s, "F");
+  // Nodes (offset from center)
+  const nodes = [
+    [-9, -15], [12, -11], [-15, 5], [14, 8], [5, 16],
+  ];
+  // Connections (edges between node indices)
+  const edges = [[0,1],[0,2],[1,3],[2,4],[3,4]];
+  doc.setLineWidth(0.7 * s);
+  for (const [a, b] of edges) {
+    doc.line(cx + nodes[a][0]*s, cy + nodes[a][1]*s, cx + nodes[b][0]*s, cy + nodes[b][1]*s);
+  }
+  // Spokes to center
+  for (const [nx, ny] of nodes) {
+    doc.setLineWidth(0.6 * s);
+    doc.line(cx + nx*s, cy + ny*s, cx, cy);
+  }
+  // Node dots
+  for (const [nx, ny] of nodes) {
+    doc.setFillColor(...C.white);
+    doc.circle(cx + nx*s, cy + ny*s, 2.3 * s, "F");
+  }
+}
+
+// ─── Main export ────────────────────────────────────────────────────
 
 export function useCartPdfExport() {
   const [isLoading, setIsLoading] = useState(false);
@@ -263,108 +339,127 @@ export function useCartPdfExport() {
     try {
       const { session, packResumes, processus, outils, equipes, irritants, taches, quickwins } = data;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pages: number[] = [1];
       const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
-      // ==================== PAGE 1: COVER ====================
-      // Full-page gradient background
-      doc.setFillColor(...C.dark);
+      // ═══════════ COVER PAGE ═══════════════════════════════════════
+      doc.setFillColor(...C.navy);
       doc.rect(0, 0, PAGE_W, PAGE_H, "F");
 
-      // Accent stripe
-      doc.setFillColor(...C.primary);
-      doc.rect(0, 0, 6, PAGE_H, "F");
+      // Left accent stripe
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, 5, PAGE_H, "F");
 
-      // Decorative circles
-      doc.setFillColor(0, 180, 216);
-      doc.setGState(doc.GState({ opacity: 0.05 }));
-      doc.circle(170, 50, 60, "F");
-      doc.circle(40, 230, 40, "F");
+      // Subtle blue gradient circle (decorative)
+      doc.setFillColor(...C.blue);
+      doc.setGState(doc.GState({ opacity: 0.04 }));
+      doc.circle(165, 55, 70, "F");
+      doc.circle(45, 240, 45, "F");
       doc.setGState(doc.GState({ opacity: 1 }));
 
-      // Logo text
-      doc.setFontSize(12);
-      doc.setTextColor(...C.primary);
-      doc.setFont("helvetica", "bold");
-      doc.text("SOLUTIO.WORK", MARGIN + 10, 40);
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184);
-      doc.setFont("helvetica", "normal");
-      doc.text("Transformation Digitale & Cartographie Organisationnelle", MARGIN + 10, 48);
+      // Top bar with brand + logo
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, PAGE_W, 1.5, "F");
 
-      // Title
-      doc.setFontSize(32);
+      // Draw shield logo
+      drawCartoLogo(doc, 45, 50, 40);
+
+      // Brand text next to logo
+      doc.setFontSize(11);
       doc.setTextColor(...C.white);
       doc.setFont("helvetica", "bold");
-      doc.text("Rapport de", MARGIN + 10, 85);
-      doc.text("Cartographie", MARGIN + 10, 100);
-      doc.setTextColor(...C.primary);
-      doc.text("Organisationnelle", MARGIN + 10, 115);
+      doc.text("SOLUTIO", 70, 47);
+      doc.setFontSize(8);
+      doc.setTextColor(...C.blueLight);
+      doc.setFont("helvetica", "normal");
+      doc.text("CARTO", 70, 54);
+
+      // Divider line
+      doc.setDrawColor(...C.blue);
+      doc.setLineWidth(0.5);
+      doc.line(ML + 8, 72, PAGE_W - MR - 8, 72);
+
+      // Main title
+      doc.setFontSize(34);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("Rapport de", ML + 8, 98);
+      doc.text("Cartographie", ML + 8, 113);
+      doc.setTextColor(...C.blue);
+      doc.text("Organisationnelle", ML + 8, 128);
 
       // Session name
-      doc.setFontSize(14);
-      doc.setTextColor(148, 163, 184); // slate-400
+      doc.setFontSize(13);
+      doc.setTextColor(...C.blueLight);
       doc.setFont("helvetica", "normal");
-      const sessionName = session.nom.length > 50 ? session.nom.slice(0, 50) + "..." : session.nom;
-      doc.text(sessionName, MARGIN + 10, 140);
+      const sessionName = session.nom.length > 55 ? session.nom.slice(0, 55) + "..." : session.nom;
+      doc.text(sessionName, ML + 8, 148);
 
       // Date
       doc.setFontSize(10);
-      doc.text(date, MARGIN + 10, 150);
+      doc.setTextColor(...C.textMuted);
+      doc.text(date, ML + 8, 160);
 
-      // Stats bar at bottom
-      const statsY = 230;
-      doc.setFillColor(30, 41, 59); // slightly lighter than bg
-      doc.roundedRect(MARGIN + 10, statsY, CONTENT_W - 20, 30, 3, 3, "F");
+      // Stats bar
+      const statsY = 200;
+      doc.setFillColor(15, 23, 42); // slightly lighter navy
+      doc.setDrawColor(...C.blue);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(ML + 8, statsY, CONTENT_W - 16, 34, 3, 3, "FD");
 
       const stats = [
-        { label: "Packs completes", value: `${session.packs_completed}/10` },
-        { label: "Processus", value: `${processus.length}` },
-        { label: "Outils", value: `${outils.length}` },
-        { label: "Quick Wins", value: `${quickwins.length}` },
+        { label: "PACKS", value: `${session.packs_completed}/10` },
+        { label: "PROCESSUS", value: `${processus.length}` },
+        { label: "OUTILS", value: `${outils.length}` },
+        { label: "IRRITANTS", value: `${irritants.length}` },
+        { label: "QUICK WINS", value: `${quickwins.length}` },
       ];
-      const statW = (CONTENT_W - 20) / stats.length;
+      const statW = (CONTENT_W - 16) / stats.length;
       stats.forEach((s, i) => {
-        const sx = MARGIN + 10 + i * statW + statW / 2;
-        doc.setFontSize(16);
-        doc.setTextColor(...C.primary);
+        const sx = ML + 8 + i * statW + statW / 2;
+        doc.setFontSize(18);
+        doc.setTextColor(...C.blue);
         doc.setFont("helvetica", "bold");
-        doc.text(s.value, sx, statsY + 13, { align: "center" });
-        doc.setFontSize(7);
-        doc.setTextColor(148, 163, 184);
+        doc.text(s.value, sx, statsY + 15, { align: "center" });
+        doc.setFontSize(6);
+        doc.setTextColor(...C.textMuted);
         doc.setFont("helvetica", "normal");
-        doc.text(s.label, sx, statsY + 21, { align: "center" });
+        doc.text(s.label, sx, statsY + 24, { align: "center" });
       });
 
-      // ==================== PAGE 2: SYNTHESE ====================
-      doc.addPage();
-      pages.push(2);
-      let y = 20;
+      // Bottom tagline
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textMuted);
+      doc.setFont("helvetica", "normal");
+      doc.text("solutio.work  |  Transformation Digitale & Cartographie Organisationnelle", PAGE_W / 2, PAGE_H - 20, { align: "center" });
 
-      // Radar chart + key metrics
+      // ═══════════ PAGE 2: SYNTHESE ═════════════════════════════════
+      doc.addPage();
+      drawPageChrome(doc);
+      let y = 16;
+
       y = drawSectionHeader(doc, y, "Synthese & Maturite Organisationnelle");
 
-      // Build radar scores
+      // Radar scores
       const radarScores: Record<number, number | null> = {};
       for (let i = 1; i <= 10; i++) {
         const pr = packResumes.find((r) => r.bloc === i);
         radarScores[i] = pr?.score_maturite ?? null;
       }
 
-      // Draw radar on left
-      drawRadarChart(doc, MARGIN + 42, y + 42, 30, radarScores);
+      // Radar left
+      drawRadarChart(doc, ML + 44, y + 44, 32, radarScores);
 
-      // Metrics on right
-      const metricsX = MARGIN + 95;
-      const cardW = 35;
-      drawMetricCard(doc, metricsX, y + 5, cardW, "Processus", processus.length.toString(), C.blue);
-      drawMetricCard(doc, metricsX + cardW + 4, y + 5, cardW, "Outils & SI", outils.length.toString(), C.green);
-      drawMetricCard(doc, metricsX, y + 32, cardW, "Equipes", equipes.length.toString(), C.orange);
-      drawMetricCard(doc, metricsX + cardW + 4, y + 32, cardW, "Irritants", irritants.length.toString(), C.red);
-      drawMetricCard(doc, metricsX, y + 59, cardW, "Quick Wins", quickwins.length.toString(), C.yellow);
-      drawMetricCard(doc, metricsX + cardW + 4, y + 59, cardW, "Taches manuelles", taches.length.toString(), C.purple);
+      // Metrics right
+      const mx = ML + 98;
+      const cw = 34;
+      drawMetricCard(doc, mx, y + 4, cw, "Processus", processus.length.toString(), C.blue);
+      drawMetricCard(doc, mx + cw + 3, y + 4, cw, "Outils & SI", outils.length.toString(), C.green);
+      drawMetricCard(doc, mx, y + 33, cw, "Equipes", equipes.length.toString(), C.orange);
+      drawMetricCard(doc, mx + cw + 3, y + 33, cw, "Irritants", irritants.length.toString(), C.red);
+      drawMetricCard(doc, mx, y + 62, cw, "Quick Wins", quickwins.length.toString(), C.amber);
+      drawMetricCard(doc, mx + cw + 3, y + 62, cw, "Taches manuelles", taches.length.toString(), C.purple);
 
-      y += 90;
+      y += 95;
 
       // Pack scores table
       y = drawSectionHeader(doc, y, "Scores par Pack");
@@ -372,95 +467,94 @@ export function useCartPdfExport() {
         .sort((a, b) => a.bloc - b.bloc)
         .map((pr) => {
           const score = pr.score_maturite ?? 0;
-          const filled = Math.round(score);
-          const bar = "|".repeat(filled) + ".".repeat(5 - filled);
+          const bar = "\u2588".repeat(Math.round(score)) + "\u2591".repeat(5 - Math.round(score));
           return [
-            `Pack ${pr.bloc}`,
+            `${pr.bloc}`,
             PACK_NAMES[pr.bloc] || "",
             `${score.toFixed(1)}/5`,
             bar,
-            pr.resume ? (pr.resume.length > 80 ? pr.resume.slice(0, 80) + "..." : pr.resume) : "-",
+            pr.resume ? (pr.resume.length > 70 ? pr.resume.slice(0, 70) + "..." : pr.resume) : "-",
           ];
         });
 
       autoTable(doc, {
         startY: y,
-        head: [["#", "Pack", "Score", "Niveau", "Resume"]],
+        head: [["#", "Pack", "Score", "", "Resume"]],
         body: packRows,
-        margin: { left: MARGIN, right: MARGIN },
-        styles: { fontSize: 7, cellPadding: 2, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
-        headStyles: { fillColor: C.dark, textColor: C.white, fontStyle: "bold", fontSize: 7 },
+        margin: { left: ML, right: MR },
+        styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
+        headStyles: { fillColor: C.navy, textColor: C.white, fontStyle: "bold", fontSize: 7 },
         columnStyles: {
-          0: { cellWidth: 12 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 14, halign: "center" },
-          3: { cellWidth: 16, fontStyle: "bold", textColor: C.primary },
+          0: { cellWidth: 8, halign: "center", fontStyle: "bold" },
+          1: { cellWidth: 32 },
+          2: { cellWidth: 16, halign: "center", fontStyle: "bold", textColor: C.blue },
+          3: { cellWidth: 14, halign: "center", textColor: C.blue },
           4: { cellWidth: "auto" },
         },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
+        alternateRowStyles: { fillColor: [240, 244, 255] },
       });
 
       y = (doc as any).lastAutoTable?.finalY + 8 || y + 60;
 
-      // ==================== RESUME EXECUTIF ====================
+      // ═══════════ RESUME EXECUTIF ══════════════════════════════════
       const resumeText = normalizeAiText(session.ai_resume_executif);
       if (resumeText) {
         y = ensureSpace(doc, y, 40);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, "Resume Executif");
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, resumeText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, resumeText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== FORCES ====================
+      // ═══════════ FORCES ═══════════════════════════════════════════
       const forcesText = normalizeAiText(session.ai_forces);
       if (forcesText) {
         y = ensureSpace(doc, y, 40);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, "Forces Identifiees", C.green);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, forcesText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, forcesText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== DYSFONCTIONNEMENTS ====================
+      // ═══════════ DYSFONCTIONNEMENTS ═══════════════════════════════
       const dysText = normalizeAiText(session.ai_dysfonctionnements);
       if (dysText) {
         y = ensureSpace(doc, y, 40);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, "Dysfonctionnements Majeurs", C.red);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, dysText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, dysText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== PROCESSUS ====================
+      // ═══════════ PROCESSUS ════════════════════════════════════════
       if (processus.length > 0) {
         doc.addPage();
-        pages.push(pages.length + 1);
-        y = 24;
+        drawPageChrome(doc);
+        y = 16;
         y = drawSectionHeader(doc, y, `Processus Detectes (${processus.length})`, C.blue);
 
         const procRows = processus.map((p) => {
-          const critColor = p.niveau_criticite === "High" ? "Critique" : p.niveau_criticite === "Medium" ? "Moyen" : "Faible";
-          return [p.nom, p.type || "-", critColor, p.description ? (p.description.length > 60 ? p.description.slice(0, 60) + "..." : p.description) : "-"];
+          const crit = p.niveau_criticite === "High" ? "Critique" : p.niveau_criticite === "Medium" ? "Moyen" : "Faible";
+          return [p.nom, p.type || "-", crit, p.description ? (p.description.length > 55 ? p.description.slice(0, 55) + "..." : p.description) : "-"];
         });
 
         autoTable(doc, {
           startY: y,
           head: [["Processus", "Type", "Criticite", "Description"]],
           body: procRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
           headStyles: { fillColor: C.blue, textColor: C.white, fontStyle: "bold" },
-          columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 }, 1: { cellWidth: 25 }, 2: { cellWidth: 18 } },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 38 }, 1: { cellWidth: 24 }, 2: { cellWidth: 18 } },
           alternateRowStyles: { fillColor: [239, 246, 255] },
           didParseCell: (data) => {
             if (data.column.index === 2 && data.section === "body") {
@@ -475,10 +569,10 @@ export function useCartPdfExport() {
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== OUTILS ====================
+      // ═══════════ OUTILS ═══════════════════════════════════════════
       if (outils.length > 0) {
         y = ensureSpace(doc, y, 30);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, `Outils & Systemes d'Information (${outils.length})`, C.green);
 
         const outilRows = outils.map((o) => [
@@ -492,19 +586,19 @@ export function useCartPdfExport() {
           startY: y,
           head: [["Outil", "Type", "Usage", "Problemes"]],
           body: outilRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
           headStyles: { fillColor: C.green, textColor: C.white, fontStyle: "bold" },
-          columnStyles: { 0: { fontStyle: "bold", cellWidth: 35 }, 1: { cellWidth: 25 }, 2: { cellWidth: 20 } },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 34 }, 1: { cellWidth: 24 }, 2: { cellWidth: 18 } },
           alternateRowStyles: { fillColor: [240, 253, 244] },
         });
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== EQUIPES ====================
+      // ═══════════ EQUIPES ══════════════════════════════════════════
       if (equipes.length > 0) {
         y = ensureSpace(doc, y, 30);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, `Equipes (${equipes.length})`, C.orange);
 
         const eqRows = equipes.map((e) => [
@@ -517,7 +611,7 @@ export function useCartPdfExport() {
           startY: y,
           head: [["Equipe", "Mission", "Charge"]],
           body: eqRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
           headStyles: { fillColor: C.orange, textColor: C.white, fontStyle: "bold" },
           columnStyles: { 0: { fontStyle: "bold", cellWidth: 35 }, 2: { cellWidth: 15, halign: "center" } },
@@ -526,10 +620,10 @@ export function useCartPdfExport() {
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== IRRITANTS ====================
+      // ═══════════ IRRITANTS ════════════════════════════════════════
       if (irritants.length > 0) {
         y = ensureSpace(doc, y, 30);
-        if (y < 30) y = 24;
+        if (y < 20) y = 16;
         y = drawSectionHeader(doc, y, `Irritants & Risques (${irritants.length})`, C.red);
 
         const sorted = [...irritants].sort((a, b) => (b.gravite || 0) - (a.gravite || 0));
@@ -544,10 +638,10 @@ export function useCartPdfExport() {
           startY: y,
           head: [["Irritant", "Type", "Gravite", "Impact"]],
           body: irrRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
           headStyles: { fillColor: C.red, textColor: C.white, fontStyle: "bold" },
-          columnStyles: { 0: { fontStyle: "bold", cellWidth: 45 }, 1: { cellWidth: 20 }, 2: { cellWidth: 15, halign: "center" } },
+          columnStyles: { 0: { fontStyle: "bold", cellWidth: 42 }, 1: { cellWidth: 20 }, 2: { cellWidth: 15, halign: "center" } },
           alternateRowStyles: { fillColor: [254, 242, 242] },
           didParseCell: (data) => {
             if (data.column.index === 2 && data.section === "body") {
@@ -562,12 +656,12 @@ export function useCartPdfExport() {
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== QUICK WINS ====================
+      // ═══════════ QUICK WINS ═══════════════════════════════════════
       if (quickwins.length > 0) {
         doc.addPage();
-        pages.push(pages.length + 1);
-        y = 24;
-        y = drawSectionHeader(doc, y, `Quick Wins & Actions Rapides (${quickwins.length})`, C.yellow);
+        drawPageChrome(doc);
+        y = 16;
+        y = drawSectionHeader(doc, y, `Quick Wins & Actions Rapides (${quickwins.length})`, C.amber);
 
         const sortedQw = [...quickwins].sort((a, b) => {
           const order: Record<string, number> = { P1: 0, P2: 1, P3: 2 };
@@ -586,109 +680,109 @@ export function useCartPdfExport() {
           startY: y,
           head: [["Priorite", "Action", "Impact", "Effort", "Categorie"]],
           body: qwRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
-          headStyles: { fillColor: [161, 98, 7], textColor: C.white, fontStyle: "bold" },
-          columnStyles: { 0: { cellWidth: 14, halign: "center", fontStyle: "bold" }, 2: { cellWidth: 16 }, 3: { cellWidth: 16 }, 4: { cellWidth: 25 } },
+          headStyles: { fillColor: C.amber, textColor: C.white, fontStyle: "bold" },
+          columnStyles: { 0: { cellWidth: 14, halign: "center", fontStyle: "bold" }, 2: { cellWidth: 18 }, 3: { cellWidth: 18 }, 4: { cellWidth: 26 } },
           alternateRowStyles: { fillColor: [254, 252, 232] },
           didParseCell: (data) => {
             if (data.column.index === 0 && data.section === "body") {
               const val = data.cell.raw as string;
               if (val === "P1") data.cell.styles.textColor = C.red;
               else if (val === "P2") data.cell.styles.textColor = C.orange;
-              else data.cell.styles.textColor = C.textLight;
+              else data.cell.styles.textColor = C.textMuted;
             }
           },
         });
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== ANALYSE TRANSVERSALE ====================
+      // ═══════════ ANALYSE TRANSVERSALE ═════════════════════════════
       const analyseTransText = normalizeAiText(session.ai_analyse_transversale);
       if (analyseTransText) {
         doc.addPage();
-        pages.push(pages.length + 1);
-        y = 24;
+        drawPageChrome(doc);
+        y = 16;
         y = drawSectionHeader(doc, y, "Analyse Transversale", C.purple);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, analyseTransText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, analyseTransText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== PLAN D'OPTIMISATION ====================
+      // ═══════════ PLAN D'OPTIMISATION ══════════════════════════════
       const planText = normalizeAiText(session.ai_plan_optimisation);
       if (planText) {
         y = ensureSpace(doc, y, 40);
-        if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
-        y = drawSectionHeader(doc, y, "Plan d'Optimisation", C.primaryDark);
+        if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
+        y = drawSectionHeader(doc, y, "Plan d'Optimisation", C.blueDark);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, planText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, planText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== VISION CIBLE ====================
+      // ═══════════ VISION CIBLE ═════════════════════════════════════
       const visionText = normalizeAiText(session.ai_vision_cible);
       if (visionText) {
         y = ensureSpace(doc, y, 40);
-        if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
+        if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
         y = drawSectionHeader(doc, y, "Vision Cible a 18 Mois", C.blue);
         doc.setFontSize(8);
         doc.setTextColor(...C.text);
         doc.setFont("helvetica", "normal");
-        y = drawWrappedText(doc, visionText, MARGIN + 2, y + 2, CONTENT_W - 4);
+        y = drawWrappedText(doc, visionText, ML + 2, y + 2, CONTENT_W - 4);
         y += 6;
       }
 
-      // ==================== ENRICHED ANALYSIS ====================
+      // ═══════════ ENRICHED ANALYSIS ════════════════════════════════
       const crossPackText = normalizeAiText((session as any).ai_cross_pack_analysis);
       const impactQuantText = normalizeAiText((session as any).ai_impact_quantification);
       const targetVisionText = normalizeAiText((session as any).ai_target_vision);
 
       if (crossPackText || impactQuantText || targetVisionText) {
         doc.addPage();
-        pages.push(pages.length + 1);
-        y = 24;
+        drawPageChrome(doc);
+        y = 16;
 
         if (crossPackText) {
           y = drawSectionHeader(doc, y, "Analyse Causale Inter-Packs", C.purple);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          y = drawWrappedText(doc, crossPackText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, crossPackText, ML + 2, y + 2, CONTENT_W - 4);
           y += 8;
         }
 
         if (impactQuantText) {
           y = ensureSpace(doc, y, 40);
-          if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
+          if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
           y = drawSectionHeader(doc, y, "Quantification d'Impact Financier", C.green);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          y = drawWrappedText(doc, impactQuantText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, impactQuantText, ML + 2, y + 2, CONTENT_W - 4);
           y += 8;
         }
 
         if (targetVisionText) {
           y = ensureSpace(doc, y, 40);
-          if (y < 30) { doc.addPage(); pages.push(pages.length + 1); y = 24; }
+          if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
           y = drawSectionHeader(doc, y, "Vision Cible Detaillee 18 Mois", C.blue);
           doc.setFontSize(8);
           doc.setTextColor(...C.text);
           doc.setFont("helvetica", "normal");
-          y = drawWrappedText(doc, targetVisionText, MARGIN + 2, y + 2, CONTENT_W - 4);
+          y = drawWrappedText(doc, targetVisionText, ML + 2, y + 2, CONTENT_W - 4);
         }
       }
 
-      // ==================== TACHES MANUELLES ====================
+      // ═══════════ TACHES MANUELLES ═════════════════════════════════
       if (taches.length > 0) {
         doc.addPage();
-        pages.push(pages.length + 1);
-        y = 24;
+        drawPageChrome(doc);
+        y = 16;
         y = drawSectionHeader(doc, y, `Taches Manuelles & Repetitives (${taches.length})`, C.purple);
 
         const tacheRows = taches.map((t) => [
@@ -701,75 +795,93 @@ export function useCartPdfExport() {
           startY: y,
           head: [["Tache", "Frequence", "Double saisie"]],
           body: tacheRows,
-          margin: { left: MARGIN, right: MARGIN },
+          margin: { left: ML, right: MR },
           styles: { fontSize: 7, cellPadding: 2.5, textColor: C.text, lineColor: C.border, lineWidth: 0.1 },
           headStyles: { fillColor: C.purple, textColor: C.white, fontStyle: "bold" },
           columnStyles: { 0: { fontStyle: "bold", cellWidth: 70 }, 1: { cellWidth: 30 }, 2: { cellWidth: 20, halign: "center" } },
           alternateRowStyles: { fillColor: [245, 243, 255] },
         });
-        y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
-      // ==================== BACK COVER ====================
+      // ═══════════ BACK COVER ═══════════════════════════════════════
       doc.addPage();
-      pages.push(pages.length + 1);
-      doc.setFillColor(...C.dark);
+      doc.setFillColor(...C.navy);
       doc.rect(0, 0, PAGE_W, PAGE_H, "F");
-      doc.setFillColor(...C.primary);
-      doc.rect(0, 0, 6, PAGE_H, "F");
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, 5, PAGE_H, "F");
+      doc.rect(0, 0, PAGE_W, 1.5, "F");
 
-      // Decorative elements
-      doc.setFillColor(0, 180, 216);
+      // Decorative
+      doc.setFillColor(...C.blue);
       doc.setGState(doc.GState({ opacity: 0.03 }));
-      doc.circle(160, 80, 50, "F");
-      doc.circle(50, 200, 35, "F");
+      doc.circle(160, 80, 55, "F");
+      doc.circle(50, 210, 40, "F");
       doc.setGState(doc.GState({ opacity: 1 }));
 
-      doc.setFontSize(24);
+      // Shield logo
+      drawCartoLogo(doc, PAGE_W / 2, 75, 50);
+
+      // Thank you
+      doc.setFontSize(28);
       doc.setTextColor(...C.white);
       doc.setFont("helvetica", "bold");
-      doc.text("Merci.", MARGIN + 10, 100);
+      doc.text("Merci.", PAGE_W / 2, 120, { align: "center" });
 
-      doc.setFontSize(14);
-      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(12);
+      doc.setTextColor(...C.blueLight);
       doc.setFont("helvetica", "normal");
-      doc.text("Votre transformation commence ici.", MARGIN + 10, 115);
+      doc.text("Votre transformation commence ici.", PAGE_W / 2, 132, { align: "center" });
 
-      doc.setFontSize(11);
-      doc.setTextColor(148, 163, 184);
-      doc.setFont("helvetica", "normal");
-      doc.text("Ce rapport a ete genere automatiquement par", MARGIN + 10, 140);
-      doc.setTextColor(...C.primary);
-      doc.setFont("helvetica", "bold");
-      doc.text("solutio.work", MARGIN + 10, 148);
+      // Separator
+      doc.setDrawColor(...C.blue);
+      doc.setLineWidth(0.5);
+      doc.line(70, 145, PAGE_W - 70, 145);
 
+      // Info block
       doc.setFontSize(9);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(...C.textMuted);
       doc.setFont("helvetica", "normal");
-      doc.text("Cartographie & Optimisation Organisationnelle", MARGIN + 10, 165);
-      doc.text("Propulse par Intelligence Artificielle", MARGIN + 10, 172);
+      doc.text("Ce rapport a ete genere automatiquement par", PAGE_W / 2, 160, { align: "center" });
+      doc.setTextColor(...C.blue);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("solutio.work", PAGE_W / 2, 170, { align: "center" });
+
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textMuted);
+      doc.setFont("helvetica", "normal");
+      doc.text("Cartographie & Optimisation Organisationnelle", PAGE_W / 2, 182, { align: "center" });
+      doc.text("Propulse par Intelligence Artificielle", PAGE_W / 2, 189, { align: "center" });
 
       // Next steps
       doc.setFontSize(10);
-      doc.setTextColor(...C.primary);
+      doc.setTextColor(...C.blue);
       doc.setFont("helvetica", "bold");
-      doc.text("Prochaines etapes :", MARGIN + 10, 195);
+      doc.text("Prochaines etapes", PAGE_W / 2, 210, { align: "center" });
+
+      const steps = [
+        "1. Priorisez vos quick wins P1 pour un impact immediat",
+        "2. Planifiez les projets P2 sur 3-9 mois",
+        "3. Reservez un RDV strategique : calendly.com/tlb-ov_p/30min",
+        "4. Contactez-nous : contact@solutio.work",
+      ];
       doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184);
+      doc.setTextColor(...C.textMuted);
       doc.setFont("helvetica", "normal");
-      doc.text("1. Priorisez vos quick wins P1 pour un impact immediat", MARGIN + 10, 205);
-      doc.text("2. Planifiez les projets P2 sur 3-9 mois", MARGIN + 10, 213);
-      doc.text("3. Reservez un RDV strategique : calendly.com/tlb-ov_p/30min", MARGIN + 10, 221);
-      doc.text("4. Contactez-nous : contact@solutio.work", MARGIN + 10, 229);
+      steps.forEach((step, i) => {
+        doc.text(step, PAGE_W / 2, 222 + i * 8, { align: "center" });
+      });
 
-      doc.setFontSize(8);
-      doc.text(date, MARGIN + 10, 250);
+      doc.setFontSize(7);
+      doc.setTextColor(...C.textMuted);
+      doc.text(date, PAGE_W / 2, PAGE_H - 20, { align: "center" });
 
-      // Add page numbers to all pages
+      // ═══════════ PAGE NUMBERS ═════════════════════════════════════
       const totalPages = doc.getNumberOfPages();
+      const contentPages = totalPages - 2; // exclude cover + back
       for (let i = 2; i < totalPages; i++) {
         doc.setPage(i);
-        addPageFooter(doc, i - 1, totalPages - 2); // Exclude cover & back cover
+        addPageFooter(doc, i - 1, contentPages, session.nom);
       }
 
       // Save
