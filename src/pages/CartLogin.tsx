@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Map, Loader2, CheckCircle, Mail } from "lucide-react";
+import { Loader2, CheckCircle, Mail } from "lucide-react";
 
 type View = "login" | "register" | "forgot" | "check-email";
 
@@ -99,12 +99,15 @@ const CartLogin = () => {
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 sm:px-10 py-5">
-          <Link to="/cartographie" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <Map className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-sm font-bold text-foreground">Solutio</span>
-            <span className="text-sm font-bold text-cyan-600">Carto</span>
+          <Link to="/cartographie" className="flex items-center gap-2.5">
+            <img
+              src="/logo-solutio-icon.svg"
+              alt="Solutio"
+              className="h-9 w-9 object-contain"
+            />
+            <span className="text-base font-bold tracking-tight" style={{ color: "#3b8ad9" }}>
+              Solutio
+            </span>
           </Link>
           {view !== "check-email" && (
             <p className="text-sm text-muted-foreground">

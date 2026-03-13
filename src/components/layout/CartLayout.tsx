@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Network, Shield, LayoutDashboard, Crown, HelpCircle } from "lucide-react";
+import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle } from "lucide-react";
 
 interface Crumb {
   label: string;
@@ -63,13 +63,14 @@ export default function CartLayout({ children }: CartLayoutProps) {
         {/* Left: Product identity + Breadcrumbs */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link to="/cartographie/sessions" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-sm">
-              <Network className="w-3.5 h-3.5 text-white" />
-            </div>
-            <div className="hidden sm:flex items-baseline gap-1">
-              <span className="text-sm font-bold tracking-tight text-foreground">Solutio</span>
-              <span className="text-sm font-bold tracking-tight text-cyan-600">Carto</span>
-            </div>
+            <img
+              src="/logo-solutio-icon.svg"
+              alt="Solutio"
+              className="h-8 w-8 object-contain"
+            />
+            <span className="hidden sm:inline text-sm font-bold tracking-tight" style={{ color: "#3b8ad9" }}>
+              Solutio
+            </span>
           </Link>
 
           {crumbs.length > 0 && (
@@ -102,8 +103,8 @@ export default function CartLayout({ children }: CartLayoutProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
-              <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-cyan-600" />
+              <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-blue-600" />
               </div>
               <span className="hidden sm:inline text-xs text-muted-foreground max-w-[120px] truncate">
                 {userName || userEmail || "Compte"}
