@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const CLAUDE_MODEL = "claude-haiku-4-5-20251001";
+const CLAUDE_MODEL = "claude-sonnet-4-20250514";
 
 async function callClaude(prompt: string): Promise<string | null> {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
