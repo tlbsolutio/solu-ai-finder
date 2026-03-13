@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, Mail } from "lucide-react";
-import { CartoLogo } from "@/components/cartographie/CartoLogo";
 
 type View = "login" | "register" | "forgot" | "check-email";
 
@@ -100,12 +99,15 @@ const CartLogin = () => {
       <div className="flex-1 flex flex-col">
         {/* Top bar */}
         <div className="flex items-center justify-between px-6 sm:px-10 py-5">
-          <Link to="/cartographie" className="flex items-center gap-2">
-            <CartoLogo size={36} />
-            <div className="flex items-baseline gap-1">
-              <span className="text-base font-bold tracking-tight" style={{ color: "#3b8ad9" }}>Solutio</span>
-              <span className="text-xs font-semibold text-muted-foreground/70">Carto</span>
-            </div>
+          <Link to="/cartographie" className="flex items-center gap-2.5">
+            <img
+              src="/logo-solutio-icon.svg"
+              alt="Solutio"
+              className="h-9 w-9 object-contain"
+            />
+            <span className="text-base font-bold tracking-tight" style={{ color: "#3b8ad9" }}>
+              Solutio
+            </span>
           </Link>
           {view !== "check-email" && (
             <p className="text-sm text-muted-foreground">
@@ -347,16 +349,17 @@ const CartLogin = () => {
 
         <div className="relative z-10 flex flex-col justify-center items-center p-12 xl:p-14 w-full">
           {/* Logo complet */}
-          <div className="mb-14 relative group flex flex-col items-center">
+          <div className="mb-14 relative group">
             {/* Glow behind logo */}
             <div className="absolute -inset-10 rounded-full opacity-0 animate-fadeGlow" style={{
-              background: "radial-gradient(ellipse, rgba(59,138,217,0.12) 0%, transparent 70%)",
+              background: "radial-gradient(ellipse, rgba(226,195,137,0.08) 0%, transparent 70%)",
             }} />
-            <CartoLogo size={72} color="#7cb8e8" className="relative opacity-0 animate-fadeSlideUp drop-shadow-[0_0_35px_rgba(59,138,217,0.25)]" />
-            <div className="flex items-baseline gap-1.5 mt-3 opacity-0 animate-fadeSlideUp" style={{ animationDelay: "0.1s" }}>
-              <span className="text-xl font-bold tracking-tight text-white">Solutio</span>
-              <span className="text-sm font-semibold text-white/50">Carto</span>
-            </div>
+            <img
+              src="/logo-solutio-full.svg"
+              alt="Solutio"
+              className="h-16 xl:h-[4.5rem] 2xl:h-20 w-auto relative opacity-0 animate-fadeSlideUp drop-shadow-[0_0_35px_rgba(226,195,137,0.12)]"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
           </div>
 
           <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight mb-4 text-center">
