@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const CLAUDE_MODEL = "claude-sonnet-4-20250514";
 
-async function callClaude(prompt: string): Promise<string | null> {
+async function callClaude(prompt: string, maxTokens = 12000): Promise<string | null> {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return null;
   try {
@@ -21,9 +21,10 @@ async function callClaude(prompt: string): Promise<string | null> {
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: 4096,
+        max_tokens: maxTokens,
         messages: [{ role: "user", content: prompt }],
       }),
+      signal: AbortSignal.timeout(180000),
     });
     if (!res.ok) {
       console.error(`Claude error: ${res.status} ${await res.text()}`);
@@ -46,6 +47,7 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(120000),
       }
     );
     if (!res.ok) return null;
@@ -56,8 +58,8 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
   }
 }
 
-async function generate(prompt: string, geminiApiKey: string): Promise<string> {
-  const claudeResult = await callClaude(prompt);
+async function generate(prompt: string, geminiApiKey: string, maxTokens = 12000): Promise<string> {
+  const claudeResult = await callClaude(prompt, maxTokens);
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
@@ -121,7 +123,7 @@ serve(async (req) => {
     console.log(`🔄 Phase 0: Deduplication — ${rawEquipes.length} equipes, ${rawProcessus.length} processus, ${rawOutils.length} outils`);
 
     let deduped: any = null;
-    if (rawEquipes.length > 3 || rawProcessus.length > 5 || rawOutils.length > 5) {
+    if (rawEquipes.length > 1 || rawProcessus.length > 1 || rawOutils.length > 1) {
       const dedupPrompt = `Tu es un expert en cartographie organisationnelle. Tu recois des listes d'equipes, processus et outils extraits de DIFFERENTS packs thematiques d'un diagnostic d'entreprise. Beaucoup d'entrees sont des DOUBLONS vus sous differents angles.
 
 Ta mission : FUSIONNER les entrees qui designent la meme realite. Sois INTELLIGENT dans ta detection :
@@ -166,7 +168,7 @@ Reponds avec ce JSON EXACT (sans markdown) :
   "stats": { "equipes_avant": ${rawEquipes.length}, "equipes_apres": 0, "processus_avant": ${rawProcessus.length}, "processus_apres": 0, "outils_avant": ${rawOutils.length}, "outils_apres": 0 }
 }`;
 
-      const dedupRaw = await generate(dedupPrompt, geminiApiKey);
+      const dedupRaw = await generate(dedupPrompt, geminiApiKey, 6000);
       try {
         let dedupJson = dedupRaw.trim();
         const dedupMatch = dedupJson.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
@@ -180,40 +182,48 @@ Reponds avec ce JSON EXACT (sans markdown) :
       }
     }
 
-    // Apply deduplication to DB if successful
+    // Apply deduplication to DB if successful (wrapped in try/catch to not block analysis)
     if (deduped) {
-      // EQUIPES: delete all AI-generated, re-insert merged
-      if (Array.isArray(deduped.equipes_fusionnees) && deduped.equipes_fusionnees.length > 0) {
-        await supabase.from("cart_equipes").delete().eq("session_id", sessionId).eq("ai_generated", true);
-        const rows = deduped.equipes_fusionnees.map((e: any) => ({
-          session_id: sessionId, nom: e.nom, mission: e.mission || null,
-          charge_estimee: e.charge_estimee || null, ai_generated: true, validated: false,
-        }));
-        await supabase.from("cart_equipes").insert(rows);
-        console.log(`📝 Replaced ${rawEquipes.length} equipes with ${rows.length} merged equipes`);
-      }
+      try {
+        // EQUIPES: delete all AI-generated, re-insert merged
+        if (Array.isArray(deduped.equipes_fusionnees) && deduped.equipes_fusionnees.length > 0) {
+          await supabase.from("cart_equipes").delete().eq("session_id", sessionId).eq("ai_generated", true);
+          const rows = deduped.equipes_fusionnees.map((e: any) => ({
+            session_id: sessionId, nom: e.nom, mission: e.mission || null,
+            charge_estimee: e.charge_estimee || null, ai_generated: true, validated: false,
+          }));
+          await supabase.from("cart_equipes").insert(rows);
+          console.log(`📝 Replaced ${rawEquipes.length} equipes with ${rows.length} merged equipes`);
+        }
 
-      // PROCESSUS: delete all AI-generated, re-insert merged
-      if (Array.isArray(deduped.processus_fusionnes) && deduped.processus_fusionnes.length > 0) {
-        await supabase.from("cart_processus").delete().eq("session_id", sessionId).eq("ai_generated", true);
-        const rows = deduped.processus_fusionnes.map((p: any) => ({
-          session_id: sessionId, nom: p.nom, type: p.type || "Autre",
-          niveau_criticite: p.niveau_criticite || "Medium", description: p.description || null,
-          ai_generated: true, validated: false,
-        }));
-        await supabase.from("cart_processus").insert(rows);
-        console.log(`📝 Replaced ${rawProcessus.length} processus with ${rows.length} merged processus`);
-      }
+        // PROCESSUS: delete all AI-generated, re-insert merged
+        if (Array.isArray(deduped.processus_fusionnes) && deduped.processus_fusionnes.length > 0) {
+          const { error: delErr } = await supabase.from("cart_processus").delete().eq("session_id", sessionId).eq("ai_generated", true);
+          if (!delErr) {
+            const rows = deduped.processus_fusionnes.map((p: any) => ({
+              session_id: sessionId, nom: p.nom, type: p.type || "Autre",
+              niveau_criticite: p.niveau_criticite || "Medium", description: p.description || null,
+              ai_generated: true, validated: false,
+            }));
+            await supabase.from("cart_processus").insert(rows);
+            console.log(`📝 Replaced ${rawProcessus.length} processus with ${rows.length} merged processus`);
+          }
+        }
 
-      // OUTILS: delete all AI-generated, re-insert merged
-      if (Array.isArray(deduped.outils_fusionnes) && deduped.outils_fusionnes.length > 0) {
-        await supabase.from("cart_outils").delete().eq("session_id", sessionId).eq("ai_generated", true);
-        const rows = deduped.outils_fusionnes.map((o: any) => ({
-          session_id: sessionId, nom: o.nom, type_outil: o.type_outil || "Autre",
-          problemes: o.problemes || null, ai_generated: true, validated: false,
-        }));
-        await supabase.from("cart_outils").insert(rows);
-        console.log(`📝 Replaced ${rawOutils.length} outils with ${rows.length} merged outils`);
+        // OUTILS: delete all AI-generated, re-insert merged
+        if (Array.isArray(deduped.outils_fusionnes) && deduped.outils_fusionnes.length > 0) {
+          const { error: delErr } = await supabase.from("cart_outils").delete().eq("session_id", sessionId).eq("ai_generated", true);
+          if (!delErr) {
+            const rows = deduped.outils_fusionnes.map((o: any) => ({
+              session_id: sessionId, nom: o.nom, type_outil: o.type_outil || "Autre",
+              problemes: o.problemes || null, ai_generated: true, validated: false,
+            }));
+            await supabase.from("cart_outils").insert(rows);
+            console.log(`📝 Replaced ${rawOutils.length} outils with ${rows.length} merged outils`);
+          }
+        }
+      } catch (dedupErr: any) {
+        console.error("⚠️ Dedup DB operations failed (continuing with analysis):", dedupErr.message);
       }
     }
 

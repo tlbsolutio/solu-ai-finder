@@ -21,7 +21,7 @@ const BLOC_NAMES: Record<number, string> = {
   10: "KPIs & Pilotage",
 };
 
-async function callClaude(prompt: string, maxTokens = 4096, systemPrompt?: string): Promise<string | null> {
+async function callClaude(prompt: string, maxTokens = 12000, systemPrompt?: string): Promise<string | null> {
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
   if (!apiKey) return null;
   try {
@@ -39,6 +39,7 @@ async function callClaude(prompt: string, maxTokens = 4096, systemPrompt?: strin
         "content-type": "application/json",
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(180000),
     });
     if (!res.ok) {
       console.error(`Claude error: ${res.status} ${await res.text()}`);
@@ -61,6 +62,7 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(120000),
       }
     );
     if (!res.ok) return null;
@@ -71,7 +73,7 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
   }
 }
 
-async function generate(prompt: string, geminiApiKey: string, maxTokens = 4096, systemPrompt?: string): Promise<string> {
+async function generate(prompt: string, geminiApiKey: string, maxTokens = 12000, systemPrompt?: string): Promise<string> {
   const claudeResult = await callClaude(prompt, maxTokens, systemPrompt);
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");

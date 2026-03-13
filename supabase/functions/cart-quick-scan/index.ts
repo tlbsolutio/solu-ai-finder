@@ -21,9 +21,10 @@ async function callClaude(prompt: string): Promise<string | null> {
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: 4096,
+        max_tokens: 6000,
         messages: [{ role: "user", content: prompt }],
       }),
+      signal: AbortSignal.timeout(120000),
     });
     if (!res.ok) {
       console.error(`Claude error: ${res.status} ${await res.text()}`);
@@ -46,6 +47,7 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        signal: AbortSignal.timeout(120000),
       }
     );
     if (!res.ok) return null;
