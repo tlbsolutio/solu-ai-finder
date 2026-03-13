@@ -24,9 +24,6 @@ interface PackAnalysisResult {
   score_maturite: number;
   alertes: Array<{ titre: string; description: string; gravite: string }>;
   objets: {
-    processus: any[];
-    outils: any[];
-    equipes: any[];
     irritants: any[];
     taches: any[];
     quickwins: any[];
@@ -35,9 +32,6 @@ interface PackAnalysisResult {
 }
 
 const OBJECT_SECTIONS = [
-  { key: "processus", label: "Processus detectes", table: "cart_processus", nameField: "nom", icon: Settings, color: "blue", bgClass: "bg-blue-50/50 border-blue-100" },
-  { key: "outils", label: "Outils detectes", table: "cart_outils", nameField: "nom", icon: Layers, color: "green", bgClass: "bg-green-50/50 border-green-100" },
-  { key: "equipes", label: "Equipes detectees", table: "cart_equipes", nameField: "nom", icon: Users, color: "orange", bgClass: "bg-orange-50/50 border-orange-100" },
   { key: "irritants", label: "Irritants detectes", table: "cart_irritants", nameField: "intitule", icon: AlertTriangle, color: "red", bgClass: "bg-red-50/50 border-red-100" },
   { key: "taches", label: "Taches manuelles", table: "cart_taches", nameField: "nom", icon: ClipboardList, color: "purple", bgClass: "bg-purple-50/50 border-purple-100" },
 ];
@@ -76,11 +70,8 @@ const CartPackResults = () => {
       if (!id || !bloc) return;
       setLoadingExisting(true);
       try {
-        const [resumeRes, processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
+        const [resumeRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
           supabase.from("cart_pack_resumes").select("*").eq("session_id", id).eq("bloc", bloc).maybeSingle(),
-          supabase.from("cart_processus").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
-          supabase.from("cart_outils").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
-          supabase.from("cart_equipes").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
           supabase.from("cart_irritants").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
           supabase.from("cart_taches").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
           supabase.from("cart_quickwins").select("*").eq("session_id", id).eq("bloc_source", bloc).order("created_at"),
@@ -93,9 +84,6 @@ const CartPackResults = () => {
             score_maturite: pr.score_maturite || 3,
             alertes: (pr.alertes as any[]) || [],
             objets: {
-              processus: processusRes.data || [],
-              outils: outilsRes.data || [],
-              equipes: equipesRes.data || [],
               irritants: irritantsRes.data || [],
               taches: tachesRes.data || [],
               quickwins: quickwinsRes.data || [],
@@ -146,10 +134,7 @@ const CartPackResults = () => {
       }
       if (data?.error) throw new Error(data.error);
 
-      const [processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
-        supabase.from("cart_processus").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
-        supabase.from("cart_outils").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
-        supabase.from("cart_equipes").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
+      const [irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
         supabase.from("cart_irritants").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
         supabase.from("cart_taches").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
         supabase.from("cart_quickwins").select("*").eq("session_id", id).eq("bloc_source", bloc).order("created_at"),
@@ -160,9 +145,6 @@ const CartPackResults = () => {
         score_maturite: data.score_maturite || 3,
         alertes: data.alertes || [],
         objets: {
-          processus: processusRes.data || [],
-          outils: outilsRes.data || [],
-          equipes: equipesRes.data || [],
           irritants: irritantsRes.data || [],
           taches: tachesRes.data || [],
           quickwins: quickwinsRes.data || [],

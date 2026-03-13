@@ -161,45 +161,11 @@ REGLE FONDAMENTALE — ISOLATION DES PACKS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Tu dois analyser UNIQUEMENT les reponses de CE pack (${blocName}, Pack ${bloc_number}/10).
-Il est INTERDIT de faire apparaitre un objet (outil, irritant, tache manuelle, equipe, processus) qui ne decoule pas DIRECTEMENT des reponses ci-dessous.
+Il est INTERDIT de faire apparaitre un objet (irritant, tache manuelle, quick win) qui ne decoule pas DIRECTEMENT des reponses ci-dessous.
 
-EXEMPLE INTERDIT :
-- Pack RH → outils detectes : HubSpot, Excel, Logiciel comptable (ces outils n'ont PAS ete mentionnes dans les reponses RH)
-- Pack Clients → irritants : "Reporting manuel", "Donnees non consolidees" (ces irritants appartiennent au pack KPIs, pas au pack Clients)
-
-EXEMPLE CORRECT :
-- Pack RH → outils detectes : Indeed, LinkedIn (si mentionnes dans les reponses RH pour le recrutement)
-- Pack KPIs → outils : HubSpot, Excel (si mentionnes dans les reponses KPIs pour le reporting)
-
-VERIFICATION : Avant de generer chaque objet, relis les reponses et verifie qu'il y a une citation verbatim qui le justifie.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGLE — EXTRACTION DES EQUIPES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Extraire TOUTES les equipes, roles et fonctions mentionnes dans les reponses de CE pack, explicitement ou implicitement.
-
-Sources a analyser :
-- Noms de roles directs ("le Responsable Technique", "l'equipe commerciale", "le dirigeant")
-- Roles implicites dans les processus ("les techniciens qui posent", "l'admin qui consolide", "la personne qui fait les devis")
-- Structures mentionnees ("comite de direction", "CoDir", "managers", "equipe terrain")
-
-REGLE ABSOLUE : Si des humains sont acteurs d'un processus decrit dans les reponses, une equipe DOIT etre creee. Ne JAMAIS retourner 0 equipes si des reponses decrivent des activites humaines.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGLE — EXTRACTION DES PROCESSUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Identifier TOUS les processus decrits dans les reponses de ce pack.
-Un processus = toute sequence d'actions decrite ("on fait X, puis Y, puis Z").
-
-Exemples a extraire systematiquement :
-- "Les commandes sont passees par email apres verification des stocks" → Processus : Gestion des commandes fournisseurs
-- "Un questionnaire est envoye 15 jours apres le chantier" → Processus : Mesure de satisfaction client
-- "Les leads sont suivis dans HubSpot jusqu'a la signature" → Processus : Gestion des opportunites commerciales
-- "On fait les devis sur Excel puis on les envoie par mail" → Processus : Elaboration et envoi des devis
-
-Objectif : au moins 3 processus detectes par pack si les reponses le permettent.
+IMPORTANT : NE PAS extraire les entites globales (equipes, processus, outils) dans cette analyse par pack.
+L'extraction d'entites est effectuee separement de maniere transversale sur l'ensemble des packs.
+Concentre-toi sur : resume, score, alertes, irritants, taches manuelles, et quick wins.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 REGLE — PRIORISATION DES QUICK WINS
@@ -223,15 +189,6 @@ OBLIGATION DE DISTRIBUTION :
 - Minimum 1 quick win classe P2
 - Si tous les quick wins sont P3, c'est une ERREUR. Revoir la classification.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGLE — RECOMMANDATIONS LOGICIELS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Avant de recommander le REMPLACEMENT d'un outil, verifier :
-1. L'outil est mal utilise → Recommandation : Formation + activation fonctionnalites
-2. L'outil est bien utilise mais non connecte → Recommandation : Integration API/connecteur/automatisation
-3. L'outil est intrinsequement inadapte → Recommandation : Remplacement + preciser par quoi et pourquoi
-
 CONTEXTE DU PACK : ${blocName} (Pack ${bloc_number}/10)
 Nombre de reponses : ${(reponsesToAnalyze || []).length}
 
@@ -244,21 +201,12 @@ Produis EXACTEMENT ce JSON (sans commentaires, sans markdown) :
   "score_maturite": 3,
   "niveau_maturite": "Critique|Emergent|En developpement|Mature|Optimise",
   "description_maturite": "Description granulaire du niveau actuel : ce qui fonctionne, ce qui manque, et a quoi ressemblerait un niveau mature/optimise pour cette dimension specifique (${blocName}). 3-4 phrases.",
-  "benchmark_secteur": "Si le secteur est connu, comparaison qualitative avec la moyenne du secteur : 'Vous etes en dessous/au niveau/au dessus de la moyenne du secteur sur cet axe car...' Sinon, comparaison avec la moyenne des PME francaises.",
+  "benchmark_secteur": "Si le secteur est connu, comparaison qualitative avec la moyenne du secteur. Sinon, comparaison avec la moyenne des PME francaises.",
   "forces": ["Force 1 — citation verbatim entre guillemets", "Force 2"],
   "faiblesses": ["Faiblesse 1 — citation verbatim entre guillemets", "Faiblesse 2"],
   "signaux_faibles": ["Signal faible ou contradiction detecte dans les reponses"],
   "alertes": [
     { "titre": "...", "description": "...", "gravite": "critique|important|modere" }
-  ],
-  "processus_detectes": [
-    { "nom_processus": "Nom du processus", "type": "Commercial|RH|Operationnel|Administratif|Strategique", "niveau_criticite": "High|Medium|Low", "description_courte": "Description basee sur les reponses" }
-  ],
-  "outils_detectes": [
-    { "nom_outil": "Nom EXACT mentionne dans les reponses", "type_outil": "CRM|ERP|Bureautique|Communication|Metier|Autre", "usage_note": "Comment l'outil est utilise selon les reponses" }
-  ],
-  "equipes_detectees": [
-    { "nom_equipe": "Nom de l'equipe/role mentionne", "mission_courte": "Mission decrite dans les reponses", "charge_estimee": 3 }
   ],
   "irritants_detectes": [
     { "intitule": "Irritant SPECIFIQUE a ce pack", "type": "Processus|Outil|RH|Organisation|Communication", "gravite": 3, "impact": "Temps|Qualite|Cout|Satisfaction" }
@@ -267,16 +215,15 @@ Produis EXACTEMENT ce JSON (sans commentaires, sans markdown) :
     { "nom_tache": "Tache manuelle SPECIFIQUE mentionnee dans les reponses", "frequence": "Quotidien|Hebdomadaire|Mensuel", "double_saisie": false }
   ],
   "quickwins": [
-    { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3", "delai_mise_en_oeuvre": "1 semaine|2-3 semaines|1 mois|2-3 mois", "roi_attendu": "Description concrete du retour attendu (ex: gain de 5h/semaine, reduction de 30% des erreurs, +15% taux de conversion)" }
+    { "action": "Action concrete et specifique", "impact": "Fort|Moyen|Faible", "effort": "Faible|Moyen|Eleve", "categorie": "Processus|Outil|RH|Organisation", "priorite": "P1|P2|P3", "delai_mise_en_oeuvre": "1 semaine|2-3 semaines|1 mois|2-3 mois", "roi_attendu": "Description concrete du retour attendu" }
   ],
-  "risques_inaction": ["Si rien ne change sur cet axe dans les 6-12 prochains mois : consequence concrete et chiffree (ex: perte de clients, turnover, cout croissant...)"],
-  "objectif_90_jours": "Un objectif SMART concret a atteindre en 90 jours sur cette dimension. Mesurable, avec un indicateur de succes clair. Ex: 'Reduire le temps de traitement des devis de 2h a 30min en implementant un modele standardise et un outil de generation automatique.'"
+  "risques_inaction": ["Si rien ne change sur cet axe dans les 6-12 prochains mois : consequence concrete et chiffree"],
+  "objectif_90_jours": "Un objectif SMART concret a atteindre en 90 jours sur cette dimension."
 }
 
 Score maturite: 1=Critique, 2=Emergent, 3=En developpement, 4=Mature, 5=Optimise.
 Genere SEULEMENT les objets clairement detectables dans les reponses de CE pack.
-Ne JAMAIS inventer de donnees absentes des reponses.
-Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citation verbatim des reponses CI-DESSUS qui le justifie.`;
+Ne JAMAIS inventer de donnees absentes des reponses.`;
 
     let rawContent = await generate(prompt, geminiApiKey);
 
@@ -328,36 +275,8 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
     // Delete previous AI-generated objects for this pack/session to avoid duplicates
     await supabase.from("cart_quickwins").delete().eq("session_id", session_id).eq("bloc_source", bloc_number).eq("ai_generated", true);
 
-    // Insert detected objects
-    const insertResults: any = { processus: [], outils: [], equipes: [], irritants: [], taches: [], quickwins: [] };
-
-    if (analysis.processus_detectes?.length > 0) {
-      const rows = analysis.processus_detectes.map((p: any) => ({
-        session_id, nom: p.nom_processus || "Processus", type: p.type || "Autre",
-        niveau_criticite: p.niveau_criticite || "Medium", description: p.description_courte || null,
-        ai_generated: true, validated: false,
-      }));
-      const { data } = await supabase.from("cart_processus").insert(rows).select();
-      insertResults.processus = data || [];
-    }
-
-    if (analysis.outils_detectes?.length > 0) {
-      const rows = analysis.outils_detectes.map((o: any) => ({
-        session_id, nom: o.nom_outil || "Outil", type_outil: o.type_outil || "Autre",
-        problemes: o.usage_note || null, ai_generated: true, validated: false,
-      }));
-      const { data } = await supabase.from("cart_outils").insert(rows).select();
-      insertResults.outils = data || [];
-    }
-
-    if (analysis.equipes_detectees?.length > 0) {
-      const rows = analysis.equipes_detectees.map((e: any) => ({
-        session_id, nom: e.nom_equipe || "Equipe", mission: e.mission_courte || null,
-        charge_estimee: e.charge_estimee || null, ai_generated: true, validated: false,
-      }));
-      const { data } = await supabase.from("cart_equipes").insert(rows).select();
-      insertResults.equipes = data || [];
-    }
+    // Insert detected objects (irritants, taches, quickwins only — entities extracted separately)
+    const insertResults: any = { irritants: [], taches: [], quickwins: [] };
 
     if (analysis.irritants_detectes?.length > 0) {
       const rows = analysis.irritants_detectes.map((i: any) => ({
@@ -425,6 +344,8 @@ Ne JAMAIS copier un objet d'un autre pack — chaque objet doit avoir une citati
       risques_inaction: analysis.risques_inaction || [],
       objectif_90_jours: analysis.objectif_90_jours || null,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Note: entities (equipes, processus, outils) are no longer extracted per-pack.
+    // Use cart-extract-entities for cross-pack entity extraction after packs are completed.
   } catch (e: any) {
     console.error("cart-pack-analyze error:", e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

@@ -25,9 +25,10 @@ import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
 import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
 import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
+import { CartEntityValidation } from "@/components/cartographie/CartEntityValidation";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 
-const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
+const FREE_TABS = new Set(["overview", "carte", "questionnaire", "entities"]);
 
 // Sidebar section definitions
 const SECTIONS = [
@@ -37,6 +38,7 @@ const SECTIONS = [
     { id: "questionnaire", label: "Questionnaire", shortLabel: "Q&A", icon: FileText, free: true },
   ]},
   { group: "Diagnostic", items: [
+    { id: "entities", label: "Entites", shortLabel: "Entites", icon: ShieldCheck, free: true },
     { id: "quickwins", label: "Quick wins", shortLabel: "Wins", icon: Zap, free: false },
     { id: "processus", label: "Processus", shortLabel: "Proc.", icon: Settings, free: false },
     { id: "outils", label: "Outils & SI", shortLabel: "Outils", icon: Layers, free: false },
@@ -135,6 +137,7 @@ const CartSessionDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [generatingFinal, setGeneratingFinal] = useState(false);
   const [generatingOllama, setGeneratingOllama] = useState(false);
+  const [extractingEntities, setExtractingEntities] = useState(false);
   const [ollamaStep, setOllamaStep] = useState(0);
   const [showGate, setShowGate] = useState(false);
   const [gateTab, setGateTab] = useState<string | undefined>();
@@ -235,6 +238,46 @@ const CartSessionDashboard = () => {
     }
   };
 
+  const handleExtractEntities = async () => {
+    if (!id) return;
+    setExtractingEntities(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cart-extract-entities", {
+        body: { session_id: id },
+      });
+      if (error) {
+        const msg = await extractFnError(error, data);
+        throw new Error(msg);
+      }
+      toast({ title: "Entites extraites", description: `${data.stats?.equipes || 0} equipes, ${data.stats?.processus || 0} processus, ${data.stats?.outils || 0} outils` });
+      await reload();
+    } catch (e: any) {
+      toast({ title: "Erreur extraction", description: e.message, variant: "destructive" });
+    } finally {
+      setExtractingEntities(false);
+    }
+  };
+
+  const handleValidateAndGenerate = async () => {
+    if (!id) return;
+    setGeneratingFinal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
+        body: { sessionId: id },
+      });
+      if (error) {
+        const msg = await extractFnError(error, data);
+        throw new Error(msg);
+      }
+      toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
+      await reload();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setGeneratingFinal(false);
+    }
+  };
+
   const alertColor = (gravite: string) => {
     if (gravite === "critique") return "bg-red-100 border-red-300 text-red-800";
     if (gravite === "important") return "bg-orange-100 border-orange-300 text-orange-800";
@@ -250,7 +293,9 @@ const CartSessionDashboard = () => {
   };
 
   // Counts for sidebar badges
+  const entityCount = (session.ai_extracted_entities?.equipes?.length || 0) + (session.ai_extracted_entities?.processus?.length || 0) + (session.ai_extracted_entities?.outils?.length || 0);
   const sectionCounts: Record<string, number> = {
+    entities: entityCount,
     quickwins: quickwins.length,
     processus: processus.length,
     outils: outils.length,
@@ -263,6 +308,7 @@ const CartSessionDashboard = () => {
     overview: packsCompleted >= 1,
     carte: processus.length > 0 || outils.length > 0,
     questionnaire: packResumes.length > 0,
+    entities: session.entities_extraction_status === "validated",
     quickwins: quickwins.length > 0,
     processus: processus.length > 0,
     outils: outils.length > 0,
@@ -1064,6 +1110,17 @@ const CartSessionDashboard = () => {
       case "overview": return renderOverview();
       case "carte": return renderCarte();
       case "questionnaire": return renderQuestionnaire();
+      case "entities": return (
+        <CartEntityValidation
+          sessionId={id!}
+          entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
+          extractionStatus={session.entities_extraction_status || "pending"}
+          onExtract={handleExtractEntities}
+          onValidateAndGenerate={handleValidateAndGenerate}
+          extracting={extractingEntities}
+          generating={generatingFinal}
+        />
+      );
       case "quickwins": return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
       case "processus": return renderProcessus();
       case "outils": return renderOutils();
@@ -1292,7 +1349,7 @@ const CartSessionDashboard = () => {
           ))}
         </div>
 
-        {/* Generate Analysis Card - Always visible */}
+        {/* Analysis Flow Card */}
         <Card className={`overflow-hidden ${packsCompleted >= 5 ? "border-cyan-300 bg-gradient-to-br from-cyan-50/80 to-blue-50/50" : "border-slate-200 bg-slate-50/30"}`}>
           <CardContent className="p-5">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1302,15 +1359,21 @@ const CartSessionDashboard = () => {
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-sm">
-                    {packsCompleted >= 10
-                      ? "Tous les packs sont completes !"
+                    {session.entities_extraction_status === "validated"
+                      ? "Entites validees — Pret pour l'analyse"
+                      : session.entities_extraction_status === "extracted"
+                      ? "Entites extraites — Validation requise"
                       : packsCompleted >= 5
-                      ? "Analyse disponible"
+                      ? "Packs completes — Extraire les entites"
                       : "Diagnostic IA"}
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {packsCompleted >= 5
-                      ? "Votre diagnostic complet est pret a etre genere par l'IA."
+                      ? session.entities_extraction_status === "validated"
+                        ? "Generez le diagnostic final a partir de vos entites validees."
+                        : session.entities_extraction_status === "extracted"
+                        ? "Verifiez et validez les entites extraites avant de generer l'analyse."
+                        : "Etape 1 : Extraire les equipes, processus et outils de vos reponses."
                       : `Completez au moins 5 packs pour debloquer l'analyse. (${packsCompleted}/5)`}
                   </p>
                   {packsCompleted < 5 && (
@@ -1319,33 +1382,94 @@ const CartSessionDashboard = () => {
                       <span className="text-[10px] text-muted-foreground font-medium">{packsCompleted}/5</span>
                     </div>
                   )}
+                  {packsCompleted >= 5 && (
+                    <div className="flex items-center gap-4 mt-2 text-[10px]">
+                      <span className={session.entities_extraction_status !== "pending" ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+                        1. Extraction {session.entities_extraction_status !== "pending" ? "done" : ""}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                      <span className={session.entities_extraction_status === "validated" ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+                        2. Validation {session.entities_extraction_status === "validated" ? "done" : ""}
+                      </span>
+                      <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                      <span className={isFinalGenerated ? "text-emerald-600 font-medium" : "text-muted-foreground"}>
+                        3. Analyse
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <Button
-                onClick={handleGenerateFinal}
-                disabled={generatingFinal || packsCompleted < 5}
-                className={`shrink-0 h-10 px-5 text-sm ${
-                  packsCompleted >= 5
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
-                    : ""
-                }`}
-                variant={packsCompleted < 5 ? "secondary" : "default"}
-              >
-                {generatingFinal ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Generation en cours...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className={`w-4 h-4 mr-2 ${packsCompleted >= 5 ? "animate-pulse" : ""}`} />
-                    Generer le diagnostic
-                  </>
-                )}
-              </Button>
+              {packsCompleted >= 5 && session.entities_extraction_status === "validated" ? (
+                <Button
+                  onClick={handleValidateAndGenerate}
+                  disabled={generatingFinal}
+                  className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
+                >
+                  {generatingFinal ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generation...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
+                      Generer le diagnostic
+                    </>
+                  )}
+                </Button>
+              ) : packsCompleted >= 5 && (session.entities_extraction_status === "extracted") ? (
+                <Button
+                  onClick={() => setActiveSection("entities")}
+                  className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
+                >
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Valider les entites
+                </Button>
+              ) : (
+                <Button
+                  onClick={isPaid ? handleExtractEntities : () => openGate()}
+                  disabled={extractingEntities || packsCompleted < 5}
+                  className={`shrink-0 h-10 px-5 text-sm ${
+                    packsCompleted >= 5
+                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
+                      : ""
+                  }`}
+                  variant={packsCompleted < 5 ? "secondary" : "default"}
+                >
+                  {extractingEntities ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Extraction...
+                    </>
+                  ) : !isPaid && packsCompleted >= 5 ? (
+                    <>
+                      <Lock className="w-4 h-4 mr-2" />
+                      Extraire (Premium)
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className={`w-4 h-4 mr-2 ${packsCompleted >= 5 ? "animate-pulse" : ""}`} />
+                      Extraire les entites
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Entity Validation (visible when entities are extracted) */}
+        {(session.entities_extraction_status === "extracted" || session.entities_extraction_status === "validated") && (
+          <CartEntityValidation
+            sessionId={id!}
+            entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
+            extractionStatus={session.entities_extraction_status || "pending"}
+            onExtract={handleExtractEntities}
+            onValidateAndGenerate={handleValidateAndGenerate}
+            extracting={extractingEntities}
+            generating={generatingFinal}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 space-y-4">

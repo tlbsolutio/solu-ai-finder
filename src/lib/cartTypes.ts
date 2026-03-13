@@ -26,6 +26,13 @@ export interface CartSessionV2 {
   sector_confidence: number | null;
   analyse_status: string;
   notes_internes: string | null;
+  entities_extraction_status: "pending" | "extracting" | "extracted" | "validated";
+  entities_validated_at: string | null;
+  ai_extracted_entities: {
+    equipes: Array<{ id: string; nom: string; description: string; source_packs: string[] }>;
+    processus: Array<{ id: string; nom: string; description: string; source_packs: string[] }>;
+    outils: Array<{ id: string; nom: string; description: string; categorie: string; source_packs: string[] }>;
+  } | null;
   created_at: string;
   updated_at: string;
 }

@@ -91,7 +91,7 @@ serve(async (req) => {
     if (!sessionId) throw new Error("Missing sessionId");
 
     const { data: session, error: sessionError } = await supabase
-      .from("cart_sessions").select("id, owner_id, nom, sector_id").eq("id", sessionId).single();
+      .from("cart_sessions").select("id, owner_id, nom, sector_id, ai_extracted_entities, entities_extraction_status").eq("id", sessionId).single();
     if (sessionError || !session) {
       return new Response(JSON.stringify({ error: "Session not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -112,127 +112,61 @@ serve(async (req) => {
 
     const sectorInfo = session.sector_id ? `Secteur : ${session.sector_id}. ` : "";
 
-    // Raw data from all packs (with IDs for DB updates)
-    const rawEquipes = (equipesRes.data || []).map((e: any) => ({ id: e.id, nom: e.nom, mission: e.mission, charge: e.charge_estimee }));
-    const rawProcessus = (processusRes.data || []).map((p: any) => ({ id: p.id, nom: p.nom, type: p.type, criticite: p.niveau_criticite, description: p.description }));
-    const rawOutils = (outilsRes.data || []).map((o: any) => ({ id: o.id, nom: o.nom, type: o.type_outil, problemes: o.problemes }));
-
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // PHASE 0 : DEDUPLICATION INTELLIGENTE (equipes, processus, outils)
+    // USE VALIDATED ENTITIES (from cart-extract-entities + user validation)
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    console.log(`🔄 Phase 0: Deduplication — ${rawEquipes.length} equipes, ${rawProcessus.length} processus, ${rawOutils.length} outils`);
+    const validatedEntities = session.ai_extracted_entities;
+    const hasValidatedEntities = validatedEntities && session.entities_extraction_status === "validated";
 
-    let deduped: any = null;
-    if (rawEquipes.length > 1 || rawProcessus.length > 1 || rawOutils.length > 1) {
-      const dedupPrompt = `Tu es un expert en cartographie organisationnelle. Tu recois des listes d'equipes, processus et outils extraits de DIFFERENTS packs thematiques d'un diagnostic d'entreprise. Beaucoup d'entrees sont des DOUBLONS vus sous differents angles.
+    if (hasValidatedEntities) {
+      console.log(`✅ Using validated entities: ${validatedEntities.equipes?.length || 0} equipes, ${validatedEntities.processus?.length || 0} processus, ${validatedEntities.outils?.length || 0} outils`);
 
-Ta mission : FUSIONNER les entrees qui designent la meme realite. Sois INTELLIGENT dans ta detection :
-- "Equipe IT/Projets" et "Equipe IT" et "Support technique" → c'est probablement LA MEME equipe
-- "Direction" et "Comite de direction" et "Management/Direction" et "Direction strategique" → c'est LA MEME entite
-- "Equipes operationnelles" et "Services operationnels" et "Collaborateurs operationnels" → MEME groupe
-- "Processus de facturation" et "Facturation client" → MEME processus
-- "HubSpot" mentionne 3 fois avec des descriptions differentes → UN SEUL outil avec description consolidee
-
-REGLES DE FUSION :
-1. EQUIPES : Regroupe les equipes qui designent les memes personnes/fonctions. Consolide les missions (la plus complete). Prends la charge la plus elevee. Donne un nom clair et unique.
-2. PROCESSUS : Regroupe les processus qui decrivent la meme sequence d'actions. Garde la description la plus detaillee. Prends la criticite la plus elevee.
-3. OUTILS : Regroupe les mentions du meme outil logiciel. Consolide les usages et problemes de toutes les mentions.
-
-ATTENTION — NE PAS FUSIONNER A TORT :
-- "Equipe commerciale" et "Equipe RH" sont DIFFERENTES meme si toutes deux sont "operationnelles"
-- "Processus de recrutement" et "Processus d'onboarding" sont DIFFERENTS meme si lies aux RH
-- "Excel (pour les devis)" et "Excel (pour le reporting)" sont LE MEME OUTIL (Excel) — fusionner avec usages combines
-
-ENTREES BRUTES A DEDUPLIQUER :
-
-EQUIPES (${rawEquipes.length}) :
-${rawEquipes.map((e: any, i: number) => `${i + 1}. [id:${e.id}] "${e.nom}" — ${e.mission || "?"} (charge: ${e.charge || "?"})`).join("\n")}
-
-PROCESSUS (${rawProcessus.length}) :
-${rawProcessus.map((p: any, i: number) => `${i + 1}. [id:${p.id}] "${p.nom}" — ${p.type || "?"} — ${p.criticite || "?"} — ${p.description || "?"}`).join("\n")}
-
-OUTILS (${rawOutils.length}) :
-${rawOutils.map((o: any, i: number) => `${i + 1}. [id:${o.id}] "${o.nom}" — ${o.type || "?"} — ${o.problemes || "?"}`).join("\n")}
-
-Reponds avec ce JSON EXACT (sans markdown) :
-{
-  "equipes_fusionnees": [
-    { "nom": "Nom consolide", "mission": "Mission consolidee (la plus complete)", "charge_estimee": 4, "ids_source": ["id1", "id2", "id3"] }
-  ],
-  "processus_fusionnes": [
-    { "nom": "Nom consolide", "type": "Commercial|RH|Operationnel|Administratif|Strategique", "niveau_criticite": "High|Medium|Low", "description": "Description consolidee", "ids_source": ["id1", "id2"] }
-  ],
-  "outils_fusionnes": [
-    { "nom": "Nom exact de l'outil", "type_outil": "CRM|ERP|Bureautique|Communication|Metier|Autre", "problemes": "Usage et problemes consolides de toutes les mentions", "ids_source": ["id1", "id2"] }
-  ],
-  "stats": { "equipes_avant": ${rawEquipes.length}, "equipes_apres": 0, "processus_avant": ${rawProcessus.length}, "processus_apres": 0, "outils_avant": ${rawOutils.length}, "outils_apres": 0 }
-}`;
-
-      const dedupRaw = await generate(dedupPrompt, geminiApiKey, 6000);
+      // Sync validated entities to cart_* tables (replace AI-generated ones)
       try {
-        let dedupJson = dedupRaw.trim();
-        const dedupMatch = dedupJson.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
-        if (dedupMatch) dedupJson = dedupMatch[1].trim();
-        const objMatch = dedupJson.match(/\{[\s\S]*\}/);
-        if (objMatch) dedupJson = objMatch[0];
-        deduped = JSON.parse(dedupJson);
-        console.log(`✅ Deduplication: equipes ${rawEquipes.length}→${deduped.equipes_fusionnees?.length || 0}, processus ${rawProcessus.length}→${deduped.processus_fusionnes?.length || 0}, outils ${rawOutils.length}→${deduped.outils_fusionnes?.length || 0}`);
-      } catch (e: any) {
-        console.error("⚠️ Deduplication parse failed, keeping originals:", e.message);
-      }
-    }
-
-    // Apply deduplication to DB if successful (wrapped in try/catch to not block analysis)
-    if (deduped) {
-      try {
-        // EQUIPES: delete all AI-generated, re-insert merged
-        if (Array.isArray(deduped.equipes_fusionnees) && deduped.equipes_fusionnees.length > 0) {
-          await supabase.from("cart_equipes").delete().eq("session_id", sessionId).eq("ai_generated", true);
-          const rows = deduped.equipes_fusionnees.map((e: any) => ({
-            session_id: sessionId, nom: e.nom, mission: e.mission || null,
-            charge_estimee: e.charge_estimee || null, ai_generated: true, validated: false,
+        // EQUIPES
+        await supabase.from("cart_equipes").delete().eq("session_id", sessionId).eq("ai_generated", true);
+        if (validatedEntities.equipes?.length > 0) {
+          const rows = validatedEntities.equipes.map((e: any) => ({
+            session_id: sessionId, nom: e.nom, mission: e.description || null,
+            ai_generated: true, validated: true,
           }));
           await supabase.from("cart_equipes").insert(rows);
-          console.log(`📝 Replaced ${rawEquipes.length} equipes with ${rows.length} merged equipes`);
         }
 
-        // PROCESSUS: delete all AI-generated, re-insert merged
-        if (Array.isArray(deduped.processus_fusionnes) && deduped.processus_fusionnes.length > 0) {
-          const { error: delErr } = await supabase.from("cart_processus").delete().eq("session_id", sessionId).eq("ai_generated", true);
-          if (!delErr) {
-            const rows = deduped.processus_fusionnes.map((p: any) => ({
-              session_id: sessionId, nom: p.nom, type: p.type || "Autre",
-              niveau_criticite: p.niveau_criticite || "Medium", description: p.description || null,
-              ai_generated: true, validated: false,
-            }));
-            await supabase.from("cart_processus").insert(rows);
-            console.log(`📝 Replaced ${rawProcessus.length} processus with ${rows.length} merged processus`);
-          }
+        // PROCESSUS
+        await supabase.from("cart_processus").delete().eq("session_id", sessionId).eq("ai_generated", true);
+        if (validatedEntities.processus?.length > 0) {
+          const rows = validatedEntities.processus.map((p: any) => ({
+            session_id: sessionId, nom: p.nom, description: p.description || null,
+            type: "Autre", niveau_criticite: "Medium",
+            ai_generated: true, validated: true,
+          }));
+          await supabase.from("cart_processus").insert(rows);
         }
 
-        // OUTILS: delete all AI-generated, re-insert merged
-        if (Array.isArray(deduped.outils_fusionnes) && deduped.outils_fusionnes.length > 0) {
-          const { error: delErr } = await supabase.from("cart_outils").delete().eq("session_id", sessionId).eq("ai_generated", true);
-          if (!delErr) {
-            const rows = deduped.outils_fusionnes.map((o: any) => ({
-              session_id: sessionId, nom: o.nom, type_outil: o.type_outil || "Autre",
-              problemes: o.problemes || null, ai_generated: true, validated: false,
-            }));
-            await supabase.from("cart_outils").insert(rows);
-            console.log(`📝 Replaced ${rawOutils.length} outils with ${rows.length} merged outils`);
-          }
+        // OUTILS
+        await supabase.from("cart_outils").delete().eq("session_id", sessionId).eq("ai_generated", true);
+        if (validatedEntities.outils?.length > 0) {
+          const rows = validatedEntities.outils.map((o: any) => ({
+            session_id: sessionId, nom: o.nom, type_outil: o.categorie || "Autre",
+            problemes: o.description || null,
+            ai_generated: true, validated: true,
+          }));
+          await supabase.from("cart_outils").insert(rows);
         }
-      } catch (dedupErr: any) {
-        console.error("⚠️ Dedup DB operations failed (continuing with analysis):", dedupErr.message);
+      } catch (syncErr: any) {
+        console.error("⚠️ Entity sync to tables failed (continuing):", syncErr.message);
       }
+    } else {
+      console.log("⚠️ No validated entities found, using existing DB entities as-is");
     }
 
-    // Re-fetch deduplicated data for the analysis prompt
-    const [finalEquipesRes, finalProcessusRes, finalOutilsRes] = deduped ? await Promise.all([
+    // Re-fetch entity data for the analysis prompt
+    const [finalEquipesRes, finalProcessusRes, finalOutilsRes] = await Promise.all([
       supabase.from("cart_equipes").select("*").eq("session_id", sessionId),
       supabase.from("cart_processus").select("*").eq("session_id", sessionId),
       supabase.from("cart_outils").select("*").eq("session_id", sessionId),
-    ]) : [equipesRes, processusRes, outilsRes];
+    ]);
 
     const context = {
       session_name: session.nom,
