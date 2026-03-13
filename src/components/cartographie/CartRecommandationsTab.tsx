@@ -158,7 +158,11 @@ function buildRecommandations(outils: CartOutilV2[]) {
 // Parse AI text helpers
 // ---------------------------------------------------------------------------
 
-function renderInlineText(text: string) {
+function renderInlineText(text: string | unknown) {
+  if (typeof text !== "string") {
+    const str = text ? JSON.stringify(text) : "";
+    return [<span key={0}>{str}</span>];
+  }
   const parts = text.split(/(Pack\s*\d+|→|->)/gi);
   return parts.map((part, i) => {
     if (/^Pack\s*\d+$/i.test(part)) {
@@ -193,8 +197,9 @@ function renderInlineText(text: string) {
   });
 }
 
-function parseAITextBlock(text: string) {
-  const lines = text.split("\n").filter((l) => l.trim().length > 0);
+function parseAITextBlock(text: string | unknown) {
+  const str = typeof text === "string" ? text : (text ? JSON.stringify(text, null, 2) : "");
+  const lines = str.split("\n").filter((l) => l.trim().length > 0);
   const items: Array<{ kind: "heading" | "bullet" | "subbullet" | "paragraph"; text: string }> = [];
 
   for (const line of lines) {

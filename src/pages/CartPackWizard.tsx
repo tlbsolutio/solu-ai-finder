@@ -146,6 +146,16 @@ const CartPackWizard = () => {
   };
 
   const handleComplete = async () => {
+    // Validate at least 3 answers before completing
+    const answered = questions.filter((q) => getValue(q).trim()).length;
+    if (answered < 3) {
+      toast({
+        title: "Reponses insuffisantes",
+        description: `Veuillez repondre a au moins 3 questions avant de terminer ce pack (${answered} actuellement).`,
+        variant: "destructive",
+      });
+      return;
+    }
     setCompleting(true);
     try {
       await syncToSupabase(false);
