@@ -77,7 +77,7 @@ const CartPackResults = () => {
       setLoadingExisting(true);
       try {
         const [resumeRes, processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
-          supabase.from("cart_pack_resumes").select("*").eq("session_id", id).eq("bloc", bloc).single(),
+          supabase.from("cart_pack_resumes").select("*").eq("session_id", id).eq("bloc", bloc).maybeSingle(),
           supabase.from("cart_processus").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
           supabase.from("cart_outils").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),
           supabase.from("cart_equipes").select("*").eq("session_id", id).eq("ai_generated", true).order("created_at"),

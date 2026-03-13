@@ -70,7 +70,7 @@ export function CartSessionProvider({ children }: { children: React.ReactNode })
       .eq("session_id", sessionId)
       .eq("status", "active")
       .limit(1)
-      .single();
+      .maybeSingle();
     const paid = !!data;
     setPaidSessions(prev => {
       const next = new Set(prev);

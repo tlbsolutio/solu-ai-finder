@@ -379,6 +379,8 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
       a.href = dataUrl;
       a.download = "cartographie-organisationnelle.png";
       a.click();
+    }).catch((err) => {
+      console.error("Export PNG failed:", err);
     });
   }, []);
 

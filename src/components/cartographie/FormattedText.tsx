@@ -58,7 +58,11 @@ function renderInlineFormatting(text: string) {
 export const FormattedText = ({ text: rawText, variant = "default", collapseThreshold = 500 }: FormattedTextProps) => {
   const [expanded, setExpanded] = useState(false);
   // Defensive: handle JSONB objects that may arrive instead of strings
-  const text = typeof rawText === "string" ? rawText : (rawText ? JSON.stringify(rawText, null, 2) : "");
+  const text = typeof rawText === "string"
+    ? rawText
+    : (rawText && typeof rawText === "object" && "content" in (rawText as any))
+      ? String((rawText as any).content)
+      : (rawText ? JSON.stringify(rawText, null, 2) : "");
   const lines = text.split("\n").filter(Boolean);
   const isLong = text.length > collapseThreshold;
 
