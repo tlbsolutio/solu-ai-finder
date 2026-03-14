@@ -282,7 +282,7 @@ export function CartEntityValidation({
       </div>
 
       {mergeMode && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm flex items-center justify-between">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm flex items-center justify-between animate-fade-in-up">
           <span className="text-amber-800">
             <Merge className="w-4 h-4 inline mr-1.5" />
             Mode fusion : cliquez sur l'entite cible pour fusionner
@@ -369,9 +369,9 @@ export function CartEntityValidation({
                 return (
                   <div
                     key={entity.id}
-                    className={`flex items-start justify-between gap-3 p-3 rounded-lg border ${bgClass} ${
+                    className={`flex items-start justify-between gap-3 p-3 rounded-lg border transition-all ${bgClass} ${
                       isMergeSource ? "ring-2 ring-amber-400" : ""
-                    } ${isMergeTarget ? "cursor-pointer hover:ring-2 hover:ring-cyan-400" : ""}`}
+                    } ${isMergeTarget ? "cursor-pointer hover:ring-2 hover:ring-cyan-400" : ""} ${saving ? "pointer-events-none opacity-70" : ""}`}
                     onClick={isMergeTarget ? () => handleMerge(key, entity.id) : undefined}
                   >
                     {isEditing ? (

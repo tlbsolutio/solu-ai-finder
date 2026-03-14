@@ -200,6 +200,25 @@ All colors MUST be HSL.
   .delay-400 { animation-delay: 400ms; }
   .delay-500 { animation-delay: 500ms; }
 
+  /* Animate fadeSlideUp (used in CartLogin brand panel) */
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeSlideUp {
+    animation: fadeSlideUp 0.7s ease-out both;
+  }
+
+  /* Animate fadeGlow (used in CartLogin brand panel) */
+  @keyframes fadeGlow {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+  }
+  .animate-fadeGlow {
+    animation: fadeGlow 2s ease-in-out both;
+  }
+
   /* Animate scale-in */
   @keyframes scale-in {
     from { opacity: 0; transform: scale(0.95); }

@@ -76,13 +76,13 @@ export function CartQuickwinsTab({ sessionId, quickwins, onReload }: CartQuickwi
     const StatutIcon = STATUT_LABEL[qw.statut]?.icon || Clock;
     const pc = PRIORITY_CONFIG[qw.priorite_calculee || ""] || PRIORITY_CONFIG["Nice to have"];
     return (
-      <div className="p-3 rounded-md border bg-card space-y-2">
+      <div className="p-3 rounded-md border bg-card space-y-2 transition-all hover:shadow-sm hover:border-cyan-200/60">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium leading-snug">{qw.intitule}</p>
             {qw.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{qw.description}</p>}
           </div>
-          <Button size="sm" variant="ghost" className="h-7 shrink-0 text-xs px-2" onClick={() => handleUpdateStatut(qw)} disabled={updating === qw.id}>
+          <Button size="sm" variant="ghost" className="h-7 shrink-0 text-xs px-2 transition-colors duration-200" onClick={() => handleUpdateStatut(qw)} disabled={updating === qw.id}>
             <StatutIcon className="w-3.5 h-3.5 mr-1" />
             {STATUT_LABEL[qw.statut]?.label || qw.statut}
           </Button>
@@ -112,19 +112,19 @@ export function CartQuickwinsTab({ sessionId, quickwins, onReload }: CartQuickwi
       {/* Summary banner */}
       {quickwins.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 text-center">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 text-center transition-all hover:shadow-sm hover:border-cyan-300/60">
             <p className="text-2xl font-bold text-cyan-700">{quickwins.length}</p>
             <p className="text-[11px] text-cyan-600">Quick wins detectes</p>
           </div>
-          <div className="p-3 rounded-lg bg-gradient-to-br from-red-50 to-orange-50 border border-red-200/50 text-center">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-red-50 to-orange-50 border border-red-200/50 text-center transition-all hover:shadow-sm hover:border-red-300/60">
             <p className="text-2xl font-bold text-red-600">{p1Count}</p>
             <p className="text-[11px] text-red-500">Priorite haute (P1)</p>
           </div>
-          <div className="p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 text-center">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 text-center transition-all hover:shadow-sm hover:border-amber-300/60">
             <p className="text-2xl font-bold text-amber-600">{p2Count}</p>
             <p className="text-[11px] text-amber-500">Priorite moyenne (P2)</p>
           </div>
-          <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 text-center">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 text-center transition-all hover:shadow-sm hover:border-emerald-300/60">
             <p className="text-2xl font-bold text-emerald-600">{doneCount}</p>
             <p className="text-[11px] text-emerald-500">Realises</p>
           </div>

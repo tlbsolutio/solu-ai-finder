@@ -107,7 +107,7 @@ const CartLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-white dark:bg-background">
+    <div className="min-h-screen flex flex-col md:flex-row bg-white dark:bg-background">
 
       {/* ═══ LEFT — Form ═══ */}
       <div className="flex-1 flex flex-col">
@@ -342,7 +342,7 @@ const CartLogin = () => {
       </div>
 
       {/* ═══ RIGHT — Brand panel ═══ */}
-      <div className="hidden lg:flex lg:w-[480px] xl:w-[520px] shrink-0 relative overflow-hidden" style={{
+      <div className="hidden md:flex md:w-[380px] lg:w-[480px] xl:w-[520px] shrink-0 relative overflow-hidden" style={{
         background: "linear-gradient(160deg, #0c1a2e 0%, #0f2035 50%, #0a1628 100%)",
       }}>
         {/* Grid pattern */}
