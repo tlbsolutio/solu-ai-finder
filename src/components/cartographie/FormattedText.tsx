@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { CircleDot, ChevronRight, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ function renderInlineFormatting(text: string) {
   return parts.length > 0 ? parts : [text];
 }
 
-export const FormattedText = ({ text: rawText, variant = "default", collapseThreshold = 500 }: FormattedTextProps) => {
+export const FormattedText = React.memo(function FormattedText({ text: rawText, variant = "default", collapseThreshold = 500 }: FormattedTextProps) {
   const [expanded, setExpanded] = useState(false);
   // Defensive: handle JSONB objects that may arrive instead of strings
   const text = typeof rawText === "string"
@@ -177,4 +177,4 @@ export const FormattedText = ({ text: rawText, variant = "default", collapseThre
       )}
     </div>
   );
-};
+});

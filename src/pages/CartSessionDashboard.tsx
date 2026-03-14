@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCartSessionV2 } from "@/hooks/useCartSessionV2";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -414,8 +414,8 @@ const CartSessionDashboard = () => {
   const scores = Object.values(radarScores).filter((v): v is number => v !== null);
   const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : null;
 
-  // ========== SIDEBAR COMPONENT ==========
-  const Sidebar = () => (
+  // ========== SIDEBAR (memoized) ==========
+  const sidebar = useMemo(() => (
     <aside className={`hidden lg:flex flex-col border-r bg-card/50 transition-all duration-200 ${sidebarCollapsed ? "w-14" : "w-56"}`}>
       {/* Session header */}
       <div className="p-3 border-b">
@@ -544,10 +544,10 @@ const CartSessionDashboard = () => {
         </div>
       )}
     </aside>
-  );
+  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
 
-  // ========== MOBILE NAV ==========
-  const MobileNav = () => (
+  // ========== MOBILE NAV (memoized) ==========
+  const mobileNav = useMemo(() => (
     <div className="lg:hidden overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6 scrollbar-none border-b bg-card/50">
       <div className="flex gap-0.5 py-1.5 w-max">
         {SECTIONS.map((group, gi) => (
@@ -590,7 +590,7 @@ const CartSessionDashboard = () => {
         ))}
       </div>
     </div>
-  );
+  ), [activeSection, isPaid, sectionCounts, handleSectionClick]);
 
   // ========== SECTION CONTENT RENDERERS ==========
   const scoreColor = (score: number) => {
@@ -606,12 +606,12 @@ const CartSessionDashboard = () => {
     return "from-emerald-500/10 to-emerald-500/5 border-emerald-200";
   };
 
-  const WhatsNextBanner = () => {
+  const whatsNextBanner = useMemo(() => {
     if (!isFinalGenerated) return null;
     const steps = [
-      { done: quickwins.filter(q => q.statut === "fait").length > 0, label: "Realisez vos premiers quick wins", section: "quickwins" },
-      { done: !!session.ai_plan_optimisation, label: "Consultez le plan d'actions", section: "plan" },
-      { done: false, label: "Exportez le rapport PDF", section: null },
+      { done: quickwins.filter(q => q.statut === "fait").length > 0, label: "Realisez vos premiers quick wins", section: "quickwins" as string | null },
+      { done: !!session.ai_plan_optimisation, label: "Consultez le plan d'actions", section: "plan" as string | null },
+      { done: false, label: "Exportez le rapport PDF", section: null as string | null },
     ];
     const nextStep = steps.find(s => !s.done);
     if (!nextStep) return null;
@@ -639,7 +639,7 @@ const CartSessionDashboard = () => {
         )}
       </div>
     );
-  };
+  }, [isFinalGenerated, quickwins, session.ai_plan_optimisation, isPaid, pdfLoading, generatePdf, session, packResumes, processus, outils, equipes, irritants, taches]);
 
   const renderOverview = () => (
     <div className="space-y-5">
@@ -661,7 +661,7 @@ const CartSessionDashboard = () => {
       )}
 
       {/* What's Next guidance */}
-      <WhatsNextBanner />
+      {whatsNextBanner}
 
       {/* Quick Stats Banner */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
@@ -1028,31 +1028,33 @@ const CartSessionDashboard = () => {
     }
 
     switch (activeSection) {
-      case "overview": return renderOverview();
-      case "carte": return renderCarte();
+      case "overview": return <AIContentBoundary label="Overview">{renderOverview()}</AIContentBoundary>;
+      case "carte": return <AIContentBoundary label="Carte">{renderCarte()}</AIContentBoundary>;
       case "questionnaire": return renderQuestionnaire();
       case "entities": return (
-        <CartEntityValidation
-          sessionId={id!}
-          entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
-          extractionStatus={session.entities_extraction_status || "pending"}
-          onExtract={handleExtractEntities}
-          onValidateAndGenerate={handleValidateAndGenerate}
-          extracting={extractingEntities}
-          generating={generatingFinal}
-          isPaid={isPaid}
-          onOpenGate={() => openGate("entities")}
-        />
+        <AIContentBoundary label="Entites">
+          <CartEntityValidation
+            sessionId={id!}
+            entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
+            extractionStatus={session.entities_extraction_status || "pending"}
+            onExtract={handleExtractEntities}
+            onValidateAndGenerate={handleValidateAndGenerate}
+            extracting={extractingEntities}
+            generating={generatingFinal}
+            isPaid={isPaid}
+            onOpenGate={() => openGate("entities")}
+          />
+        </AIContentBoundary>
       );
       case "quickwins": return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
       case "processus": return <CartProcessusSection processus={processus} activeSection={activeSection} packsCompleted={packsCompleted} />;
       case "outils": return <CartOutilsSection outils={outils} activeSection={activeSection} packsCompleted={packsCompleted} />;
       case "equipes": return <CartEquipesSection equipes={equipes} activeSection={activeSection} packsCompleted={packsCompleted} />;
       case "irritants": return <CartIrritantsSection irritants={irritants} taches={taches} activeSection={activeSection} packsCompleted={packsCompleted} />;
-      case "plan": return <CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} />;
+      case "plan": return <AIContentBoundary label="Plan d'actions"><CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} /></AIContentBoundary>;
       case "recommandations": return <AIContentBoundary label="Recommandations"><CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} /></AIContentBoundary>;
       case "analyse": return <AIContentBoundary label="Analyse IA"><CartAnalyseSection session={session} /></AIContentBoundary>;
-      default: return renderOverview();
+      default: return <AIContentBoundary label="Overview">{renderOverview()}</AIContentBoundary>;
     }
   };
 
@@ -1060,7 +1062,7 @@ const CartSessionDashboard = () => {
   if (isFinalGenerated) {
     return (
       <div className="flex-1 flex flex-col lg:flex-row bg-background">
-        <Sidebar />
+        {sidebar}
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top bar with actions (mobile + desktop) */}
@@ -1143,7 +1145,7 @@ const CartSessionDashboard = () => {
 
           {/* Mobile nav */}
           <div className="px-4 sm:px-6 pt-3">
-            <MobileNav />
+            {mobileNav}
           </div>
 
           {/* Content area */}

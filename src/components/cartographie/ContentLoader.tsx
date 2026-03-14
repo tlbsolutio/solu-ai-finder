@@ -1,3 +1,4 @@
+import React from "react";
 import { Loader2, Network } from "lucide-react";
 
 interface ContentLoaderProps {
@@ -5,7 +6,7 @@ interface ContentLoaderProps {
   variant?: "spinner" | "skeleton" | "brand";
 }
 
-export const ContentLoader = ({ message = "Chargement...", variant = "spinner" }: ContentLoaderProps) => {
+export const ContentLoader = React.memo(function ContentLoader({ message = "Chargement...", variant = "spinner" }: ContentLoaderProps) {
   if (variant === "skeleton") {
     return (
       <div className="flex-1 px-4 sm:px-6 py-6 space-y-4 animate-fade-in-up">
@@ -42,4 +43,4 @@ export const ContentLoader = ({ message = "Chargement...", variant = "spinner" }
       {message && <p className="mt-4 text-muted-foreground text-sm">{message}</p>}
     </div>
   );
-};
+});

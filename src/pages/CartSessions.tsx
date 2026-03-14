@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -116,22 +116,25 @@ const CartSessions = () => {
           if (r.score_maturite != null) scoresBySession[r.session_id].push(r.score_maturite);
         }
 
-        // Object counts per session
-        const countTable = async (table: string, field: string) => {
-          const { data } = await supabase.from(table).select("session_id").in("session_id", ids);
+        // Object counts per session — fetch all 4 tables in parallel with minimal data
+        const tables = ["cart_processus", "cart_outils", "cart_equipes", "cart_irritants"] as const;
+        const countResults = await Promise.allSettled(
+          tables.map(table =>
+            supabase.from(table).select("session_id").in("session_id", ids)
+          )
+        );
+
+        const buildCounts = (result: PromiseSettledResult<any>) => {
           const counts: Record<string, number> = {};
-          for (const row of (data || [])) {
-            counts[row.session_id] = (counts[row.session_id] || 0) + 1;
+          if (result.status === "fulfilled") {
+            for (const row of (result.value.data || []) as { session_id: string }[]) {
+              counts[row.session_id] = (counts[row.session_id] || 0) + 1;
+            }
           }
           return counts;
         };
 
-        const [procCounts, outilsCounts, equipesCounts, irritantsCounts] = await Promise.all([
-          countTable("cart_processus", "session_id"),
-          countTable("cart_outils", "session_id"),
-          countTable("cart_equipes", "session_id"),
-          countTable("cart_irritants", "session_id"),
-        ]);
+        const [procCounts, outilsCounts, equipesCounts, irritantsCounts] = countResults.map(buildCounts);
 
         for (const s of sessionsData) {
           const scores = scoresBySession[s.id] || [];
@@ -192,11 +195,17 @@ const CartSessions = () => {
     return "text-red-600";
   };
 
-  if (loading) return <ContentLoader variant="skeleton" />;
-
-  const totalObjects = Object.values(sessionStats).reduce((acc, s) => acc + s.proc_count + s.outils_count + s.equipes_count + s.irritants_count, 0);
-  const completedSessions = sessions.filter(s => s.final_generation_done).length;
+  const totalObjects = useMemo(
+    () => Object.values(sessionStats).reduce((acc, s) => acc + s.proc_count + s.outils_count + s.equipes_count + s.irritants_count, 0),
+    [sessionStats]
+  );
+  const completedSessions = useMemo(
+    () => sessions.filter(s => s.final_generation_done).length,
+    [sessions]
+  );
   const firstName = userName?.split(" ")[0] || userEmail?.split("@")[0] || "Utilisateur";
+
+  if (loading) return <ContentLoader variant="skeleton" />;
 
   return (
     <div className="flex-1 flex flex-col">
