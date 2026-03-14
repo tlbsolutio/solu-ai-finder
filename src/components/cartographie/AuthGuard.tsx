@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ContentLoader } from "./ContentLoader";
 
@@ -9,6 +9,7 @@ interface Props {
 
 export function AuthGuard({ children }: Props) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [checking, setChecking] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
@@ -18,7 +19,7 @@ export function AuthGuard({ children }: Props) {
       if (session?.user && !session.user.is_anonymous) {
         setAuthenticated(true);
       } else {
-        navigate("/cartographie/login", { replace: true });
+        navigate("/cartographie/login?redirect=" + encodeURIComponent(location.pathname), { replace: true });
       }
       setChecking(false);
     };
@@ -26,14 +27,14 @@ export function AuthGuard({ children }: Props) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user || session.user.is_anonymous) {
-        navigate("/cartographie/login", { replace: true });
+        navigate("/cartographie/login?reason=expired", { replace: true });
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
-  if (checking) return <ContentLoader />;
+  if (checking) return <ContentLoader message="Verification de votre session..." />;
   if (!authenticated) return null;
 
   return <>{children}</>;

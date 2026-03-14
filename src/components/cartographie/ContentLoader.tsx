@@ -1,8 +1,8 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Network } from "lucide-react";
 
 interface ContentLoaderProps {
   message?: string;
-  variant?: "spinner" | "skeleton";
+  variant?: "spinner" | "skeleton" | "brand";
 }
 
 export const ContentLoader = ({ message = "Chargement...", variant = "spinner" }: ContentLoaderProps) => {
@@ -34,9 +34,10 @@ export const ContentLoader = ({ message = "Chargement...", variant = "spinner" }
   return (
     <div className="flex-1 flex flex-col items-center justify-center py-20 animate-fade-in-up">
       <div className="relative">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-cyan-600" />
         </div>
+        <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-cyan-400/60 animate-ping" />
       </div>
       {message && <p className="mt-4 text-muted-foreground text-sm">{message}</p>}
     </div>

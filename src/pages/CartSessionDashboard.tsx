@@ -153,11 +153,24 @@ const CartSessionDashboard = () => {
 
   if (loading) return <ContentLoader />;
   if (error || !session) {
+    const isForbidden = error?.toLowerCase().includes("forbidden") || error?.toLowerCase().includes("permission");
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive mb-4">{error || "Session introuvable"}</p>
-          <Button onClick={() => navigate("/cartographie/sessions")}>Retour</Button>
+      <div className="min-h-screen flex items-center justify-center animate-fade-in-up">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6 text-red-400" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">{isForbidden ? "Acces refuse" : "Session introuvable"}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isForbidden
+                ? "Vous n'avez pas acces a cette session. Verifiez que vous etes connecte avec le bon compte."
+                : error || "Cette session n'existe pas ou a ete supprimee."}
+            </p>
+          </div>
+          <Button onClick={() => navigate("/cartographie/sessions")} className="w-full">
+            Retour a mes diagnostics
+          </Button>
         </div>
       </div>
     );
@@ -427,10 +440,10 @@ const CartSessionDashboard = () => {
                   <div className="relative shrink-0">
                     <item.icon className={`w-3.5 h-3.5 ${isActive ? "text-cyan-600" : ""}`} />
                     {isComplete && !isLocked && !sidebarCollapsed && (
-                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white" />
+                      <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-card shadow-sm" />
                     )}
                     {isComplete && !isLocked && sidebarCollapsed && (
-                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 ring-1 ring-white" />
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-card" />
                     )}
                   </div>
                   {!sidebarCollapsed && (
@@ -438,7 +451,7 @@ const CartSessionDashboard = () => {
                       <span className="truncate">{item.label}</span>
                       <div className="ml-auto flex items-center gap-1">
                         {count !== undefined && count > 0 && !isLocked && (
-                          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 leading-none">{count}</span>
+                          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 leading-none" aria-label={`${count} ${item.label}`}>{count}</span>
                         )}
                         {isLocked && <Lock className="w-3 h-3 text-muted-foreground/40" />}
                       </div>
@@ -527,7 +540,7 @@ const CartSessionDashboard = () => {
                   <span className="hidden sm:inline">{item.label}</span>
                   <span className="sm:hidden">{item.shortLabel}</span>
                   {!isLocked && count !== undefined && count > 0 && (
-                    <span className="text-[9px] bg-muted rounded-full px-1 py-0.5 leading-none">{count}</span>
+                    <span className="text-[9px] bg-muted rounded-full px-1 py-0.5 leading-none" aria-label={`${count} elements`}>{count}</span>
                   )}
                   {isLocked && <Lock className="w-3 h-3 ml-0.5" />}
                 </button>
@@ -1079,8 +1092,10 @@ const CartSessionDashboard = () => {
           </div>
 
           {/* Content area */}
-          <div className="flex-1 px-4 sm:px-6 py-4 pb-8">
-            {renderSectionContent()}
+          <div className="flex-1 px-4 sm:px-6 py-4 pb-8" key={activeSection}>
+            <div className="animate-fade-in-up">
+              {renderSectionContent()}
+            </div>
           </div>
         </div>
 

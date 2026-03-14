@@ -21,7 +21,7 @@ export const CartOutilsSection = React.memo(function CartOutilsSection({ outils,
           {outils.length === 0 ? (
             <CartEmptyState message="Aucun outil detecte pour le moment" icon={Layers} activeSection={activeSection} packsCompleted={packsCompleted} />
           ) : outils.map((o) => (
-            <div key={o.id} className="flex items-start gap-3 p-3 rounded-md bg-green-50/50 border border-green-100">
+            <div key={o.id} className="flex items-start gap-3 p-3 rounded-lg bg-green-50/50 border border-green-100 transition-all hover:shadow-sm hover:border-green-200">
               <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

@@ -21,7 +21,7 @@ export const CartProcessusSection = React.memo(function CartProcessusSection({ p
           {processus.length === 0 ? (
             <CartEmptyState message="Aucun processus detecte pour le moment" icon={Settings} activeSection={activeSection} packsCompleted={packsCompleted} />
           ) : processus.map((p) => (
-            <div key={p.id} className="flex items-start gap-3 p-3 rounded-md bg-blue-50/50 border border-blue-100">
+            <div key={p.id} className="flex items-start gap-3 p-3 rounded-lg bg-blue-50/50 border border-blue-100 transition-all hover:shadow-sm hover:border-blue-200">
               <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

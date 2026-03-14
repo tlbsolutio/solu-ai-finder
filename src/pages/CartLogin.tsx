@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,21 @@ type View = "login" | "register" | "forgot" | "check-email";
 
 const CartLogin = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  const redirectTo = searchParams.get("redirect") || "/cartographie/sessions";
+
+  useEffect(() => {
+    if (searchParams.get("reason") === "expired") {
+      toast({
+        title: "Session expiree",
+        description: "Votre session a expire. Veuillez vous reconnecter.",
+        variant: "destructive",
+      });
+    }
+  }, []);
   const [view, setView] = useState<View>("login");
   const [checkEmailMessage, setCheckEmailMessage] = useState("");
 
@@ -32,7 +45,7 @@ const CartLogin = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate("/cartographie/sessions");
+      navigate(redirectTo);
     } catch (err: any) {
       toast({ title: "Erreur de connexion", description: err.message, variant: "destructive" });
     } finally {
@@ -85,7 +98,7 @@ const CartLogin = () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/cartographie/sessions` },
+        options: { redirectTo: `${window.location.origin}${redirectTo}` },
       });
       if (error) throw error;
     } catch (err: any) {

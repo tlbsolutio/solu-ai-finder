@@ -23,7 +23,7 @@ export const CartIrritantsSection = React.memo(function CartIrritantsSection({ i
             {irritants.length === 0 ? (
               <CartEmptyState message="Aucun irritant detecte pour le moment" icon={AlertTriangle} activeSection={activeSection} packsCompleted={packsCompleted} />
             ) : irritants.map((i) => (
-              <div key={i.id} className="flex items-start gap-3 p-3 rounded-md bg-red-50/50 border border-red-100">
+              <div key={i.id} className="flex items-start gap-3 p-3 rounded-lg bg-red-50/50 border border-red-100 transition-all hover:shadow-sm hover:border-red-200">
                 <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${(i.gravite || 0) >= 4 ? "bg-red-600" : (i.gravite || 0) >= 3 ? "bg-orange-500" : "bg-yellow-400"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -45,7 +45,7 @@ export const CartIrritantsSection = React.memo(function CartIrritantsSection({ i
             </CardHeader>
             <CardContent className="px-4 pb-4 space-y-2">
               {taches.map((t) => (
-                <div key={t.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/30 border">
+                <div key={t.id} className="flex items-start gap-3 p-3 rounded-lg bg-purple-50/30 border border-purple-100 transition-all hover:shadow-sm hover:border-purple-200">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-medium">{t.nom}</p>

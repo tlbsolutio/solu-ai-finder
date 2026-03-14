@@ -21,7 +21,7 @@ export const CartEquipesSection = React.memo(function CartEquipesSection({ equip
           {equipes.length === 0 ? (
             <CartEmptyState message="Aucune equipe detectee pour le moment" icon={Users} activeSection={activeSection} packsCompleted={packsCompleted} />
           ) : equipes.map((e) => (
-            <div key={e.id} className="flex items-start gap-3 p-3 rounded-md bg-orange-50/50 border border-orange-100">
+            <div key={e.id} className="flex items-start gap-3 p-3 rounded-lg bg-orange-50/50 border border-orange-100 transition-all hover:shadow-sm hover:border-orange-200">
               <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
