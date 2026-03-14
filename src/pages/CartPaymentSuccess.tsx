@@ -2,8 +2,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, ArrowRight, Mail, BarChart3 } from "lucide-react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 export default function CartPaymentSuccess() {
+  usePageTitle("Paiement confirme");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const plan = searchParams.get("plan"); // "autonome" or "accompagnee"

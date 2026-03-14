@@ -61,6 +61,8 @@ export default function CartLayout({ children }: CartLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Skip to content link for keyboard navigation */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-white focus:text-cyan-700 focus:rounded-lg focus:shadow-lg focus:text-sm focus:font-medium">Aller au contenu principal</a>
       {/* App header */}
       <header className="sticky top-0 z-50 h-12 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-3 sm:px-5 flex items-center justify-between gap-2">
         {/* Left: Product identity + Breadcrumbs */}
@@ -145,9 +147,9 @@ export default function CartLayout({ children }: CartLayoutProps) {
       </header>
 
       {/* Page content */}
-      <div className="flex-1 flex flex-col">
+      <main id="main-content" className="flex-1 flex flex-col">
         {children}
-      </div>
+      </main>
     </div>
   );
 }

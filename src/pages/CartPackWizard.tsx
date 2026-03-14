@@ -11,10 +11,52 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud } from "lucide-react";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud, FileText } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
 const getDraftKey = (sessionId: string, bloc: number) => `cart_pack_draft_${sessionId}_${bloc}`;
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface DraftPayload {
+  answers: Record<string, string>;
+  savedAt: number;
+}
+
+const readDraftPayload = (sessionId: string, bloc: number): DraftPayload | null => {
+  const raw = localStorage.getItem(getDraftKey(sessionId, bloc));
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    // Support legacy format (plain object of answers without savedAt)
+    if (parsed && typeof parsed === "object" && !parsed.savedAt) {
+      return { answers: parsed, savedAt: Date.now() };
+    }
+    if (parsed && parsed.answers && typeof parsed.savedAt === "number") {
+      return parsed as DraftPayload;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const writeDraftPayload = (sessionId: string, bloc: number, answers: Record<string, string>) => {
+  const payload: DraftPayload = { answers, savedAt: Date.now() };
+  localStorage.setItem(getDraftKey(sessionId, bloc), JSON.stringify(payload));
+};
+
+const formatTimeAgo = (timestamp: number): string => {
+  const diffMs = Date.now() - timestamp;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "a l'instant";
+  if (diffMin < 60) return `il y a ${diffMin} min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `il y a ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  return `il y a ${diffD}j`;
+};
 
 const CartPackWizard = () => {
   const { id, packId } = useParams<{ id: string; packId: string }>();
@@ -23,6 +65,7 @@ const CartPackWizard = () => {
 
   const bloc = parseInt(packId || "0");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
+  usePageTitle(packDef ? `Questionnaire - ${packDef.title}` : "Questionnaire");
 
   // Guard: invalid pack ID
   if (!packDef || isNaN(bloc) || bloc < 1 || bloc > 10) {
@@ -47,7 +90,12 @@ const CartPackWizard = () => {
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [showAutoSaved, setShowAutoSaved] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [showDraftRecovery, setShowDraftRecovery] = useState(false);
+  const [pendingDraftAnswers, setPendingDraftAnswers] = useState<Record<string, string> | null>(null);
   const syncTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -88,9 +136,19 @@ const CartPackWizard = () => {
         }
         setExistingReponses(repMap);
 
-        const stored = localStorage.getItem(getDraftKey(id!, bloc));
-        if (stored) {
-          try { setDrafts(JSON.parse(stored)); } catch {}
+        const draftPayload = readDraftPayload(id!, bloc);
+        if (draftPayload) {
+          const hasContent = Object.values(draftPayload.answers).some((v) => v.trim() !== "");
+          const isStale = Date.now() - draftPayload.savedAt > SEVEN_DAYS_MS;
+          if (isStale) {
+            // Auto-clear stale drafts
+            localStorage.removeItem(getDraftKey(id!, bloc));
+          } else if (hasContent) {
+            // Show recovery prompt instead of auto-loading
+            setPendingDraftAnswers(draftPayload.answers);
+            setLastSavedAt(draftPayload.savedAt);
+            setShowDraftRecovery(true);
+          }
         }
       } catch (e: any) {
         toast({ title: "Erreur", description: e.message, variant: "destructive" });
@@ -103,8 +161,17 @@ const CartPackWizard = () => {
 
   useEffect(() => {
     if (Object.keys(drafts).length > 0) {
-      localStorage.setItem(getDraftKey(id!, bloc), JSON.stringify(drafts));
+      writeDraftPayload(id!, bloc, drafts);
+      const now = Date.now();
+      setLastSavedAt(now);
+      // Show auto-save indicator briefly
+      setShowAutoSaved(true);
+      if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+      autoSaveTimeout.current = setTimeout(() => setShowAutoSaved(false), 2000);
     }
+    return () => {
+      if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+    };
   }, [drafts, id, bloc]);
 
   useEffect(() => {
@@ -216,6 +283,7 @@ const CartPackWizard = () => {
       await syncToSupabase(false);
       localStorage.removeItem(getDraftKey(id!, bloc));
       setDrafts({});
+      setLastSavedAt(null);
       navigate(`/cartographie/sessions/${id}/pack/${bloc}/results`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
@@ -247,7 +315,7 @@ const CartPackWizard = () => {
       const labels7 = ["1 - Pas du tout", "2", "3", "4 - Neutre", "5", "6", "7 - Tout a fait"];
       return (
         <div className="space-y-2">
-          <Slider value={[numValue]} onValueChange={([v]) => updateDraft(q.id, String(v))} min={1} max={7} step={1} />
+          <Slider value={[numValue]} onValueChange={([v]) => updateDraft(q.id, String(v))} min={1} max={7} step={1} aria-label={q.texte} />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>1 - Pas du tout</span>
             <span className="font-medium text-foreground text-sm">{numValue}/7</span>
@@ -268,7 +336,7 @@ const CartPackWizard = () => {
       const numValue = parseInt(value) || 3;
       return (
         <div className="space-y-2">
-          <Slider value={[numValue]} onValueChange={([v]) => updateDraft(q.id, String(v))} min={1} max={5} step={1} />
+          <Slider value={[numValue]} onValueChange={([v]) => updateDraft(q.id, String(v))} min={1} max={5} step={1} aria-label={q.texte} />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>1 - Faible</span>
             <span className="font-medium text-foreground text-sm">{numValue}/5</span>
@@ -294,7 +362,7 @@ const CartPackWizard = () => {
 
     if (type.includes("nombre") || type.includes("numerique")) {
       return (
-        <Input type="number" value={value} onChange={(e) => updateDraft(q.id, e.target.value)} placeholder="Nombre..." />
+        <Input type="number" value={value} onChange={(e) => updateDraft(q.id, e.target.value)} placeholder="Nombre..." aria-label={q.texte} />
       );
     }
 
@@ -304,6 +372,7 @@ const CartPackWizard = () => {
         onChange={(e) => updateDraft(q.id, e.target.value)}
         placeholder="Votre reponse..."
         rows={3}
+        aria-label={q.texte}
       />
     );
   };
@@ -405,6 +474,47 @@ const CartPackWizard = () => {
         </div>
       </div>
 
+      {showDraftRecovery && pendingDraftAnswers && (
+        <div className="px-4 pt-4 max-w-2xl mx-auto w-full">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <FileText className="w-5 h-5 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-amber-900">Un brouillon a ete trouve pour ce pack. Voulez-vous le recuperer ?</p>
+              {lastSavedAt && (
+                <p className="text-xs text-amber-700 mt-0.5">Derniere sauvegarde : {formatTimeAgo(lastSavedAt)}</p>
+              )}
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="default"
+                className="text-xs"
+                onClick={() => {
+                  setDrafts(pendingDraftAnswers);
+                  setShowDraftRecovery(false);
+                  setPendingDraftAnswers(null);
+                }}
+              >
+                Recuperer le brouillon
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-xs"
+                onClick={() => {
+                  localStorage.removeItem(getDraftKey(id!, bloc));
+                  setShowDraftRecovery(false);
+                  setPendingDraftAnswers(null);
+                  setLastSavedAt(null);
+                }}
+              >
+                Commencer a zero
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 p-4 sm:p-6 max-w-2xl mx-auto w-full">
         <div className="mb-4">
           <Badge variant="outline" className="mb-3">{currentSection}</Badge>
@@ -443,7 +553,18 @@ const CartPackWizard = () => {
               {currentSectionIndex + 1} / {sections.length}
             </span>
             <br />
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">Ctrl+S sauvegarder &middot; &larr; &rarr; naviguer</span>
+            {showAutoSaved ? (
+              <span className="text-xs text-muted-foreground inline-flex items-center gap-1 animate-in fade-in duration-300">
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                Brouillon sauvegarde
+              </span>
+            ) : lastSavedAt && !showDraftRecovery ? (
+              <span className="text-[10px] text-muted-foreground">
+                Derniere sauvegarde : {formatTimeAgo(lastSavedAt)}
+              </span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground hidden sm:inline">Ctrl+S sauvegarder &middot; &larr; &rarr; naviguer</span>
+            )}
           </div>
 
           {isLastSection ? (

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   CheckCircle, X, Sparkles, ArrowRight, Crown,
   FileText, Users, Zap, Brain, Phone, Shield,
@@ -53,6 +54,7 @@ const ACCOMPAGNEE_FEATURES: PlanFeature[] = [
 ];
 
 export default function CartPricing() {
+  usePageTitle("Tarifs");
   const navigate = useNavigate();
 
   return (

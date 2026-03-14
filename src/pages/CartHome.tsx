@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MetaTags from "@/components/seo/MetaTags";
 import { CartoLogo } from "@/components/cartographie/CartoLogo";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   ArrowRight,
   Brain,
@@ -336,6 +337,7 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
    CartHome — main page component
    ═══════════════════════════════════════════════════════════════════════ */
 const CartHome = () => {
+  usePageTitle("Accueil");
   const { t } = useLanguage();
 
   const packs = [

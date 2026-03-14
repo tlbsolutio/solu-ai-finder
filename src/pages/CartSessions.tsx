@@ -749,49 +749,15 @@ const CartSessions = () => {
           </div>
         )}
 
-        {/* Comparison panel */}
-        {compareMode && compareIds.size === 2 && (() => {
-          const [id1, id2] = [...compareIds];
-          const s1 = sessions.find(s => s.id === id1)!;
-          const s2 = sessions.find(s => s.id === id2)!;
-          const st1 = sessionStats[id1];
-          const st2 = sessionStats[id2];
-          const metrics = [
-            { label: "Score moyen", v1: st1?.avg_score?.toFixed(1) || "--", v2: st2?.avg_score?.toFixed(1) || "--", better: (st1?.avg_score || 0) > (st2?.avg_score || 0) ? 1 : (st1?.avg_score || 0) < (st2?.avg_score || 0) ? 2 : 0 },
-            { label: "Packs completes", v1: `${s1.packs_completed}/10`, v2: `${s2.packs_completed}/10`, better: s1.packs_completed > s2.packs_completed ? 1 : s1.packs_completed < s2.packs_completed ? 2 : 0 },
-            { label: "Processus", v1: st1?.proc_count?.toString() || "0", v2: st2?.proc_count?.toString() || "0", better: 0 },
-            { label: "Outils", v1: st1?.outils_count?.toString() || "0", v2: st2?.outils_count?.toString() || "0", better: 0 },
-            { label: "Equipes", v1: st1?.equipes_count?.toString() || "0", v2: st2?.equipes_count?.toString() || "0", better: 0 },
-            { label: "Irritants", v1: st1?.irritants_count?.toString() || "0", v2: st2?.irritants_count?.toString() || "0", better: (st1?.irritants_count || 0) < (st2?.irritants_count || 0) ? 1 : (st1?.irritants_count || 0) > (st2?.irritants_count || 0) ? 2 : 0 },
-          ];
-          return (
-            <Card className="border-purple-200 bg-purple-50/30">
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <GitCompare className="w-4 h-4 text-purple-600" />
-                    <h3 className="text-sm font-semibold">Comparaison</h3>
-                  </div>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setCompareMode(false); setCompareIds(new Set()); }}>
-                    <X className="w-3 h-3 mr-1" /> Fermer
-                  </Button>
-                </div>
-                <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-2 text-xs">
-                  <div className="font-semibold text-center truncate text-purple-700">{s1.nom}</div>
-                  <div />
-                  <div className="font-semibold text-center truncate text-purple-700">{s2.nom}</div>
-                  {metrics.map(m => (
-                    <React.Fragment key={m.label}>
-                      <div className={`text-center py-1 px-2 rounded ${m.better === 1 ? "bg-emerald-100 text-emerald-700 font-bold" : ""}`}>{m.v1}</div>
-                      <div className="text-center text-muted-foreground py-1 whitespace-nowrap">{m.label}</div>
-                      <div className={`text-center py-1 px-2 rounded ${m.better === 2 ? "bg-emerald-100 text-emerald-700 font-bold" : ""}`}>{m.v2}</div>
-                    </React.Fragment>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })()}
+        {/* Comparison prompt */}
+        {compareMode && compareIds.size === 2 && (
+          <div className="text-center py-4">
+            <Button onClick={openCompareDialog} className="bg-purple-600 hover:bg-purple-700 text-white">
+              <GitCompare className="w-4 h-4 mr-2" />
+              Comparer les 2 diagnostics
+            </Button>
+          </div>
+        )}
 
         {compareMode && compareIds.size < 2 && (
           <div className="text-center py-4 text-sm text-muted-foreground">
@@ -888,6 +854,140 @@ const CartSessions = () => {
             <Button variant="outline" onClick={() => setShowNewDialog(false)}>Annuler</Button>
             <Button onClick={createSession} disabled={creating} className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
               {creating ? "Creation..." : "Creer le diagnostic"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Comparison dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={(open) => { if (!open) setShowCompareDialog(false); }}>
+        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitCompare className="w-5 h-5 text-purple-600" />
+              Comparaison de diagnostics
+            </DialogTitle>
+          </DialogHeader>
+          {(() => {
+            if (compareIds.size !== 2) return null;
+            const [id1, id2] = [...compareIds];
+            const s1 = sessions.find(s => s.id === id1);
+            const s2 = sessions.find(s => s.id === id2);
+            if (!s1 || !s2) return null;
+            const st1 = sessionStats[id1];
+            const st2 = sessionStats[id2];
+            const packs1 = comparePackScores[id1] || [];
+            const packs2 = comparePackScores[id2] || [];
+
+            const metrics = [
+              { label: "Score moyen", v1: st1?.avg_score?.toFixed(1) || "--", v2: st2?.avg_score?.toFixed(1) || "--", better: (st1?.avg_score || 0) > (st2?.avg_score || 0) ? 1 : (st1?.avg_score || 0) < (st2?.avg_score || 0) ? 2 : 0 },
+              { label: "Packs completes", v1: `${s1.packs_completed}/10`, v2: `${s2.packs_completed}/10`, better: s1.packs_completed > s2.packs_completed ? 1 : s1.packs_completed < s2.packs_completed ? 2 : 0 },
+              { label: "Processus", v1: st1?.proc_count?.toString() || "0", v2: st2?.proc_count?.toString() || "0", better: (st1?.proc_count || 0) > (st2?.proc_count || 0) ? 1 : (st1?.proc_count || 0) < (st2?.proc_count || 0) ? 2 : 0 },
+              { label: "Outils", v1: st1?.outils_count?.toString() || "0", v2: st2?.outils_count?.toString() || "0", better: (st1?.outils_count || 0) > (st2?.outils_count || 0) ? 1 : (st1?.outils_count || 0) < (st2?.outils_count || 0) ? 2 : 0 },
+              { label: "Equipes", v1: st1?.equipes_count?.toString() || "0", v2: st2?.equipes_count?.toString() || "0", better: (st1?.equipes_count || 0) > (st2?.equipes_count || 0) ? 1 : (st1?.equipes_count || 0) < (st2?.equipes_count || 0) ? 2 : 0 },
+              { label: "Irritants", v1: st1?.irritants_count?.toString() || "0", v2: st2?.irritants_count?.toString() || "0", better: (st1?.irritants_count || 0) < (st2?.irritants_count || 0) ? 1 : (st1?.irritants_count || 0) > (st2?.irritants_count || 0) ? 2 : 0 },
+            ];
+
+            return (
+              <div className="space-y-6 py-2">
+                {/* Session names */}
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 items-center">
+                  <div className="text-center">
+                    <p className="font-semibold text-sm text-purple-700 truncate">{s1.nom}</p>
+                    <p className="text-[11px] text-muted-foreground">{s1.packs_completed}/10 packs</p>
+                  </div>
+                  <div className="text-muted-foreground text-xs">vs</div>
+                  <div className="text-center">
+                    <p className="font-semibold text-sm text-purple-700 truncate">{s2.nom}</p>
+                    <p className="text-[11px] text-muted-foreground">{s2.packs_completed}/10 packs</p>
+                  </div>
+                </div>
+
+                {/* Key metrics table */}
+                <div>
+                  <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Metriques cles</h4>
+                  <div className="rounded-lg border overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-muted/50">
+                          <th className="text-left px-3 py-2 font-medium text-xs">{s1.nom}</th>
+                          <th className="text-center px-3 py-2 font-medium text-xs text-muted-foreground">Metrique</th>
+                          <th className="text-right px-3 py-2 font-medium text-xs">{s2.nom}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {metrics.map((m, i) => (
+                          <tr key={m.label} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                            <td className={`text-left px-3 py-2 font-medium ${m.better === 1 ? "text-emerald-700 bg-emerald-50" : "text-foreground"}`}>{m.v1}</td>
+                            <td className="text-center px-3 py-2 text-xs text-muted-foreground whitespace-nowrap">{m.label}</td>
+                            <td className={`text-right px-3 py-2 font-medium ${m.better === 2 ? "text-emerald-700 bg-emerald-50" : "text-foreground"}`}>{m.v2}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pack scores comparison */}
+                {loadingCompare ? (
+                  <div className="text-center py-4 text-sm text-muted-foreground">Chargement des scores par pack...</div>
+                ) : (packs1.length > 0 || packs2.length > 0) && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Scores par pack</h4>
+                    <div className="space-y-2">
+                      {PACK_DEFINITIONS.map(pack => {
+                        const score1 = packs1.find(p => p.bloc === pack.bloc)?.score_maturite;
+                        const score2 = packs2.find(p => p.bloc === pack.bloc)?.score_maturite;
+                        if (score1 == null && score2 == null) return null;
+                        const s1Better = (score1 || 0) > (score2 || 0);
+                        const s2Better = (score2 || 0) > (score1 || 0);
+                        const maxScore = 5;
+                        return (
+                          <div key={pack.bloc} className="flex items-center gap-3">
+                            <span className="text-lg w-6 text-center shrink-0">{pack.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium truncate">{pack.title}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {/* Score bar for session 1 */}
+                                <div className="flex items-center gap-1.5 flex-1">
+                                  <span className={`text-xs font-bold w-8 text-right ${s1Better ? "text-emerald-600" : score1 != null ? "text-foreground" : "text-muted-foreground"}`}>
+                                    {score1 != null ? score1.toFixed(1) : "--"}
+                                  </span>
+                                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all ${s1Better ? "bg-emerald-500" : "bg-purple-400"}`}
+                                      style={{ width: score1 != null ? `${(score1 / maxScore) * 100}%` : "0%" }}
+                                    />
+                                  </div>
+                                </div>
+                                {/* Score bar for session 2 */}
+                                <div className="flex items-center gap-1.5 flex-1">
+                                  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden flex justify-end">
+                                    <div
+                                      className={`h-full rounded-full transition-all ${s2Better ? "bg-emerald-500" : "bg-cyan-400"}`}
+                                      style={{ width: score2 != null ? `${(score2 / maxScore) * 100}%` : "0%" }}
+                                    />
+                                  </div>
+                                  <span className={`text-xs font-bold w-8 ${s2Better ? "text-emerald-600" : score2 != null ? "text-foreground" : "text-muted-foreground"}`}>
+                                    {score2 != null ? score2.toFixed(1) : "--"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowCompareDialog(false); setCompareMode(false); setCompareIds(new Set()); }}>
+              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>

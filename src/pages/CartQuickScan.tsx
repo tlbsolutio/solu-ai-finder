@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuickScan } from "@/hooks/useQuickScan";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { MiniRadarChart } from "@/components/cartographie/MiniRadarChart";
 import { QuickWinCard } from "@/components/cartographie/QuickWinCard";
 import { SECTORS, detectSectorByKeywords, detectSectorByNAF, getSectorById } from "@/data/sectors";
@@ -48,6 +49,7 @@ const BLOC_LABELS: Record<string, string> = {
 };
 
 const CartQuickScan = () => {
+  usePageTitle("Quick Scan");
   const { runScan, loading, result, error } = useQuickScan();
   const [step, setStep] = useState<"form" | "results">("form");
   const [description, setDescription] = useState("");

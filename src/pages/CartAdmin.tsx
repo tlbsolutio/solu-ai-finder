@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import { Users, FileText, BarChart3, CreditCard, ShieldCheck, RefreshCw, Mail, Eye, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 const ADMIN_EMAIL = "tlb@solutio.work";
 
@@ -44,6 +45,7 @@ interface SubscriptionRow {
 }
 
 const CartAdmin = () => {
+  usePageTitle("Administration");
   const navigate = useNavigate();
   const { userEmail, loading: ctxLoading } = useCartContext();
   const { toast } = useToast();

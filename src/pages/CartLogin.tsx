@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Loader2, CheckCircle, Mail } from "lucide-react";
 import { CartoLogo } from "@/components/cartographie/CartoLogo";
 
 type View = "login" | "register" | "forgot" | "check-email";
 
 const CartLogin = () => {
+  usePageTitle("Connexion");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();

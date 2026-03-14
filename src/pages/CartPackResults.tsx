@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import {
   Star, AlertCircle, CheckCircle, Trash2, Loader2, Sparkles, Lock, ArrowRight,
   Settings, Layers, Users, AlertTriangle, ClipboardList, Zap, TrendingUp,
@@ -50,6 +51,8 @@ const CartPackResults = () => {
   const { toast } = useToast();
   const { isSessionPaid, loadSessionTier } = useCartContext();
   const isPaid = id ? isSessionPaid(id) : false;
+  usePageTitle(`Resultats Pack ${packId || ""}`);
+
 
   useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
 
