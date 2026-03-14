@@ -178,7 +178,7 @@ const CartSessionDashboard = () => {
     })
     .slice(0, 5);
 
-  const totalObjects = processus.length + outils.length + equipes.length + irritants.length + taches.length;
+  const totalObjects = mapProcessus.length + mapOutils.length + mapEquipes.length + irritants.length + taches.length;
   const estimatedTimeRemaining = PACK_DEFINITIONS
     .filter((p) => getPackStatus(p.bloc) !== "done")
     .reduce((acc, p) => acc + p.estimatedMinutes, 0);
@@ -292,8 +292,18 @@ const CartSessionDashboard = () => {
     setActiveSection(sectionId);
   };
 
+  // Merge DB entities with AI-extracted entities for display (mini map, carte, counts)
+  // Before final analysis, DB tables are empty — use ai_extracted_entities instead
+  const extracted = session.ai_extracted_entities;
+  const mapProcessus = processus.length > 0 ? processus :
+    (extracted?.processus || []).map((p: any) => ({ id: p.id, session_id: id!, nom: p.nom, description: p.description, type: "Metier", niveau_criticite: "Medium", ai_generated: true } as CartProcessusV2));
+  const mapOutils = outils.length > 0 ? outils :
+    (extracted?.outils || []).map((o: any) => ({ id: o.id, session_id: id!, nom: o.nom, type_outil: o.categorie || "Autre", niveau_usage: 3, problemes: o.description, ai_generated: true } as CartOutilV2));
+  const mapEquipes = equipes.length > 0 ? equipes :
+    (extracted?.equipes || []).map((e: any) => ({ id: e.id, session_id: id!, nom: e.nom, mission: e.description, charge_estimee: 3, ai_generated: true } as CartEquipeV2));
+
   // Counts for sidebar badges
-  const entityCount = (session.ai_extracted_entities?.equipes?.length || 0) + (session.ai_extracted_entities?.processus?.length || 0) + (session.ai_extracted_entities?.outils?.length || 0);
+  const entityCount = (extracted?.equipes?.length || 0) + (extracted?.processus?.length || 0) + (extracted?.outils?.length || 0);
   const sectionCounts: Record<string, number> = {
     entities: entityCount,
     quickwins: quickwins.length,
@@ -306,7 +316,7 @@ const CartSessionDashboard = () => {
   // Section completion indicators
   const sectionCompleted: Record<string, boolean> = {
     overview: packsCompleted >= 1,
-    carte: processus.length > 0 || outils.length > 0,
+    carte: mapProcessus.length > 0 || mapOutils.length > 0,
     questionnaire: packResumes.length > 0,
     entities: session.entities_extraction_status === "validated",
     quickwins: quickwins.length > 0,
@@ -742,15 +752,15 @@ const CartSessionDashboard = () => {
         <CardTitle className="text-sm flex items-center justify-between">
           <span>Carte organisation interactive</span>
           <span className="text-xs font-normal text-muted-foreground">
-            {processus.length} processus - {outils.length} outils - {equipes.length} equipes - {irritants.length} irritants
+            {mapProcessus.length} processus - {mapOutils.length} outils - {mapEquipes.length} equipes - {irritants.length} irritants
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0 relative">
         <OrgMap
-          processus={processus}
-          outils={outils}
-          equipes={equipes}
+          processus={mapProcessus}
+          outils={mapOutils}
+          equipes={mapEquipes}
           irritants={irritants}
           packResumes={packResumes}
           aiCartographyJson={session.ai_cartography_json}
@@ -1575,12 +1585,12 @@ const CartSessionDashboard = () => {
             <CardTitle className="text-sm flex items-center justify-between">
               <span>Mini-map organisation</span>
               <span className="text-xs font-normal text-muted-foreground">
-                {processus.length} processus - {outils.length} outils - {equipes.length} equipes - {irritants.length} irritants
+                {mapProcessus.length} processus - {mapOutils.length} outils - {mapEquipes.length} equipes - {irritants.length} irritants
               </span>
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <OrgMiniMap processus={processus} outils={outils} equipes={equipes} irritants={irritants} />
+            <OrgMiniMap processus={mapProcessus} outils={mapOutils} equipes={mapEquipes} irritants={irritants} />
           </CardContent>
         </Card>
       </main>

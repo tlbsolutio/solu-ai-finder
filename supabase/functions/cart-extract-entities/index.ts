@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
+let corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "https://solutio.work",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
@@ -80,6 +80,8 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
 }
 
 serve(async (req) => {
+  const origin = req.headers.get("Origin") || "";
+  if (origin) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization");
@@ -230,14 +232,6 @@ IMPORTANT :
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {
     console.error("cart-extract-entities error:", e);
-    // Reset status on error
-    try {
-      const { session_id } = await req.clone().json();
-      if (session_id) {
-        const supabase2 = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-        await supabase2.from("cart_sessions").update({ entities_extraction_status: "pending" }).eq("id", session_id);
-      }
-    } catch {}
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
