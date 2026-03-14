@@ -8,13 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import {
   Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3, Zap,
   Settings, Users, Layers, AlertTriangle, CheckCircle, FileText, Brain,
   HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare, Search, Copy,
+  MoreVertical, Archive, Trash2, RotateCcw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
 interface CartSession {
   id: string;
@@ -27,6 +32,7 @@ interface CartSession {
   owner_id: string;
   created_at: string;
   updated_at: string;
+  archived_at: string | null;
 }
 
 interface SessionStats {
@@ -45,6 +51,7 @@ const ONBOARDING_STEPS = [
 ];
 
 const CartSessions = () => {
+  usePageTitle("Mes Sessions");
   const navigate = useNavigate();
   const location = useLocation();
   const { ownerId, userName, userEmail, ensureSession, isAdmin } = useCartContext();
@@ -62,8 +69,13 @@ const CartSessions = () => {
   });
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [comparePackScores, setComparePackScores] = useState<Record<string, Array<{ bloc: number; score_maturite: number | null }>>>({});
+  const [loadingCompare, setLoadingCompare] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "nouveau" | "en_cours" | "analyse_generee">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "nouveau" | "en_cours" | "analyse_generee" | "archivees">("all");
+  const [deleteTarget, setDeleteTarget] = useState<CartSession | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const toggleCompare = (id: string) => {
     setCompareIds(prev => {
@@ -71,6 +83,30 @@ const CartSessions = () => {
       if (next.has(id)) { next.delete(id); } else if (next.size < 2) { next.add(id); }
       return next;
     });
+  };
+
+  const openCompareDialog = async () => {
+    if (compareIds.size !== 2) return;
+    setLoadingCompare(true);
+    setShowCompareDialog(true);
+    try {
+      const ids = [...compareIds];
+      const { data } = await supabase
+        .from("cart_pack_resumes")
+        .select("session_id, bloc, score_maturite")
+        .in("session_id", ids)
+        .order("bloc");
+      const bySession: Record<string, Array<{ bloc: number; score_maturite: number | null }>> = {};
+      for (const row of (data || [])) {
+        if (!bySession[row.session_id]) bySession[row.session_id] = [];
+        bySession[row.session_id].push({ bloc: row.bloc, score_maturite: row.score_maturite });
+      }
+      setComparePackScores(bySession);
+    } catch {
+      // Silently fail, dialog will show what it can
+    } finally {
+      setLoadingCompare(false);
+    }
   };
 
   useEffect(() => { loadSessions(); }, [ownerId]);
@@ -207,8 +243,11 @@ const CartSessions = () => {
   );
   const firstName = userName?.split(" ")[0] || userEmail?.split("@")[0] || "Utilisateur";
 
+  const activeSessions = useMemo(() => sessions.filter(s => !s.archived_at), [sessions]);
+  const archivedSessions = useMemo(() => sessions.filter(s => !!s.archived_at), [sessions]);
+
   const filteredSessions = useMemo(() => {
-    let result = sessions;
+    let result = statusFilter === "archivees" ? archivedSessions : activeSessions;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(s => s.nom.toLowerCase().includes(q));
@@ -221,7 +260,7 @@ const CartSessions = () => {
       result = result.filter(s => s.final_generation_done);
     }
     return result;
-  }, [sessions, searchQuery, statusFilter]);
+  }, [sessions, activeSessions, archivedSessions, searchQuery, statusFilter]);
 
   const duplicateSession = async (session: CartSession) => {
     const uid = ownerId || await ensureSession();
@@ -236,6 +275,49 @@ const CartSessions = () => {
       if (error) throw error;
       toast({ title: "Diagnostic duplique" });
       navigate(`/cartographie/sessions/${data.id}`);
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const archiveSession = async (session: CartSession) => {
+    try {
+      const { error } = await supabase
+        .from("cart_sessions")
+        .update({ archived_at: new Date().toISOString() } as any)
+        .eq("id", session.id);
+      if (error) throw error;
+      toast({ title: "Diagnostic archive" });
+      await loadSessions();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const unarchiveSession = async (session: CartSession) => {
+    try {
+      const { error } = await supabase
+        .from("cart_sessions")
+        .update({ archived_at: null } as any)
+        .eq("id", session.id);
+      if (error) throw error;
+      toast({ title: "Diagnostic desarchive" });
+      await loadSessions();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const deleteSession = async (session: CartSession) => {
+    try {
+      const { error } = await supabase
+        .from("cart_sessions")
+        .delete()
+        .eq("id", session.id);
+      if (error) throw error;
+      toast({ title: "Diagnostic supprime" });
+      setDeleteTarget(null);
+      await loadSessions();
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     }
@@ -310,6 +392,7 @@ const CartSessions = () => {
             <button
               onClick={dismissTutorial}
               className="absolute top-3 right-3 p-1 rounded-md hover:bg-cyan-100 transition-colors z-10"
+              aria-label="Fermer"
             >
               <X className="w-4 h-4 text-cyan-600/60" />
             </button>
@@ -351,6 +434,7 @@ const CartSessions = () => {
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Rechercher un diagnostic..."
                   className="pl-9"
+                  aria-label="Rechercher un diagnostic"
                 />
               </div>
               <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -363,6 +447,7 @@ const CartSessions = () => {
                 { key: "nouveau", label: "Nouveau" },
                 { key: "en_cours", label: "En cours" },
                 { key: "analyse_generee", label: "Analyse generee" },
+                ...(archivedSessions.length > 0 ? [{ key: "archivees" as const, label: `Archivees (${archivedSessions.length})` }] : []),
               ] as const).map(({ key, label }) => (
                 <button
                   key={key}
@@ -434,6 +519,7 @@ const CartSessions = () => {
                   >
                     {/* Top accent bar */}
                     <div className={`h-1 w-full bg-gradient-to-r ${
+                      s.archived_at ? "from-slate-300 to-slate-400" :
                       s.final_generation_done ? "from-emerald-400 to-emerald-500" :
                       s.packs_completed > 0 ? "from-cyan-500 to-blue-500" :
                       "from-muted to-muted"
@@ -454,6 +540,12 @@ const CartSessions = () => {
                           </div>
                           <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                             <Badge variant="outline" className={`text-[10px] ${statusCfg.color}`}>{statusCfg.label}</Badge>
+                            {s.archived_at && (
+                              <Badge variant="outline" className="text-[9px] bg-slate-100 text-slate-500 border-slate-200 gap-0.5">
+                                <Archive className="w-2.5 h-2.5" />
+                                Archive
+                              </Badge>
+                            )}
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               {new Date(s.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
@@ -466,13 +558,41 @@ const CartSessions = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0 mt-1">
-                          <button
-                            title="Dupliquer"
-                            className="p-1 rounded-md hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
-                            onClick={(e) => { e.stopPropagation(); duplicateSession(s); }}
-                          >
-                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-cyan-600" />
-                          </button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                className="p-1 rounded-md hover:bg-muted transition-colors opacity-0 group-hover:opacity-100" aria-label="Menu actions"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                              <DropdownMenuItem onClick={() => duplicateSession(s)}>
+                                <Copy className="w-3.5 h-3.5 mr-2" />
+                                Dupliquer
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {s.archived_at ? (
+                                <DropdownMenuItem onClick={() => unarchiveSession(s)}>
+                                  <RotateCcw className="w-3.5 h-3.5 mr-2" />
+                                  Desarchiver
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => archiveSession(s)}>
+                                  <Archive className="w-3.5 h-3.5 mr-2" />
+                                  Archiver
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600"
+                                onClick={() => setDeleteTarget(s)}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-cyan-600 group-hover:translate-x-0.5 transition-all" />
                         </div>
                       </div>
@@ -534,6 +654,98 @@ const CartSessions = () => {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* Archived sessions collapsible */}
+        {statusFilter !== "archivees" && archivedSessions.length > 0 && (
+          <div className="mt-2">
+            <button
+              onClick={() => setShowArchived(!showArchived)}
+              className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Archive className="w-3.5 h-3.5" />
+              {showArchived ? "Masquer" : "Afficher"} les sessions archivees ({archivedSessions.length})
+              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showArchived ? "rotate-90" : ""}`} />
+            </button>
+            {showArchived && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3 opacity-75">
+                {archivedSessions.map(s => {
+                  const stats = sessionStats[s.id];
+                  const statusCfg = getStatusConfig(s);
+                  const totalObj = stats ? stats.proc_count + stats.outils_count + stats.equipes_count + stats.irritants_count : 0;
+                  const progressPct = (s.packs_completed / 10) * 100;
+                  return (
+                    <Card
+                      key={s.id}
+                      className="group cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.99] overflow-hidden hover:border-slate-300"
+                      onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
+                    >
+                      <div className="h-1 w-full bg-gradient-to-r from-slate-300 to-slate-400" />
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-semibold text-sm truncate">{s.nom}</h3>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                              <Badge variant="outline" className="text-[9px] bg-slate-100 text-slate-500 border-slate-200 gap-0.5">
+                                <Archive className="w-2.5 h-2.5" />
+                                Archive
+                              </Badge>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {new Date(s.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0 mt-1">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="p-1 rounded-md hover:bg-muted transition-colors opacity-0 group-hover:opacity-100" aria-label="Menu actions"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuItem onClick={() => duplicateSession(s)}>
+                                  <Copy className="w-3.5 h-3.5 mr-2" />
+                                  Dupliquer
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => unarchiveSession(s)}>
+                                  <RotateCcw className="w-3.5 h-3.5 mr-2" />
+                                  Desarchiver
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600"
+                                  onClick={() => setDeleteTarget(s)}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                  Supprimer
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <div className="flex justify-between text-[11px] text-muted-foreground mb-1">
+                            <span>Progression</span>
+                            <span className="font-medium text-foreground">{s.packs_completed}/10 packs</span>
+                          </div>
+                          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-slate-400 to-slate-500"
+                              style={{ width: `${progressPct}%` }}
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -629,6 +841,27 @@ const CartSessions = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le diagnostic</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irreversible. Toutes les donnees de cette session seront supprimees.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => { if (deleteTarget) deleteSession(deleteTarget); }}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* New session dialog */}
       <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>

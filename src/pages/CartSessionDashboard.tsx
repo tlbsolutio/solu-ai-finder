@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCartSessionV2 } from "@/hooks/useCartSessionV2";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -35,6 +35,11 @@ import { CartAnalyseSection } from "@/components/cartographie/CartAnalyseSection
 import { CartSectionHeader } from "@/components/cartographie/CartSectionHeader";
 import { CartEmptyState } from "@/components/cartographie/CartEmptyState";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
+import { useCartDataExport } from "@/hooks/useCartDataExport";
+import { usePageTitle } from "@/hooks/usePageTitle";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
 const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
@@ -141,6 +146,7 @@ const CartSessionDashboard = () => {
     session, packResumes, processus, outils, equipes, irritants, taches, quickwins,
     totalReponses, loading, error, partialErrors, reload, getPackProgress, getPackResume, getPackStatus, getPackTotalQuestions,
   } = useCartSessionV2(id);
+  usePageTitle(session?.nom ? `Dashboard - ${session.nom}` : "Dashboard");
 
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -150,8 +156,10 @@ const CartSessionDashboard = () => {
   const [gateTab, setGateTab] = useState<string | undefined>();
   const [shareCopied, setShareCopied] = useState(false);
   const [lastError, setLastError] = useState<{ action: "generate" | "extract"; message: string } | null>(null);
+  const actionInProgress = useRef<string | null>(null);
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
   const { generatePdf, generateBrief, generateTeaser, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
+  const { exportJSON, exportCSV, isExporting } = useCartDataExport();
 
   // Progress-triggered freemium nudge at 3 packs
   const packsCompletedEarly = session?.packs_completed || 0;
@@ -238,12 +246,19 @@ const CartSessionDashboard = () => {
     return error?.message || "Erreur inconnue";
   };
 
+  const isActionBusy = generatingFinal || extractingEntities;
+
   const handleGenerateFinal = async () => {
     if (!id) return;
+    if (actionInProgress.current) {
+      toast({ title: "Une action est deja en cours", variant: "destructive" });
+      return;
+    }
     if (packsCompleted < 5) {
       toast({ title: "Packs insuffisants", description: `Completez au moins 5 packs avant de generer l'analyse (${packsCompleted}/5 actuellement)`, variant: "destructive" });
       return;
     }
+    actionInProgress.current = "generateFinal";
     setGeneratingFinal(true);
     setLastError(null);
     try {
@@ -284,11 +299,17 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setGeneratingFinal(false);
+      actionInProgress.current = null;
     }
   };
 
   const handleExtractEntities = async () => {
     if (!id) return;
+    if (actionInProgress.current) {
+      toast({ title: "Une action est deja en cours", variant: "destructive" });
+      return;
+    }
+    actionInProgress.current = "extractEntities";
     setExtractingEntities(true);
     setLastError(null);
     try {
@@ -317,11 +338,17 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setExtractingEntities(false);
+      actionInProgress.current = null;
     }
   };
 
   const handleValidateAndGenerate = async () => {
     if (!id) return;
+    if (actionInProgress.current) {
+      toast({ title: "Une action est deja en cours", variant: "destructive" });
+      return;
+    }
+    actionInProgress.current = "validateAndGenerate";
     setGeneratingFinal(true);
     setLastError(null);
     try {
@@ -361,6 +388,7 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setGeneratingFinal(false);
+      actionInProgress.current = null;
     }
   };
 
@@ -542,26 +570,46 @@ const CartSessionDashboard = () => {
       {/* Sidebar footer: actions */}
       {isFinalGenerated && !sidebarCollapsed && isPaid && (
         <div className="p-3 border-t space-y-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full h-8 text-[11px] justify-start"
-            disabled={pdfLoading}
-            onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            {pdfLoading ? (pdfProgress || "Export...") : "Rapport complet PDF"}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="w-full h-7 text-[11px] justify-start text-muted-foreground"
-            disabled={pdfLoading}
-            onClick={() => generateBrief({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
-          >
-            <FileText className="w-3.5 h-3.5 mr-1.5" />
-            Brief executif (1 page)
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-[11px] justify-start"
+                disabled={pdfLoading || isExporting}
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                {pdfLoading ? (pdfProgress || "Export...") : isExporting ? "Export..." : "Exporter"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuItem
+                onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+              >
+                <FileText className="w-3.5 h-3.5 mr-2" />
+                Rapport complet PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => generateBrief({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+              >
+                <FileText className="w-3.5 h-3.5 mr-2" />
+                Brief executif (1 page)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => exportCSV({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }, true)}
+              >
+                <Download className="w-3.5 h-3.5 mr-2" />
+                Export CSV complet
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => exportJSON({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }, true)}
+              >
+                <Download className="w-3.5 h-3.5 mr-2" />
+                Export JSON complet
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             size="sm"
             variant="ghost"
@@ -580,23 +628,53 @@ const CartSessionDashboard = () => {
       )}
       {isFinalGenerated && !sidebarCollapsed && !isPaid && (
         <div className="p-3 border-t space-y-1.5">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full h-8 text-[11px] justify-start"
-            disabled={pdfLoading}
-            onClick={() => {
-              generateTeaser({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins });
-              toast({ title: "Apercu gratuit genere", description: "Passez en premium pour le rapport complet" });
-            }}
-          >
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            {pdfLoading ? (pdfProgress || "Export...") : "Apercu PDF gratuit"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-[11px] justify-start"
+                disabled={pdfLoading || isExporting}
+              >
+                <Download className="w-3.5 h-3.5 mr-1.5" />
+                {pdfLoading ? (pdfProgress || "Export...") : isExporting ? "Export..." : "Exporter"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuItem
+                onClick={() => {
+                  generateTeaser({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins });
+                  toast({ title: "Apercu gratuit genere", description: "Passez en premium pour le rapport complet" });
+                }}
+              >
+                <FileText className="w-3.5 h-3.5 mr-2" />
+                Apercu PDF gratuit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => {
+                  exportCSV({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }, false);
+                  toast({ title: "CSV exporte (version limitee)", description: "Passez en premium pour l'export complet" });
+                }}
+              >
+                <Download className="w-3.5 h-3.5 mr-2" />
+                Export CSV (version limitee)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  exportJSON({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }, false);
+                  toast({ title: "JSON exporte (version limitee)", description: "Passez en premium pour l'export complet" });
+                }}
+              >
+                <Download className="w-3.5 h-3.5 mr-2" />
+                Export JSON (version limitee)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </aside>
-  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, generateTeaser, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
+  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, isExporting, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, generateTeaser, exportJSON, exportCSV, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
 
   // ========== MOBILE NAV (memoized) ==========
   const mobileNav = useMemo(() => (
@@ -1145,7 +1223,7 @@ const CartSessionDashboard = () => {
 
               <div className="flex items-center gap-1.5 shrink-0">
                 {packsCompleted >= 5 && !isFinalGenerated && (
-                  <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} className="h-8 text-xs">
+                  <Button size="sm" onClick={handleGenerateFinal} disabled={isActionBusy} className="h-8 text-xs">
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
                     {generatingFinal ? "..." : "Generer"}
                   </Button>
@@ -1271,7 +1349,7 @@ const CartSessionDashboard = () => {
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {packsCompleted >= 5 && (
-              <Button size="sm" onClick={handleGenerateFinal} disabled={generatingFinal} className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
+              <Button size="sm" onClick={handleGenerateFinal} disabled={isActionBusy} className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
                 <Sparkles className="w-3.5 h-3.5 mr-1" />
                 <span className="hidden sm:inline">{generatingFinal ? "Generation..." : "Generer analyse"}</span>
                 <span className="sm:hidden">{generatingFinal ? "..." : "Analyser"}</span>
@@ -1435,7 +1513,7 @@ const CartSessionDashboard = () => {
                 <Button
                   data-tour="step-3"
                   onClick={handleValidateAndGenerate}
-                  disabled={generatingFinal}
+                  disabled={isActionBusy}
                   className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
                 >
                   {generatingFinal ? (
@@ -1463,7 +1541,7 @@ const CartSessionDashboard = () => {
                 <Button
                   data-tour="step-3"
                   onClick={isPaid ? handleExtractEntities : () => openGate()}
-                  disabled={extractingEntities || packsCompleted < 5}
+                  disabled={isActionBusy || packsCompleted < 5}
                   className={`shrink-0 h-10 px-5 text-sm ${
                     packsCompleted >= 5
                       ? "bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
