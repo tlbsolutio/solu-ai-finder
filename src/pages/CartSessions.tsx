@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import {
-  Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3, Zap,
+  Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3,
   Settings, Users, Layers, AlertTriangle, CheckCircle, FileText, Brain,
   HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare, Search, Copy,
   MoreVertical, Archive, Trash2, RotateCcw,
@@ -269,7 +269,7 @@ const CartSessions = () => {
       const { data, error } = await supabase.from("cart_sessions").insert({
         nom: `${session.nom} (copie)`,
         owner_id: uid,
-        status: "nouveau",
+        status: "brouillon",
         packs_completed: 0,
       }).select("id").single();
       if (error) throw error;

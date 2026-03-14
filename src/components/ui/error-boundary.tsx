@@ -2,7 +2,6 @@ import React from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Link } from 'react-router-dom';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -53,12 +52,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
                   Recharger la page
                 </Button>
                 
-                <Link to="/" className="block">
+                <a href="/" className="block">
                   <Button variant="outline" className="w-full">
                     <Home className="h-4 w-4 mr-2" />
                     Retour à l'accueil
                   </Button>
-                </Link>
+                </a>
               </div>
               
               {process.env.NODE_ENV === 'development' && this.state.error && (

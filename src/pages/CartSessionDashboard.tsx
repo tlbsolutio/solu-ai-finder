@@ -19,7 +19,7 @@ import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
-  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info, Share2, Copy, Check, RefreshCw,
+  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Share2, Check, RefreshCw,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
@@ -159,7 +159,7 @@ const CartSessionDashboard = () => {
   const actionInProgress = useRef<string | null>(null);
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
   const { generatePdf, generateBrief, generateTeaser, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
-  const { exportJSON, exportCSV, isExporting } = useCartDataExport();
+  const { exportJSON, exportCSV } = useCartDataExport();
 
   // Progress-triggered freemium nudge at 3 packs
   const packsCompletedEarly = session?.packs_completed || 0;
@@ -576,10 +576,10 @@ const CartSessionDashboard = () => {
                 size="sm"
                 variant="outline"
                 className="w-full h-8 text-[11px] justify-start"
-                disabled={pdfLoading || isExporting}
+                disabled={pdfLoading}
               >
                 <Download className="w-3.5 h-3.5 mr-1.5" />
-                {pdfLoading ? (pdfProgress || "Export...") : isExporting ? "Export..." : "Exporter"}
+                {pdfLoading ? (pdfProgress || "Export...") : "Exporter"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-52">
@@ -634,10 +634,10 @@ const CartSessionDashboard = () => {
                 size="sm"
                 variant="outline"
                 className="w-full h-8 text-[11px] justify-start"
-                disabled={pdfLoading || isExporting}
+                disabled={pdfLoading}
               >
                 <Download className="w-3.5 h-3.5 mr-1.5" />
-                {pdfLoading ? (pdfProgress || "Export...") : isExporting ? "Export..." : "Exporter"}
+                {pdfLoading ? (pdfProgress || "Export...") : "Exporter"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-52">
@@ -674,7 +674,7 @@ const CartSessionDashboard = () => {
         </div>
       )}
     </aside>
-  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, isExporting, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, generateTeaser, exportJSON, exportCSV, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
+  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, generateTeaser, exportJSON, exportCSV, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
 
   // ========== MOBILE NAV (memoized) ==========
   const mobileNav = useMemo(() => (
@@ -1222,12 +1222,6 @@ const CartSessionDashboard = () => {
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                {packsCompleted >= 5 && !isFinalGenerated && (
-                  <Button size="sm" onClick={handleGenerateFinal} disabled={isActionBusy} className="h-8 text-xs">
-                    <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    {generatingFinal ? "..." : "Generer"}
-                  </Button>
-                )}
                 {/* Mobile-only action buttons */}
                 {isPaid && (
                   <div className="flex lg:hidden items-center gap-1.5">

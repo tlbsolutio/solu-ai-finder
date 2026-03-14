@@ -28,7 +28,7 @@ const STORAGE_KEY = "carto_onboarding_done";
 export function OnboardingTour({ packsCompleted }: OnboardingTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [visible, setVisible] = useState(false);
-  const [position, setPosition] = useState<{ top: number; left: number; arrowDir: "up" | "down" | "left" } | null>(null);
+  const [position, setPosition] = useState<{ top: number; left: number; arrowDir: "up" | "down" } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function OnboardingTour({ packsCompleted }: OnboardingTourProps) {
     // Prefer placing tooltip below the target
     let top = rect.bottom + 12;
     let left = rect.left + rect.width / 2 - tooltipWidth / 2;
-    let arrowDir: "up" | "down" | "left" = "up";
+    let arrowDir: "up" | "down" = "up";
 
     // If tooltip would go below viewport, place above
     if (top + tooltipHeight > window.innerHeight - 20) {

@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
 import type {
   CartSessionV2, CartPackResume, CartProcessusV2, CartOutilV2,
   CartEquipeV2, CartIrritantV2, CartTacheV2, CartQuickwinV2,
@@ -28,7 +29,10 @@ function downloadFile(content: string, filename: string, type: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
@@ -173,7 +177,8 @@ function arrayToCSV(headers: string[], rows: unknown[][]): string {
   for (const row of rows) {
     lines.push(row.map(escapeCSV).join(","));
   }
-  return lines.join("\n");
+  // UTF-8 BOM for Excel compatibility
+  return "\uFEFF" + lines.join("\n");
 }
 
 function buildFreeCSV(data: CartDataForExport): string {
@@ -334,32 +339,32 @@ function buildPaidCSV(data: CartDataForExport): string {
 // ─── Hook ───────────────────────────────────────────────────────────
 
 export function useCartDataExport() {
-  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
 
   const exportJSON = useCallback((data: CartDataForExport, isPaid: boolean) => {
-    setIsExporting(true);
     try {
       const json = isPaid ? buildPaidJSON(data) : buildFreeJSON(data);
       const content = JSON.stringify(json, null, 2);
       const safeName = sanitizeFilename(data.session.nom);
       const suffix = isPaid ? "complet" : "apercu";
       downloadFile(content, `${safeName}_export_${suffix}.json`, "application/json");
-    } finally {
-      setIsExporting(false);
+    } catch (err) {
+      console.error("Export JSON failed:", err);
+      toast({ title: "Erreur d'export", description: "Impossible de generer le fichier JSON.", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
   const exportCSV = useCallback((data: CartDataForExport, isPaid: boolean) => {
-    setIsExporting(true);
     try {
       const csv = isPaid ? buildPaidCSV(data) : buildFreeCSV(data);
       const safeName = sanitizeFilename(data.session.nom);
       const suffix = isPaid ? "complet" : "apercu";
       downloadFile(csv, `${safeName}_export_${suffix}.csv`, "text/csv;charset=utf-8");
-    } finally {
-      setIsExporting(false);
+    } catch (err) {
+      console.error("Export CSV failed:", err);
+      toast({ title: "Erreur d'export", description: "Impossible de generer le fichier CSV.", variant: "destructive" });
     }
-  }, []);
+  }, [toast]);
 
-  return { exportJSON, exportCSV, isExporting };
+  return { exportJSON, exportCSV };
 }

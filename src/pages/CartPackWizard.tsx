@@ -67,19 +67,6 @@ const CartPackWizard = () => {
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
   usePageTitle(packDef ? `Questionnaire - ${packDef.title}` : "Questionnaire");
 
-  // Guard: invalid pack ID
-  if (!packDef || isNaN(bloc) || bloc < 1 || bloc > 10) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <p className="text-destructive font-medium">Pack introuvable</p>
-          <p className="text-sm text-muted-foreground">Le pack "{packId}" n'existe pas (packs 1-10 disponibles)</p>
-          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au diagnostic</Button>
-        </div>
-      </div>
-    );
-  }
-
   const [questions, setQuestions] = useState<any[]>([]);
   const [existingReponses, setExistingReponses] = useState<Record<string, string>>({});
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -87,7 +74,6 @@ const CartPackWizard = () => {
   const [sectionGroups, setSectionGroups] = useState<Record<string, any[]>>({});
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [completing, setCompleting] = useState(false);
   const [showAutoSaved, setShowAutoSaved] = useState(false);
@@ -201,7 +187,7 @@ const CartPackWizard = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [sections.length]);
+  }, [sections.length, drafts, questions]);
 
   // Warn on page unload if unsaved drafts exist
   useEffect(() => {
@@ -226,10 +212,11 @@ const CartPackWizard = () => {
 
   const syncToSupabase = async (showFeedback = true) => {
     if (!id || Object.keys(drafts).length === 0) return;
+    const syncedDrafts = { ...drafts };
     setSyncing(true);
     try {
       const batchId = `batch_${Date.now()}`;
-      const rows = Object.entries(drafts).map(([questionId, value]) => {
+      const rows = Object.entries(syncedDrafts).map(([questionId, value]) => {
         const q = questions.find((q) => q.id === questionId);
         return {
           session_id: id,
@@ -249,6 +236,20 @@ const CartPackWizard = () => {
       if (error) throw error;
 
       await supabase.from("cart_sessions").update({ status: "en_cours" }).eq("id", id);
+
+      // Merge synced answers into existingReponses and clear only the synced drafts
+      setExistingReponses((prev) => ({ ...prev, ...syncedDrafts }));
+      setDrafts((current) => {
+        const remaining: Record<string, string> = {};
+        for (const [k, v] of Object.entries(current)) {
+          // Keep draft if the user changed it after we started syncing
+          if (!(k in syncedDrafts) || v !== syncedDrafts[k]) {
+            remaining[k] = v;
+          }
+        }
+        return remaining;
+      });
+      localStorage.removeItem(getDraftKey(id!, bloc));
 
       if (showFeedback) toast({ title: "Sauvegarde effectuee" });
     } catch (e: any) {
@@ -290,6 +291,19 @@ const CartPackWizard = () => {
       setCompleting(false);
     }
   };
+
+  // Guard: invalid pack ID (after all hooks)
+  if (!packDef || isNaN(bloc) || bloc < 1 || bloc > 10) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="text-destructive font-medium">Pack introuvable</p>
+          <p className="text-sm text-muted-foreground">Le pack "{packId}" n'existe pas (packs 1-10 disponibles)</p>
+          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au diagnostic</Button>
+        </div>
+      </div>
+    );
+  }
 
   const renderInput = (q: any) => {
     const value = getValue(q);
@@ -385,14 +399,6 @@ const CartPackWizard = () => {
     );
   }
 
-  if (!packDef) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-muted-foreground">Pack introuvable</p>
-      </div>
-    );
-  }
-
   if (questions.length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
@@ -427,7 +433,7 @@ const CartPackWizard = () => {
           </div>
           <div className="flex items-center gap-1.5">
             {syncing && <Cloud className="w-3.5 h-3.5 animate-pulse text-muted-foreground" />}
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => syncToSupabase(true)} disabled={saving || Object.keys(drafts).length === 0}>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => syncToSupabase(true)} disabled={syncing || Object.keys(drafts).length === 0}>
               <Save className="w-3.5 h-3.5 sm:mr-1" />
               <span className="hidden sm:inline">Sauvegarder</span>
             </Button>

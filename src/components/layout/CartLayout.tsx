@@ -52,7 +52,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
   const navigate = useNavigate();
   const { userEmail, userName, signOut } = useCartContext();
   const crumbs = useBreadcrumbs();
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
@@ -103,12 +103,12 @@ export default function CartLayout({ children }: CartLayoutProps) {
 
         {/* Right: Theme toggle + User menu */}
         <div className="flex items-center gap-1">
-        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Basculer le theme">
-          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        <button onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Basculer le theme">
+          {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
+            <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2" aria-label="Menu du compte">
               <div className="w-6 h-6 rounded-full bg-blue-500/10 flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-blue-600" />
               </div>

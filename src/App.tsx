@@ -45,6 +45,12 @@ function ScrollToTop() {
   return null;
 }
 
+/** Wrapper that remounts RouteErrorBoundary on route change, clearing stale error state */
+function KeyedRouteErrorBoundary({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  return <RouteErrorBoundary key={pathname}>{children}</RouteErrorBoundary>;
+}
+
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="light" storageKey="solutio-theme">
@@ -76,13 +82,13 @@ const App = () => (
                   <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />
                   {/* Cartographie routes - protected, wrapped in RouteErrorBoundary */}
-                  <Route path="/cartographie/scan" element={<RouteErrorBoundary><CartLayout><CartQuickScan /></CartLayout></RouteErrorBoundary>} />
-                  <Route path="/cartographie/sessions" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessions /></CartLayout></RouteErrorBoundary></AuthGuard>} />
-                  <Route path="/cartographie/sessions/new" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessions /></CartLayout></RouteErrorBoundary></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessionDashboard /></CartLayout></RouteErrorBoundary></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartPackWizard /></CartLayout></RouteErrorBoundary></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartPackResults /></CartLayout></RouteErrorBoundary></AuthGuard>} />
-                  <Route path="/cartographie/admin" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartAdmin /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/scan" element={<KeyedRouteErrorBoundary><CartLayout><CartQuickScan /></CartLayout></KeyedRouteErrorBoundary>} />
+                  <Route path="/cartographie/sessions" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartSessions /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/new" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartSessions /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartSessionDashboard /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartPackWizard /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartPackResults /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/admin" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartAdmin /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>
