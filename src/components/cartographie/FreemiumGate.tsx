@@ -144,11 +144,12 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
               </thead>
               <tbody className="divide-y">
                 {[
-                  { feature: "Scan rapide & radar", free: true, auto: true, acc: true },
                   { feature: "Questionnaire complet", free: true, auto: true, acc: true },
-                  { feature: "Analyse IA par pack", free: false, auto: true, acc: true },
-                  { feature: "Quick wins priorises", free: false, auto: true, acc: true },
-                  { feature: "Plan d'actions P1/P2/P3", free: false, auto: true, acc: true },
+                  { feature: "Analyse IA par pack", free: true, auto: true, acc: true },
+                  { feature: "Radar de maturite", free: true, auto: true, acc: true },
+                  { feature: "Extraction d'entites", free: false, auto: true, acc: true },
+                  { feature: "Carte interactive", free: false, auto: true, acc: true },
+                  { feature: "Diagnostic complet IA", free: false, auto: true, acc: true },
                   { feature: "Export PDF", free: false, auto: true, acc: true },
                   { feature: "RDV expert 1h", free: false, auto: false, acc: true },
                   { feature: "Suivi 30 jours", free: false, auto: false, acc: true },

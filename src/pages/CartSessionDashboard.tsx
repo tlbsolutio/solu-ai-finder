@@ -29,7 +29,7 @@ import { CartEntityValidation } from "@/components/cartographie/CartEntityValida
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
-const FREE_TABS = new Set(["overview", "carte", "questionnaire", "entities"]);
+const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
 
 // Sidebar section definitions
 const SECTIONS = [
@@ -39,7 +39,7 @@ const SECTIONS = [
     { id: "questionnaire", label: "Questionnaire", shortLabel: "Q&A", icon: FileText, free: true },
   ]},
   { group: "Diagnostic", items: [
-    { id: "entities", label: "Entites", shortLabel: "Entites", icon: ShieldCheck, free: true },
+    { id: "entities", label: "Entites", shortLabel: "Entites", icon: ShieldCheck, free: false },
     { id: "quickwins", label: "Quick wins", shortLabel: "Wins", icon: Zap, free: false },
     { id: "processus", label: "Processus", shortLabel: "Proc.", icon: Settings, free: false },
     { id: "outils", label: "Outils & SI", shortLabel: "Outils", icon: Layers, free: false },
@@ -137,9 +137,7 @@ const CartSessionDashboard = () => {
   const [activeSection, setActiveSection] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [generatingFinal, setGeneratingFinal] = useState(false);
-  const [generatingOllama, setGeneratingOllama] = useState(false);
   const [extractingEntities, setExtractingEntities] = useState(false);
-  const [ollamaStep, setOllamaStep] = useState(0);
   const [showGate, setShowGate] = useState(false);
   const [gateTab, setGateTab] = useState<string | undefined>();
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
@@ -223,29 +221,6 @@ const CartSessionDashboard = () => {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally {
       setGeneratingFinal(false);
-    }
-  };
-
-  const handleAnalyzeOllama = async () => {
-    if (!id) return;
-    setGeneratingOllama(true);
-    setOllamaStep(1);
-    try {
-      const { data, error } = await supabase.functions.invoke("cart-analyze-ollama", {
-        body: { sessionId: id },
-      });
-      if (error) {
-        const msg = await extractFnError(error, data);
-        throw new Error(msg);
-      }
-      toast({ title: "Analyse approfondie terminee", description: "Les resultats enrichis sont disponibles" });
-      await reload();
-    } catch (e: any) {
-      console.error("cart-analyze-ollama error:", e);
-      toast({ title: "Erreur analyse", description: e.message, variant: "destructive" });
-    } finally {
-      setGeneratingOllama(false);
-      setOllamaStep(0);
     }
   };
 
@@ -427,32 +402,18 @@ const CartSessionDashboard = () => {
       </nav>
 
       {/* Sidebar footer: actions */}
-      {isFinalGenerated && !sidebarCollapsed && (
-        <div className="p-3 border-t space-y-1.5">
-          {isPaid && (
-            <Button
-              size="sm"
-              onClick={handleAnalyzeOllama}
-              disabled={generatingOllama}
-              variant="secondary"
-              className="w-full h-8 text-[11px] justify-start"
-            >
-              {generatingOllama ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Brain className="w-3.5 h-3.5 mr-1.5" />}
-              {generatingOllama ? "Analyse..." : "Approfondie"}
-            </Button>
-          )}
-          {isPaid && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full h-8 text-[11px] justify-start"
-              disabled={pdfLoading}
-              onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
-            >
-              <Download className="w-3.5 h-3.5 mr-1.5" />
-              {pdfLoading ? "Export..." : "Export PDF"}
-            </Button>
-          )}
+      {isFinalGenerated && !sidebarCollapsed && isPaid && (
+        <div className="p-3 border-t">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-8 text-[11px] justify-start"
+            disabled={pdfLoading}
+            onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            {pdfLoading ? "Export..." : "Export PDF"}
+          </Button>
         </div>
       )}
     </aside>
@@ -1176,13 +1137,8 @@ const CartSessionDashboard = () => {
                   </Button>
                 )}
                 {/* Mobile-only action buttons */}
-                <div className="flex lg:hidden items-center gap-1.5">
-                  {isPaid && (
-                    <Button size="sm" onClick={handleAnalyzeOllama} disabled={generatingOllama} variant="secondary" className="h-8 text-xs">
-                      {generatingOllama ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
-                    </Button>
-                  )}
-                  {isPaid && (
+                {isPaid && (
+                  <div className="flex lg:hidden items-center gap-1.5">
                     <Button
                       size="sm"
                       variant="outline"
@@ -1192,8 +1148,8 @@ const CartSessionDashboard = () => {
                     >
                       <Download className="w-3.5 h-3.5" />
                     </Button>
-                  )}
-                </div>
+                  </div>
+                )}
                 {!isPaid && (
                   <Button size="sm" className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" onClick={() => openGate()}>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
@@ -1211,22 +1167,6 @@ const CartSessionDashboard = () => {
                 <ShieldCheck className="w-4 h-4 shrink-0" />
                 <span>Vue admin — Session de <strong>{session.owner_id?.slice(0, 8)}...</strong></span>
               </div>
-            </div>
-          )}
-
-          {generatingOllama && (
-            <div className="px-4 sm:px-6 pt-3">
-              <Card className="border-purple-200 bg-purple-50/50">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <Sparkles className="w-5 h-5 text-purple-500 animate-pulse shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-purple-800">Analyse approfondie en cours... 1-2 minutes.</p>
-                    <div className="mt-2 w-full bg-purple-200/50 rounded-full h-1.5 overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full animate-pulse" style={{ width: "60%" }} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           )}
 

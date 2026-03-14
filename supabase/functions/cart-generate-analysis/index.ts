@@ -316,6 +316,69 @@ IMPORTANT: Reponds UNIQUEMENT avec le JSON valide, pas de markdown.`;
     if (parsed.ai_cout_inaction_annuel) updatePayload.ai_cout_inaction_annuel = toText(parsed.ai_cout_inaction_annuel);
     if (parsed.ai_kpis_de_suivi) updatePayload.ai_kpis_de_suivi = toText(parsed.ai_kpis_de_suivi);
 
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STEP 2: Generate cartography JSON (nodes/edges for interactive map)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    console.log("Step 2: Generating cartography JSON...");
+    try {
+      const { data: tachesData } = await supabase.from("cart_taches").select("*").eq("session_id", sessionId);
+      const taches = tachesData || [];
+
+      const topEquipes = context.equipes.slice(0, 8);
+      const topProcessus = context.processus.slice(0, 12);
+      const topOutils = context.outils.slice(0, 6);
+      const topIrritants = context.irritants.sort((a: any, b: any) => (b.gravite || 0) - (a.gravite || 0)).slice(0, 8);
+
+      const cartoPrompt = `Donnees de la cartographie organisationnelle:
+Equipes: ${topEquipes.map((e: any, i: number) => `${e.nom}(eq-${i + 1})`).join(", ")}
+Processus: ${topProcessus.map((p: any, i: number) => `${p.nom}(pr-${i + 1})`).join(", ")}
+Outils: ${topOutils.map((o: any, i: number) => `${o.nom}(ou-${i + 1})`).join(", ")}
+Irritants: ${topIrritants.map((ir: any, i: number) => `${ir.intitule}(ir-${i + 1},g=${ir.gravite})`).join(", ")}
+
+REGLES :
+1. Genere 20-30 noeuds et 25-40 edges. Utilise les IDs fournis.
+2. Types noeud: equipe, processus, outil, irritant
+3. Types edge: feeds_into (equipe->processus), uses (processus->outil), blocks (irritant->processus, animated:true), causes (irritant->irritant), supports (outil->equipe). Chaque edge a un label explicatif.
+4. Chaque noeud a min 1 edge. Description riche 15-25 mots. Priorite 1-5.
+5. Clusters : regrouper par domaine fonctionnel.
+
+Reponds UNIQUEMENT avec du JSON valide, sans markdown :
+{"nodes":[{"id":"str","type":"equipe|processus|outil|irritant","label":"str","maturityScore":3,"gravite":0,"description":"str","priorite":3}],"edges":[{"id":"e1","source":"id","target":"id","type":"str","label":"str","animated":false}],"clusters":[{"id":"cluster-1","label":"str","nodeIds":["id1"],"description":"str"}]}`;
+
+      const cartoResult = await generate(cartoPrompt, geminiApiKey, 8000);
+      let cartoJson: any = null;
+
+      // Robust JSON extraction for cartography
+      try { cartoJson = JSON.parse(cartoResult); } catch {}
+      if (!cartoJson) {
+        const mdMatch = cartoResult.match(/```(?:json)?\s*\n?([\s\S]*?)(?:\n?\s*```|$)/);
+        if (mdMatch) { try { cartoJson = JSON.parse(mdMatch[1].trim()); } catch {} }
+      }
+      if (!cartoJson) {
+        const objMatch = cartoResult.match(/\{[\s\S]*\}/);
+        if (objMatch) { try { cartoJson = JSON.parse(objMatch[0]); } catch {} }
+      }
+      if (!cartoJson) {
+        // Repair truncated JSON
+        let s = (cartoResult.match(/\{[\s\S]*/) || [cartoResult])[0].trim();
+        s = s.replace(/,\s*([}\]])/g, '$1');
+        let ob = 0, oB = 0;
+        for (const ch of s) { if (ch === '{') ob++; else if (ch === '}') ob--; else if (ch === '[') oB++; else if (ch === ']') oB--; }
+        while (oB > 0) { s += ']'; oB--; }
+        while (ob > 0) { s += '}'; ob--; }
+        try { cartoJson = JSON.parse(s); } catch {}
+      }
+
+      if (cartoJson && cartoJson.nodes) {
+        updatePayload.ai_cartography_json = cartoJson;
+        console.log(`Cartography: ${cartoJson.nodes?.length || 0} nodes, ${cartoJson.edges?.length || 0} edges`);
+      } else {
+        console.warn("Failed to generate cartography JSON");
+      }
+    } catch (cartoErr: any) {
+      console.error("Cartography generation failed (continuing):", cartoErr.message);
+    }
+
     await supabase.from("cart_sessions").update(updatePayload).eq("id", sessionId);
 
     return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
