@@ -56,9 +56,16 @@ serve(async (req: Request): Promise<Response> => {
       console.error("Invalid Stripe signature");
       return new Response("Invalid signature", { status: 400 });
     }
+  } else {
+    console.warn("⚠️ STRIPE_WEBHOOK_SECRET not set — skipping signature verification. Set this in production!");
   }
 
-  const event = JSON.parse(body);
+  let event;
+  try {
+    event = JSON.parse(body);
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
   console.log("Stripe event:", event.type, event.id);
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -77,17 +84,19 @@ serve(async (req: Request): Promise<Response> => {
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: "cancelled", updated_at: new Date().toISOString() })
-        .eq("stripe_subscription_id", stripeSubscriptionId);
+        .eq("stripe_subscription_id", stripeSubscriptionId)
+        .select();
     }
 
     // If no rows matched by subscription ID, try by customer email
-    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+    if ((!updateResult || updateResult.error || !updateResult.data?.length) && customerEmail) {
       console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: "cancelled", updated_at: new Date().toISOString() })
         .eq("customer_email", customerEmail)
-        .eq("status", "active");
+        .eq("status", "active")
+        .select();
     }
 
     if (updateResult?.error) {
@@ -119,17 +128,19 @@ serve(async (req: Request): Promise<Response> => {
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: "payment_failed", updated_at: new Date().toISOString() })
-        .eq("stripe_subscription_id", stripeSubscriptionId);
+        .eq("stripe_subscription_id", stripeSubscriptionId)
+        .select();
     }
 
     // If no rows matched by subscription ID, try by customer email
-    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+    if ((!updateResult || updateResult.error || !updateResult.data?.length) && customerEmail) {
       console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: "payment_failed", updated_at: new Date().toISOString() })
         .eq("customer_email", customerEmail)
-        .eq("status", "active");
+        .eq("status", "active")
+        .select();
     }
 
     if (updateResult?.error) {
@@ -191,23 +202,25 @@ serve(async (req: Request): Promise<Response> => {
 
     // Detect plan change from amount
     const amountTotal = subscription.items?.data?.[0]?.price?.unit_amount || 0;
-    const planType = amountTotal >= 80000 ? "accompanee" : "autonome";
+    const planType = amountTotal >= 80000 ? "accompagnee" : "autonome";
 
     let updateResult;
     if (stripeSubscriptionId) {
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: mappedStatus, plan_type: planType, updated_at: new Date().toISOString() })
-        .eq("stripe_subscription_id", stripeSubscriptionId);
+        .eq("stripe_subscription_id", stripeSubscriptionId)
+        .select();
     }
 
-    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+    if ((!updateResult || updateResult.error || !updateResult.data?.length) && customerEmail) {
       console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
       updateResult = await supabase
         .from("cart_subscriptions")
         .update({ status: mappedStatus, plan_type: planType, updated_at: new Date().toISOString() })
         .eq("customer_email", customerEmail)
-        .eq("status", "active");
+        .eq("status", "active")
+        .select();
     }
 
     if (updateResult?.error) {

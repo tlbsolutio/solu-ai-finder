@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-let corsHeaders: Record<string, string> = {
+const DEFAULT_CORS = {
   "Access-Control-Allow-Origin": "https://solutio.work",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
@@ -82,6 +82,7 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
 serve(async (req) => {
   const origin = req.headers.get("Origin") || "";
   const ALLOWED_ORIGINS = ["https://solutio.work", "https://www.solutio.work", "http://localhost:5173", "http://localhost:8080"];
+  const corsHeaders = { ...DEFAULT_CORS };
   if (origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o))) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -275,8 +276,11 @@ Ne JAMAIS inventer de donnees absentes des reponses.`;
       }
     }
 
-    // Delete previous AI-generated quickwins for this pack to avoid duplicates on re-analysis
+    // Delete previous AI-generated objects for this pack to avoid duplicates on re-analysis
     await supabase.from("cart_quickwins").delete().eq("session_id", session_id).eq("bloc_source", bloc_number).eq("ai_generated", true);
+    // Irritants/taches don't have bloc_source column — delete unvalidated AI-generated ones for this session
+    await supabase.from("cart_irritants").delete().eq("session_id", session_id).eq("ai_generated", true).eq("validated", false);
+    await supabase.from("cart_taches").delete().eq("session_id", session_id).eq("ai_generated", true);
 
     // Insert detected objects (irritants, taches, quickwins only — entities extracted separately)
     const insertResults: any = { irritants: [], taches: [], quickwins: [] };
