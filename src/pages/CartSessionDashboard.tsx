@@ -27,6 +27,7 @@ import { CartRecommandationsTab } from "@/components/cartographie/CartRecommanda
 import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
 import { CartEntityValidation } from "@/components/cartographie/CartEntityValidation";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
+import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
 const FREE_TABS = new Set(["overview", "carte", "questionnaire", "entities"]);
 
@@ -178,6 +179,16 @@ const CartSessionDashboard = () => {
     })
     .slice(0, 5);
 
+  // Merge DB entities with AI-extracted entities for display (mini map, carte, counts)
+  // Before final analysis, DB tables are empty — use ai_extracted_entities instead
+  const extracted = session.ai_extracted_entities;
+  const mapProcessus = processus.length > 0 ? processus :
+    (extracted?.processus || []).map((p: any) => ({ id: p.id, session_id: id!, nom: p.nom, description: p.description, type: "Metier", niveau_criticite: "Medium", ai_generated: true } as CartProcessusV2));
+  const mapOutils = outils.length > 0 ? outils :
+    (extracted?.outils || []).map((o: any) => ({ id: o.id, session_id: id!, nom: o.nom, type_outil: o.categorie || "Autre", niveau_usage: 3, problemes: o.description, ai_generated: true } as CartOutilV2));
+  const mapEquipes = equipes.length > 0 ? equipes :
+    (extracted?.equipes || []).map((e: any) => ({ id: e.id, session_id: id!, nom: e.nom, mission: e.description, charge_estimee: 3, ai_generated: true } as CartEquipeV2));
+
   const totalObjects = mapProcessus.length + mapOutils.length + mapEquipes.length + irritants.length + taches.length;
   const estimatedTimeRemaining = PACK_DEFINITIONS
     .filter((p) => getPackStatus(p.bloc) !== "done")
@@ -291,16 +302,6 @@ const CartSessionDashboard = () => {
     }
     setActiveSection(sectionId);
   };
-
-  // Merge DB entities with AI-extracted entities for display (mini map, carte, counts)
-  // Before final analysis, DB tables are empty — use ai_extracted_entities instead
-  const extracted = session.ai_extracted_entities;
-  const mapProcessus = processus.length > 0 ? processus :
-    (extracted?.processus || []).map((p: any) => ({ id: p.id, session_id: id!, nom: p.nom, description: p.description, type: "Metier", niveau_criticite: "Medium", ai_generated: true } as CartProcessusV2));
-  const mapOutils = outils.length > 0 ? outils :
-    (extracted?.outils || []).map((o: any) => ({ id: o.id, session_id: id!, nom: o.nom, type_outil: o.categorie || "Autre", niveau_usage: 3, problemes: o.description, ai_generated: true } as CartOutilV2));
-  const mapEquipes = equipes.length > 0 ? equipes :
-    (extracted?.equipes || []).map((e: any) => ({ id: e.id, session_id: id!, nom: e.nom, mission: e.description, charge_estimee: 3, ai_generated: true } as CartEquipeV2));
 
   // Counts for sidebar badges
   const entityCount = (extracted?.equipes?.length || 0) + (extracted?.processus?.length || 0) + (extracted?.outils?.length || 0);
