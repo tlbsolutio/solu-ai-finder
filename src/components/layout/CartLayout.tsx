@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCartContext } from "@/contexts/CartSessionContext";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,6 @@ import {
 import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle, Moon, Sun, CreditCard } from "lucide-react";
 import { CartoLogo } from "@/components/cartographie/CartoLogo";
 import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const STRIPE_PORTAL_URL = "https://billing.stripe.com/p/login/6oE7vT1Qs0gYf4c288";
@@ -60,6 +59,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
 
   useEffect(() => {
+    setHasActiveSubscription(false);
     if (!ownerId) return;
     supabase
       .from("cart_subscriptions")

@@ -7,8 +7,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   CheckCircle, X, Sparkles, ArrowRight, Crown,
-  FileText, Users, Zap, Brain, Phone, Shield,
-  BarChart3, ClipboardList, Download, Calendar,
+  Brain, Shield, BarChart3, Download,
 } from "lucide-react";
 
 const AUTONOME_LINK = "https://buy.stripe.com/28EaEXebubz15uv8QtabK00";
@@ -165,7 +164,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-gradient-primary hover:opacity-90"
-                onClick={() => { track("payment_started", { plan: "autonome" }); window.open(AUTONOME_LINK, "_blank"); }}
+                onClick={() => { track("payment_started", { plan: "autonome" }); window.open(`${AUTONOME_LINK}${sessionId ? `?client_reference_id=${sessionId}` : ""}`, "_blank"); }}
               >
                 Debloquer la cartographie
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -208,7 +207,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-amber-600 hover:bg-amber-700 text-white"
-                onClick={() => { track("payment_started", { plan: "accompagnee" }); window.open(ACCOMPAGNEE_LINK, "_blank"); }}
+                onClick={() => { track("payment_started", { plan: "accompagnee" }); window.open(`${ACCOMPAGNEE_LINK}${sessionId ? `?client_reference_id=${sessionId}` : ""}`, "_blank"); }}
               >
                 Choisir l'accompagnement
                 <ArrowRight className="w-4 h-4 ml-2" />

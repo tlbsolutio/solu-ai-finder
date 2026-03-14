@@ -11,12 +11,7 @@ export function PaywallOverlay({ onUnlock, itemCount, label = "elements" }: Payw
   return (
     <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none">
       {/* Gradient fade from transparent to solid */}
-      <div
-        className="h-32"
-        style={{
-          background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,1) 100%)",
-        }}
-      />
+      <div className="h-32 bg-gradient-to-b from-transparent via-white/80 to-white dark:via-slate-950/80 dark:to-slate-950" />
       {/* Glassmorphism card */}
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl pb-6 pt-2 px-4">
         <div className="max-w-sm mx-auto text-center space-y-3 pointer-events-auto">

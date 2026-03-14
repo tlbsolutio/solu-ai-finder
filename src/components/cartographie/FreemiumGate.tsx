@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle, ArrowRight, Crown, Lock, Shield, Users, X, Zap, TrendingUp, AlertTriangle } from "lucide-react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 

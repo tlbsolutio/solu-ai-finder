@@ -4,7 +4,6 @@ import { useCartSessionV2 } from "@/hooks/useCartSessionV2";
 import { useCartContext } from "@/contexts/CartSessionContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import { PackCard, PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
@@ -263,7 +262,8 @@ const CartSessionDashboard = () => {
       const key = `carto_freemium_nudge_${id}`;
       if (!localStorage.getItem(key)) {
         localStorage.setItem(key, "1");
-        setTimeout(() => openGate("progress"), 1500);
+        const timer = setTimeout(() => openGate("progress"), 1500);
+        return () => clearTimeout(timer);
       }
     }
   }, [isPaid, packsCompletedEarly, id]);
