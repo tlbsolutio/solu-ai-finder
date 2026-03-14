@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle } from "lucide-react";
+import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle, Moon, Sun } from "lucide-react";
 import { CartoLogo } from "@/components/cartographie/CartoLogo";
+import { useTheme } from "next-themes";
 
 interface Crumb {
   label: string;
@@ -51,6 +52,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
   const navigate = useNavigate();
   const { userEmail, userName, signOut } = useCartContext();
   const crumbs = useBreadcrumbs();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
@@ -97,7 +99,11 @@ export default function CartLayout({ children }: CartLayoutProps) {
           </div>
         </div>
 
-        {/* Right: User menu */}
+        {/* Right: Theme toggle + User menu */}
+        <div className="flex items-center gap-1">
+        <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="p-2 rounded-lg hover:bg-muted transition-colors" aria-label="Basculer le theme">
+          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
@@ -135,6 +141,7 @@ export default function CartLayout({ children }: CartLayoutProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </header>
 
       {/* Page content */}

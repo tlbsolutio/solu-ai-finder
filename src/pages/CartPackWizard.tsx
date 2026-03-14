@@ -114,6 +114,28 @@ const CartPackWizard = () => {
     return () => { if (syncTimer.current) clearInterval(syncTimer.current); };
   }, [drafts, questions]);
 
+  // Keyboard shortcuts: Ctrl+S save, ArrowLeft/Right navigate sections
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Ctrl+S / Cmd+S → save
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        syncToSupabase(true);
+        return;
+      }
+      // Arrow keys: only when not in input/textarea/select
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "ArrowLeft") {
+        setCurrentSectionIndex((prev) => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowRight") {
+        setCurrentSectionIndex((prev) => Math.min(sections.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [sections.length]);
+
   // Warn on page unload if unsaved drafts exist
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -416,9 +438,13 @@ const CartPackWizard = () => {
             <ChevronLeft className="w-4 h-4 mr-1" /> Precedent
           </Button>
 
-          <span className="text-sm text-muted-foreground">
-            {currentSectionIndex + 1} / {sections.length}
-          </span>
+          <div className="text-center">
+            <span className="text-sm text-muted-foreground">
+              {currentSectionIndex + 1} / {sections.length}
+            </span>
+            <br />
+            <span className="text-[10px] text-muted-foreground hidden sm:inline">Ctrl+S sauvegarder &middot; &larr; &rarr; naviguer</span>
+          </div>
 
           {isLastSection ? (
             <Button onClick={handleComplete} disabled={completing} variant="default">

@@ -1077,5 +1077,207 @@ export function useCartPdfExport() {
     }
   }, []);
 
-  return { generatePdf, generateBrief, isLoading, error, progress };
+  const generateTeaser = useCallback(async (data: CartDataForPdf) => {
+    setIsLoading(true);
+    setError(null);
+    setProgress("Generation de l'apercu...");
+
+    try {
+      const { session, packResumes, processus, outils, equipes, irritants, quickwins } = data;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+      // ═══════════ COVER PAGE (same as generatePdf) ═══════════════════
+      doc.setFillColor(...C.navy);
+      doc.rect(0, 0, PAGE_W, PAGE_H, "F");
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, 5, PAGE_H, "F");
+      doc.setFillColor(...C.blue);
+      doc.setGState(doc.GState({ opacity: 0.04 }));
+      doc.circle(165, 55, 70, "F");
+      doc.circle(45, 240, 45, "F");
+      doc.setGState(doc.GState({ opacity: 1 }));
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, PAGE_W, 1.5, "F");
+      drawCartoLogo(doc, 45, 50, 40);
+      doc.setFontSize(11);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("SOLUTIO", 70, 47);
+      doc.setFontSize(8);
+      doc.setTextColor(...C.blueLight);
+      doc.setFont("helvetica", "normal");
+      doc.text("CARTO", 70, 54);
+      doc.setDrawColor(...C.blue);
+      doc.setLineWidth(0.5);
+      doc.line(ML + 8, 72, PAGE_W - MR - 8, 72);
+      doc.setFontSize(34);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("Rapport de", ML + 8, 98);
+      doc.text("Cartographie", ML + 8, 113);
+      doc.setTextColor(...C.blue);
+      doc.text("Organisationnelle", ML + 8, 128);
+      const sessionName = session.nom.length > 55 ? session.nom.slice(0, 55) + "..." : session.nom;
+      doc.setFontSize(13);
+      doc.setTextColor(...C.blueLight);
+      doc.setFont("helvetica", "normal");
+      doc.text(sessionName, ML + 8, 148);
+      doc.setFontSize(10);
+      doc.setTextColor(...C.textMuted);
+      doc.text(date, ML + 8, 160);
+
+      const statsY = 200;
+      doc.setFillColor(15, 23, 42);
+      doc.setDrawColor(...C.blue);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(ML + 8, statsY, CONTENT_W - 16, 34, 3, 3, "FD");
+      const stats = [
+        { label: "PACKS", value: `${session.packs_completed}/10` },
+        { label: "PROCESSUS", value: `${processus.length}` },
+        { label: "OUTILS", value: `${outils.length}` },
+        { label: "IRRITANTS", value: `${irritants.length}` },
+        { label: "QUICK WINS", value: `${quickwins.length}` },
+      ];
+      const statW = (CONTENT_W - 16) / stats.length;
+      stats.forEach((s, i) => {
+        const sx = ML + 8 + i * statW + statW / 2;
+        doc.setFontSize(18);
+        doc.setTextColor(...C.blue);
+        doc.setFont("helvetica", "bold");
+        doc.text(s.value, sx, statsY + 15, { align: "center" });
+        doc.setFontSize(6);
+        doc.setTextColor(...C.textMuted);
+        doc.setFont("helvetica", "normal");
+        doc.text(s.label, sx, statsY + 24, { align: "center" });
+      });
+      doc.setFontSize(8);
+      doc.setTextColor(...C.textMuted);
+      doc.setFont("helvetica", "normal");
+      doc.text("solutio.work  |  Transformation Digitale & Cartographie Organisationnelle", PAGE_W / 2, PAGE_H - 20, { align: "center" });
+      // Badge "APERCU GRATUIT" on cover
+      doc.setFontSize(9);
+      doc.setFillColor(...C.blue);
+      doc.roundedRect(PAGE_W - MR - 50, 160, 50, 10, 2, 2, "F");
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("APERCU GRATUIT", PAGE_W - MR - 25, 167, { align: "center" });
+
+      // ═══════════ PAGE 2: TEASER CONTENT ═════════════════════════════
+      doc.addPage();
+      drawPageChrome(doc);
+      let y = 16;
+
+      y = drawSectionHeader(doc, y, "Synthese & Maturite Organisationnelle");
+
+      // Radar scores — show fully
+      const radarScores: Record<number, number | null> = {};
+      for (let i = 1; i <= 10; i++) {
+        const pr = packResumes.find((r) => r.bloc === i);
+        radarScores[i] = pr?.score_maturite ?? null;
+      }
+      drawRadarChart(doc, ML + 44, y + 44, 32, radarScores);
+
+      // Metrics right
+      const mx = ML + 98;
+      const cw = 34;
+      drawMetricCard(doc, mx, y + 4, cw, "Processus", processus.length.toString(), C.blue);
+      drawMetricCard(doc, mx + cw + 3, y + 4, cw, "Outils & SI", outils.length.toString(), C.green);
+      drawMetricCard(doc, mx, y + 33, cw, "Equipes", equipes.length.toString(), C.orange);
+      drawMetricCard(doc, mx + cw + 3, y + 33, cw, "Irritants", irritants.length.toString(), C.red);
+
+      y += 95;
+
+      // Resume executif — first 3 lines only
+      const resumeText = normalizeAiText(session.ai_resume_executif);
+      if (resumeText) {
+        y = drawSectionHeader(doc, y, "Resume Executif");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "normal");
+        const allLines = doc.splitTextToSize(resumeText.replace(/\*\*/g, "").replace(/^#{1,6}\s*/gm, ""), CONTENT_W - 4);
+        const previewLines = allLines.slice(0, 3);
+        for (const line of previewLines) {
+          doc.text(line, ML + 2, y + 2);
+          y += 4.5;
+        }
+        if (allLines.length > 3) {
+          doc.setTextColor(...C.textMuted);
+          doc.text("...", ML + 2, y + 2);
+          y += 6;
+        }
+        y += 4;
+      }
+
+      // Gray placeholder bars for locked content
+      const placeholderSections = [
+        "Forces Identifiees",
+        "Dysfonctionnements Majeurs",
+        "Plan d'Optimisation",
+        "Vision Cible",
+      ];
+      for (const sectionTitle of placeholderSections) {
+        if (y + 30 > PAGE_H - 50) break; // leave room for CTA
+        doc.setFontSize(8);
+        doc.setTextColor(...C.textMuted);
+        doc.setFont("helvetica", "bold");
+        doc.text(sectionTitle, ML + 2, y);
+        y += 5;
+        // 3 gray bars
+        for (let b = 0; b < 3; b++) {
+          const barWidth = CONTENT_W - 4 - (b === 2 ? 40 : b === 1 ? 15 : 0);
+          doc.setFillColor(220, 220, 220);
+          doc.rect(ML + 2, y, barWidth, 4, "F");
+          y += 6;
+        }
+        y += 4;
+      }
+
+      // Watermark: "VERSION GRATUITE" rotated
+      doc.setGState(doc.GState({ opacity: 0.08 }));
+      doc.setFontSize(60);
+      doc.setTextColor(150, 150, 150);
+      doc.setFont("helvetica", "bold");
+      // Save state, rotate, draw text, restore
+      const centerX = PAGE_W / 2;
+      const centerY = PAGE_H / 2;
+      doc.text("VERSION GRATUITE", centerX, centerY, {
+        align: "center",
+        angle: 45,
+      });
+      doc.setGState(doc.GState({ opacity: 1 }));
+
+      // CTA at the bottom
+      const ctaY = PAGE_H - 40;
+      doc.setFillColor(...C.navy);
+      doc.roundedRect(ML, ctaY, CONTENT_W, 28, 3, 3, "F");
+      doc.setFillColor(...C.blue);
+      doc.rect(ML, ctaY, 3.5, 28, "F");
+      doc.setFontSize(11);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("Debloquez le rapport complet", ML + 10, ctaY + 11);
+      doc.setFontSize(8);
+      doc.setTextColor(...C.blueLight);
+      doc.setFont("helvetica", "normal");
+      doc.text("solutio.work/cartographie/pricing", ML + 10, ctaY + 20);
+
+      // Footer
+      addPageFooter(doc, 1, 1, session.nom);
+
+      // Save
+      const fileName = `Apercu_${session.nom.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(fileName);
+
+      setProgress("Telechargement...");
+    } catch (err: unknown) {
+      console.error("Erreur teaser PDF:", err);
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+    } finally {
+      setIsLoading(false);
+      setProgress("");
+    }
+  }, []);
+
+  return { generatePdf, generateBrief, generateTeaser, isLoading, error, progress };
 }

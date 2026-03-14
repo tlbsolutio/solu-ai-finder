@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartSessionProvider } from "@/contexts/CartSessionContext";
 import { HelmetProvider } from "react-helmet-async";
+import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "./components/ui/error-boundary";
 import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
@@ -45,6 +46,7 @@ function ScrollToTop() {
 
 const App = () => (
   <ErrorBoundary>
+    <ThemeProvider attribute="class" defaultTheme="light" storageKey="solutio-theme">
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <LanguageProvider>
@@ -90,6 +92,7 @@ const App = () => (
         </LanguageProvider>
       </QueryClientProvider>
     </HelmetProvider>
+    </ThemeProvider>
   </ErrorBoundary>
 );
 

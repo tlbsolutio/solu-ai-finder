@@ -12,7 +12,7 @@ import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import {
   Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3, Zap,
   Settings, Users, Layers, AlertTriangle, CheckCircle, FileText, Brain,
-  HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare,
+  HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare, Search, Copy,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -62,6 +62,8 @@ const CartSessions = () => {
   });
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "nouveau" | "en_cours" | "analyse_generee">("all");
 
   const toggleCompare = (id: string) => {
     setCompareIds(prev => {
@@ -205,6 +207,40 @@ const CartSessions = () => {
   );
   const firstName = userName?.split(" ")[0] || userEmail?.split("@")[0] || "Utilisateur";
 
+  const filteredSessions = useMemo(() => {
+    let result = sessions;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(s => s.nom.toLowerCase().includes(q));
+    }
+    if (statusFilter === "nouveau") {
+      result = result.filter(s => !s.final_generation_done && s.packs_completed === 0);
+    } else if (statusFilter === "en_cours") {
+      result = result.filter(s => !s.final_generation_done && s.packs_completed > 0);
+    } else if (statusFilter === "analyse_generee") {
+      result = result.filter(s => s.final_generation_done);
+    }
+    return result;
+  }, [sessions, searchQuery, statusFilter]);
+
+  const duplicateSession = async (session: CartSession) => {
+    const uid = ownerId || await ensureSession();
+    if (!uid) return;
+    try {
+      const { data, error } = await supabase.from("cart_sessions").insert({
+        nom: `${session.nom} (copie)`,
+        owner_id: uid,
+        status: "nouveau",
+        packs_completed: 0,
+      }).select("id").single();
+      if (error) throw error;
+      toast({ title: "Diagnostic duplique" });
+      navigate(`/cartographie/sessions/${data.id}`);
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
   if (loading) return <ContentLoader variant="skeleton" />;
 
   return (
@@ -304,6 +340,46 @@ const CartSessions = () => {
           </Card>
         )}
 
+        {/* Search & filter bar */}
+        {sessions.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  placeholder="Rechercher un diagnostic..."
+                  className="pl-9"
+                />
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                {filteredSessions.length} diagnostic{filteredSessions.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {([
+                { key: "all", label: "Tous" },
+                { key: "nouveau", label: "Nouveau" },
+                { key: "en_cours", label: "En cours" },
+                { key: "analyse_generee", label: "Analyse generee" },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setStatusFilter(key)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    statusFilter === key
+                      ? "bg-cyan-600 text-white"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Sessions list or empty state */}
         {sessions.length === 0 ? (
           <Card className="border-dashed border-2">
@@ -338,7 +414,7 @@ const CartSessions = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-              {sessions.map(s => {
+              {filteredSessions.map(s => {
                 const stats = sessionStats[s.id];
                 const statusCfg = getStatusConfig(s);
                 const totalObj = stats ? stats.proc_count + stats.outils_count + stats.equipes_count + stats.irritants_count : 0;
@@ -389,7 +465,16 @@ const CartSessions = () => {
                             )}
                           </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1 group-hover:text-cyan-600 group-hover:translate-x-0.5 transition-all" />
+                        <div className="flex items-center gap-1 shrink-0 mt-1">
+                          <button
+                            title="Dupliquer"
+                            className="p-1 rounded-md hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
+                            onClick={(e) => { e.stopPropagation(); duplicateSession(s); }}
+                          >
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-cyan-600" />
+                          </button>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-cyan-600 group-hover:translate-x-0.5 transition-all" />
+                        </div>
                       </div>
 
                       {/* Progress bar */}

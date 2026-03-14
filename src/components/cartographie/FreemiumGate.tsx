@@ -28,6 +28,7 @@ const TAB_VALUE_MAP: Record<string, string> = {
   plan: "Plan d'actions P1/P2/P3 priorise",
   recommandations: "Recommandations IA personnalisees",
   analyse: "Analyse causale inter-packs et quantification d'impact",
+  progress: "Vous avez complete 3 packs ! Debloquez l'analyse complete pour transformer vos reponses en plan d'actions.",
 };
 
 export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: FreemiumGateProps) {

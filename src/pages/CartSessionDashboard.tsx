@@ -13,6 +13,7 @@ import { OrgMiniMap } from "@/components/cartographie/OrgMiniMap";
 import { OrgMap } from "@/components/cartographie/OrgMap";
 import { FormattedText } from "@/components/cartographie/FormattedText";
 import { FreemiumGate } from "@/components/cartographie/FreemiumGate";
+import { OnboardingTour } from "@/components/cartographie/OnboardingTour";
 import { useToast } from "@/hooks/use-toast";
 import {
   Network, Sparkles, CheckCircle, AlertCircle,
@@ -130,7 +131,7 @@ const LockedTabContent = ({ onUnlock, items, count, tabLabel }: LockedTabContent
 const CartSessionDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSessionPaid, loadSessionTier, isAdmin, ownerId } = useCartContext();
+  const { isSessionPaid, loadSessionTier, isAdmin, ownerId, userEmail } = useCartContext();
   const { toast } = useToast();
   const isPaid = id ? isSessionPaid(id) : false;
 
@@ -150,7 +151,19 @@ const CartSessionDashboard = () => {
   const [shareCopied, setShareCopied] = useState(false);
   const [lastError, setLastError] = useState<{ action: "generate" | "extract"; message: string } | null>(null);
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
-  const { generatePdf, generateBrief, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
+  const { generatePdf, generateBrief, generateTeaser, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
+
+  // Progress-triggered freemium nudge at 3 packs
+  const packsCompletedEarly = session?.packs_completed || 0;
+  useEffect(() => {
+    if (!isPaid && packsCompletedEarly >= 3 && id) {
+      const key = `carto_freemium_nudge_${id}`;
+      if (!localStorage.getItem(key)) {
+        localStorage.setItem(key, "1");
+        setTimeout(() => openGate("progress"), 1500);
+      }
+    }
+  }, [isPaid, packsCompletedEarly, id]);
 
   if (loading) return <ContentLoader />;
   if (error || !session) {
@@ -242,6 +255,17 @@ const CartSessionDashboard = () => {
         throw new Error(msg);
       }
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
+      // Fire and forget email notification
+      if (userEmail) {
+        supabase.functions.invoke("send-diagnostic-email", {
+          body: {
+            email: userEmail,
+            type: "analysis_complete",
+            sessionName: session.nom,
+            sessionUrl: `${window.location.origin}/cartographie/sessions/${id}`,
+          },
+        }).catch(() => {}); // silent fail
+      }
       await reload();
     } catch (e: any) {
       console.error("cart-generate-analysis error:", e);
@@ -309,6 +333,17 @@ const CartSessionDashboard = () => {
         throw new Error(msg);
       }
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
+      // Fire and forget email notification
+      if (userEmail) {
+        supabase.functions.invoke("send-diagnostic-email", {
+          body: {
+            email: userEmail,
+            type: "analysis_complete",
+            sessionName: session.nom,
+            sessionUrl: `${window.location.origin}/cartographie/sessions/${id}`,
+          },
+        }).catch(() => {}); // silent fail
+      }
       await reload();
     } catch (e: any) {
       setLastError({ action: "generate", message: e.message });
@@ -543,8 +578,25 @@ const CartSessionDashboard = () => {
           )}
         </div>
       )}
+      {isFinalGenerated && !sidebarCollapsed && !isPaid && (
+        <div className="p-3 border-t space-y-1.5">
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-8 text-[11px] justify-start"
+            disabled={pdfLoading}
+            onClick={() => {
+              generateTeaser({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins });
+              toast({ title: "Apercu gratuit genere", description: "Passez en premium pour le rapport complet" });
+            }}
+          >
+            <Download className="w-3.5 h-3.5 mr-1.5" />
+            {pdfLoading ? (pdfProgress || "Export...") : "Apercu PDF gratuit"}
+          </Button>
+        </div>
+      )}
     </aside>
-  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
+  ), [sidebarCollapsed, session.nom, session.share_enabled, packsCompleted, avgScore, activeSection, isPaid, sectionCounts, sectionCompleted, isFinalGenerated, pdfLoading, pdfProgress, shareCopied, handleSectionClick, handleShare, handleDisableShare, generatePdf, generateBrief, generateTeaser, session, packResumes, processus, outils, equipes, irritants, taches, quickwins]);
 
   // ========== MOBILE NAV (memoized) ==========
   const mobileNav = useMemo(() => (
@@ -637,9 +689,20 @@ const CartSessionDashboard = () => {
             <Download className="w-3.5 h-3.5 mr-1" /> PDF
           </Button>
         )}
+        {!nextStep.section && !isPaid && (
+          <Button size="sm" variant="outline" className="shrink-0 h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+            disabled={pdfLoading}
+            onClick={() => {
+              generateTeaser({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins });
+              toast({ title: "Apercu gratuit genere", description: "Passez en premium pour le rapport complet" });
+            }}
+          >
+            <Download className="w-3.5 h-3.5 mr-1" /> Apercu PDF
+          </Button>
+        )}
       </div>
     );
-  }, [isFinalGenerated, quickwins, session.ai_plan_optimisation, isPaid, pdfLoading, generatePdf, session, packResumes, processus, outils, equipes, irritants, taches]);
+  }, [isFinalGenerated, quickwins, session.ai_plan_optimisation, isPaid, pdfLoading, generatePdf, generateTeaser, session, packResumes, processus, outils, equipes, irritants, taches]);
 
   const renderOverview = () => (
     <div className="space-y-5">
@@ -1109,11 +1172,29 @@ const CartSessionDashboard = () => {
                   </div>
                 )}
                 {!isPaid && (
-                  <Button size="sm" className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" onClick={() => openGate()}>
-                    <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    <span className="hidden sm:inline">Version complete</span>
-                    <span className="sm:hidden">Upgrade</span>
-                  </Button>
+                  <div className="flex lg:hidden items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs"
+                      disabled={pdfLoading}
+                      onClick={() => {
+                        generateTeaser({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins });
+                        toast({ title: "Apercu gratuit genere", description: "Passez en premium pour le rapport complet" });
+                      }}
+                    >
+                      {pdfLoading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
+                    </Button>
+                    <Button size="sm" className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white" onClick={() => openGate()}>
+                      <Sparkles className="w-3.5 h-3.5 mr-1" />
+                      <span className="hidden sm:inline">Version complete</span>
+                      <span className="sm:hidden">Upgrade</span>
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -1352,6 +1433,7 @@ const CartSessionDashboard = () => {
               </div>
               {packsCompleted >= 5 && session.entities_extraction_status === "validated" ? (
                 <Button
+                  data-tour="step-3"
                   onClick={handleValidateAndGenerate}
                   disabled={generatingFinal}
                   className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
@@ -1370,6 +1452,7 @@ const CartSessionDashboard = () => {
                 </Button>
               ) : packsCompleted >= 5 && (session.entities_extraction_status === "extracted") ? (
                 <Button
+                  data-tour="step-3"
                   onClick={() => document.getElementById("entity-validation-section")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                   className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
                 >
@@ -1378,6 +1461,7 @@ const CartSessionDashboard = () => {
                 </Button>
               ) : (
                 <Button
+                  data-tour="step-3"
                   onClick={isPaid ? handleExtractEntities : () => openGate()}
                   disabled={extractingEntities || packsCompleted < 5}
                   className={`shrink-0 h-10 px-5 text-sm ${
@@ -1432,7 +1516,7 @@ const CartSessionDashboard = () => {
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
               Packs thematiques
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-tour="step-1">
               {PACK_DEFINITIONS.map((packDef) => (
                 <PackCard
                   key={packDef.bloc}
@@ -1448,7 +1532,7 @@ const CartSessionDashboard = () => {
           </div>
 
           <div className="lg:col-span-1 space-y-4">
-            <Card>
+            <Card data-tour="step-2">
               <CardHeader className="pb-2 px-4 pt-4">
                 <CardTitle className="text-sm">Radar de maturite</CardTitle>
               </CardHeader>
@@ -1537,6 +1621,7 @@ const CartSessionDashboard = () => {
         </Card>
       </main>
 
+      <OnboardingTour packsCompleted={packsCompleted} />
       <FreemiumGate open={showGate} onOpenChange={setShowGate} sessionId={id} />
     </div>
   );
