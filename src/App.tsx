@@ -9,6 +9,7 @@ import { CartSessionProvider } from "@/contexts/CartSessionContext";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import ErrorBoundary from "./components/ui/error-boundary";
+import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
 import Contact from "./pages/Contact";
@@ -74,14 +75,14 @@ const App = () => (
                   <Route path="/cartographie/login" element={<CartLogin />} />
                   <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />
-                  {/* Cartographie routes - protected (CartLayout provides header + breadcrumbs) */}
-                  <Route path="/cartographie/scan" element={<CartLayout><CartQuickScan /></CartLayout>} />
-                  <Route path="/cartographie/sessions" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
-                  <Route path="/cartographie/sessions/new" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id" element={<AuthGuard><CartLayout><CartSessionDashboard /></CartLayout></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><CartLayout><CartPackWizard /></CartLayout></AuthGuard>} />
-                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><CartLayout><CartPackResults /></CartLayout></AuthGuard>} />
-                  <Route path="/cartographie/admin" element={<AuthGuard><CartLayout><CartAdmin /></CartLayout></AuthGuard>} />
+                  {/* Cartographie routes - protected, wrapped in RouteErrorBoundary */}
+                  <Route path="/cartographie/scan" element={<RouteErrorBoundary><CartLayout><CartQuickScan /></CartLayout></RouteErrorBoundary>} />
+                  <Route path="/cartographie/sessions" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessions /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/new" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessions /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartSessionDashboard /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartPackWizard /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartPackResults /></CartLayout></RouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/admin" element={<AuthGuard><RouteErrorBoundary><CartLayout><CartAdmin /></CartLayout></RouteErrorBoundary></AuthGuard>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>
