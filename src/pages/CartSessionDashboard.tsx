@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCartSessionV2 } from "@/hooks/useCartSessionV2";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -9,8 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import { PackCard, PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 import { RadarChart } from "@/components/cartographie/RadarChart";
-import { OrgMiniMap } from "@/components/cartographie/OrgMiniMap";
-import { OrgMap } from "@/components/cartographie/OrgMap";
+// OrgMiniMap and OrgMap lazy-loaded below
 import { FormattedText } from "@/components/cartographie/FormattedText";
 import { FreemiumGate } from "@/components/cartographie/FreemiumGate";
 import { OnboardingTour } from "@/components/cartographie/OnboardingTour";
@@ -20,18 +19,46 @@ import {
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
   Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Share2, Check, RefreshCw,
+  Calendar,
 } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Progress } from "@/components/ui/progress";
-import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
-import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab";
-import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
 import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
-import { CartEntityValidation } from "@/components/cartographie/CartEntityValidation";
-import { CartProcessusSection } from "@/components/cartographie/CartProcessusSection";
-import { CartOutilsSection } from "@/components/cartographie/CartOutilsSection";
-import { CartEquipesSection } from "@/components/cartographie/CartEquipesSection";
-import { CartIrritantsSection } from "@/components/cartographie/CartIrritantsSection";
-import { CartAnalyseSection } from "@/components/cartographie/CartAnalyseSection";
+
+// ─── Lazy-loaded tab components (code splitting) ───────────────────
+const CartQuickwinsTab = lazy(() =>
+  import("@/components/cartographie/CartQuickwinsTab").then(m => ({ default: m.CartQuickwinsTab }))
+);
+const CartPlanActionsTab = lazy(() =>
+  import("@/components/cartographie/CartPlanActionsTab").then(m => ({ default: m.CartPlanActionsTab }))
+);
+const CartRecommandationsTab = lazy(() =>
+  import("@/components/cartographie/CartRecommandationsTab").then(m => ({ default: m.CartRecommandationsTab }))
+);
+const CartEntityValidation = lazy(() =>
+  import("@/components/cartographie/CartEntityValidation").then(m => ({ default: m.CartEntityValidation }))
+);
+const CartProcessusSection = lazy(() =>
+  import("@/components/cartographie/CartProcessusSection").then(m => ({ default: m.CartProcessusSection }))
+);
+const CartOutilsSection = lazy(() =>
+  import("@/components/cartographie/CartOutilsSection").then(m => ({ default: m.CartOutilsSection }))
+);
+const CartEquipesSection = lazy(() =>
+  import("@/components/cartographie/CartEquipesSection").then(m => ({ default: m.CartEquipesSection }))
+);
+const CartIrritantsSection = lazy(() =>
+  import("@/components/cartographie/CartIrritantsSection").then(m => ({ default: m.CartIrritantsSection }))
+);
+const CartAnalyseSection = lazy(() =>
+  import("@/components/cartographie/CartAnalyseSection").then(m => ({ default: m.CartAnalyseSection }))
+);
+const OrgMiniMap = lazy(() =>
+  import("@/components/cartographie/OrgMiniMap").then(m => ({ default: m.OrgMiniMap }))
+);
+const OrgMap = lazy(() =>
+  import("@/components/cartographie/OrgMap").then(m => ({ default: m.OrgMap }))
+);
 import { CartSectionHeader } from "@/components/cartographie/CartSectionHeader";
 import { CartEmptyState } from "@/components/cartographie/CartEmptyState";
 import { PaywallOverlay } from "@/components/cartographie/PaywallOverlay";
@@ -45,6 +72,30 @@ import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes
 
 const FREE_TABS = new Set(["overview", "questionnaire"]);
 const TEASER_TABS = new Set(["carte"]); // Show blurred teaser instead of full lock
+const CALENDLY_URL = "https://calendly.com/solutio-expert/diagnostic";
+
+const GENERATION_STEPS = [
+  { label: "Analyse des reponses...", duration: 8000 },
+  { label: "Extraction des tendances...", duration: 12000 },
+  { label: "Generation de la cartographie...", duration: 15000 },
+  { label: "Construction du plan d'actions...", duration: 20000 },
+  { label: "Redaction du diagnostic...", duration: 25000 },
+  { label: "Finalisation...", duration: 5000 },
+];
+
+const EXTRACTION_STEPS = [
+  { label: "Lecture des reponses...", duration: 5000 },
+  { label: "Identification des entites...", duration: 15000 },
+  { label: "Deduplication et consolidation...", duration: 10000 },
+];
+
+const isSubscriptionError = (error: any, data: any): boolean => {
+  const msg = error?.message || "";
+  if (msg.includes("Subscription required") || msg.includes("403")) return true;
+  if (typeof error?.context === "string" && error.context.includes("Subscription required")) return true;
+  if (data?.error?.includes?.("Subscription required")) return true;
+  return false;
+};
 
 // Sidebar section definitions
 const SECTIONS = [
@@ -141,8 +192,25 @@ const CartSessionDashboard = () => {
   const { isSessionPaid, loadSessionTier, isAdmin, ownerId, userEmail } = useCartContext();
   const { toast } = useToast();
   const isPaid = id ? isSessionPaid(id) : false;
+  const { track } = useAnalytics(id);
 
   useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
+
+  // Subscription plan (for Calendly CTA)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<string | null>(null);
+  useEffect(() => {
+    if (id && isPaid) {
+      supabase
+        .from("cart_subscriptions")
+        .select("plan_type")
+        .eq("session_id", id)
+        .eq("status", "active")
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setSubscriptionPlan((data as any).plan_type);
+        });
+    }
+  }, [id, isPaid]);
 
   const {
     session, packResumes, processus, outils, equipes, irritants, taches, quickwins,
@@ -158,8 +226,33 @@ const CartSessionDashboard = () => {
   const [gateTab, setGateTab] = useState<string | undefined>();
   const [shareCopied, setShareCopied] = useState(false);
   const [lastError, setLastError] = useState<{ action: "generate" | "extract"; message: string } | null>(null);
+  const [generationStep, setGenerationStep] = useState<number>(0);
+  const [activeSteps, setActiveSteps] = useState<typeof GENERATION_STEPS | typeof EXTRACTION_STEPS | null>(null);
+  const stepTimerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const actionInProgress = useRef<string | null>(null);
-  const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
+  const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); track("gate_shown", { tab }); };
+
+  const startStepProgress = (steps: typeof GENERATION_STEPS | typeof EXTRACTION_STEPS) => {
+    setActiveSteps(steps);
+    setGenerationStep(0);
+    stepTimerRef.current.forEach(clearTimeout);
+    stepTimerRef.current = [];
+    let cumulative = 0;
+    steps.forEach((step, i) => {
+      if (i === 0) return; // Start at step 0 immediately
+      cumulative += steps[i - 1].duration;
+      const timer = setTimeout(() => setGenerationStep(i), cumulative);
+      stepTimerRef.current.push(timer);
+    });
+  };
+
+  const clearStepProgress = () => {
+    stepTimerRef.current.forEach(clearTimeout);
+    stepTimerRef.current = [];
+    setActiveSteps(null);
+    setGenerationStep(0);
+  };
+
   const { generatePdf, generateBrief, generateTeaser, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
   const { exportJSON, exportCSV } = useCartDataExport();
 
@@ -263,15 +356,25 @@ const CartSessionDashboard = () => {
     actionInProgress.current = "generateFinal";
     setGeneratingFinal(true);
     setLastError(null);
+    startStepProgress(GENERATION_STEPS);
     try {
       const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
         body: { sessionId: id },
       });
+      if (isSubscriptionError(error, data)) {
+        openGate("analyse");
+        return;
+      }
       if (error) {
         const msg = await extractFnError(error, data);
         throw new Error(msg);
       }
+      if (data?.error?.includes?.("Subscription required")) {
+        openGate("analyse");
+        return;
+      }
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
+      track("analysis_generated");
       // Fire and forget email notification
       if (userEmail) {
         supabase.functions.invoke("send-diagnostic-email", {
@@ -301,6 +404,7 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setGeneratingFinal(false);
+      clearStepProgress();
       actionInProgress.current = null;
     }
   };
@@ -314,13 +418,22 @@ const CartSessionDashboard = () => {
     actionInProgress.current = "extractEntities";
     setExtractingEntities(true);
     setLastError(null);
+    startStepProgress(EXTRACTION_STEPS);
     try {
       const { data, error } = await supabase.functions.invoke("cart-extract-entities", {
         body: { session_id: id },
       });
+      if (isSubscriptionError(error, data)) {
+        openGate("analyse");
+        return;
+      }
       if (error) {
         const msg = await extractFnError(error, data);
         throw new Error(msg);
+      }
+      if (data?.error?.includes?.("Subscription required")) {
+        openGate("analyse");
+        return;
       }
       toast({ title: "Entites extraites", description: `${data.stats?.equipes || 0} equipes, ${data.stats?.processus || 0} processus, ${data.stats?.outils || 0} outils` });
       await reload();
@@ -340,6 +453,7 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setExtractingEntities(false);
+      clearStepProgress();
       actionInProgress.current = null;
     }
   };
@@ -353,15 +467,25 @@ const CartSessionDashboard = () => {
     actionInProgress.current = "validateAndGenerate";
     setGeneratingFinal(true);
     setLastError(null);
+    startStepProgress(GENERATION_STEPS);
     try {
       const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
         body: { sessionId: id },
       });
+      if (isSubscriptionError(error, data)) {
+        openGate("analyse");
+        return;
+      }
       if (error) {
         const msg = await extractFnError(error, data);
         throw new Error(msg);
       }
+      if (data?.error?.includes?.("Subscription required")) {
+        openGate("analyse");
+        return;
+      }
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
+      track("analysis_generated");
       // Fire and forget email notification
       if (userEmail) {
         supabase.functions.invoke("send-diagnostic-email", {
@@ -390,6 +514,7 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setGeneratingFinal(false);
+      clearStepProgress();
       actionInProgress.current = null;
     }
   };
@@ -586,7 +711,7 @@ const CartSessionDashboard = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-52">
               <DropdownMenuItem
-                onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+                onClick={() => { generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }); track("pdf_exported"); }}
               >
                 <FileText className="w-3.5 h-3.5 mr-2" />
                 Rapport complet PDF
@@ -764,7 +889,7 @@ const CartSessionDashboard = () => {
         {!nextStep.section && isPaid && (
           <Button size="sm" variant="outline" className="shrink-0 h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-100"
             disabled={pdfLoading}
-            onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+            onClick={() => { generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }); track("pdf_exported"); }}
           >
             <Download className="w-3.5 h-3.5 mr-1" /> PDF
           </Button>
@@ -1055,14 +1180,16 @@ const CartSessionDashboard = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-0 pb-0 relative">
-        <OrgMap
-          processus={mapProcessus}
-          outils={mapOutils}
-          equipes={mapEquipes}
-          irritants={irritants}
-          packResumes={packResumes}
-          aiCartographyJson={session.ai_cartography_json}
-        />
+        <Suspense fallback={<ContentLoader />}>
+          <OrgMap
+            processus={mapProcessus}
+            outils={mapOutils}
+            equipes={mapEquipes}
+            irritants={irritants}
+            packResumes={packResumes}
+            aiCartographyJson={session.ai_cartography_json}
+          />
+        </Suspense>
         {!isPaid && (
           <div className="absolute inset-0 z-10 flex items-end justify-center pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--card) / 0.7) 60%, hsl(var(--card) / 0.95) 100%)" }}>
             <div className="pointer-events-auto mb-8 text-center space-y-3 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-5 max-w-xs">
@@ -1346,7 +1473,7 @@ const CartSessionDashboard = () => {
                       variant="outline"
                       className="h-8 text-xs"
                       disabled={pdfLoading}
-                      onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+                      onClick={() => { generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins }); track("pdf_exported"); }}
                     >
                       {pdfLoading ? (
                         <>
@@ -1412,6 +1539,30 @@ const CartSessionDashboard = () => {
             </div>
           )}
 
+          {/* Calendly CTA for Accompagnee plan */}
+          {subscriptionPlan === "accompanee" && (
+            <div className="px-4 sm:px-6 pt-2">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4 text-amber-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-amber-900">Votre RDV expert est inclus</p>
+                    <p className="text-xs text-amber-700/80">Planifiez votre session d'1h avec un consultant</p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white text-xs h-8"
+                  onClick={() => window.open(CALENDLY_URL, "_blank")}
+                >
+                  Reserver un creneau
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Mobile nav */}
           <div className="px-4 sm:px-6 pt-3">
             {mobileNav}
@@ -1420,7 +1571,9 @@ const CartSessionDashboard = () => {
           {/* Content area */}
           <div className="flex-1 px-4 sm:px-6 py-4 pb-8" key={activeSection}>
             <div className="animate-fade-in-up">
-              {renderSectionContent()}
+              <Suspense fallback={<ContentLoader />}>
+                {renderSectionContent()}
+              </Suspense>
             </div>
           </div>
         </div>
@@ -1697,22 +1850,81 @@ const CartSessionDashboard = () => {
           </CardContent>
         </Card>
 
+        {/* Staged progress indicator */}
+        {activeSteps && (generatingFinal || extractingEntities) && (
+          <Card className="border-cyan-300 bg-gradient-to-br from-cyan-50/80 to-blue-50/50 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm">
+                    {generatingFinal ? "Generation du diagnostic en cours" : "Extraction des entites en cours"}
+                  </h3>
+                  <div className="flex items-center justify-center gap-2 mt-2 text-sm text-cyan-700">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>{activeSteps[generationStep]?.label}</span>
+                  </div>
+                </div>
+                <div className="w-full max-w-md space-y-3">
+                  <Progress
+                    value={(() => {
+                      const totalDuration = activeSteps.reduce((sum, s) => sum + s.duration, 0);
+                      let elapsed = 0;
+                      for (let i = 0; i < generationStep; i++) elapsed += activeSteps[i].duration;
+                      elapsed += activeSteps[generationStep].duration * 0.5;
+                      return Math.min((elapsed / totalDuration) * 100, 95);
+                    })()}
+                    className="h-2"
+                  />
+                  <div className="flex items-center justify-center gap-1.5">
+                    {activeSteps.map((_, i) => (
+                      <div
+                        key={i}
+                        className={`flex items-center justify-center w-5 h-5 rounded-full transition-all duration-300 ${
+                          i < generationStep
+                            ? "bg-cyan-500"
+                            : i === generationStep
+                            ? "bg-cyan-500/20 ring-2 ring-cyan-500"
+                            : "bg-muted"
+                        }`}
+                      >
+                        {i < generationStep ? (
+                          <Check className="w-3 h-3 text-white" />
+                        ) : i === generationStep ? (
+                          <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Etape {generationStep + 1} sur {activeSteps.length} — Ne fermez pas cette page
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Entity Validation (visible when entities are extracted) */}
         {(session.entities_extraction_status === "extracted" || session.entities_extraction_status === "validated") && (
           <div id="entity-validation-section" />
         )}
         {(session.entities_extraction_status === "extracted" || session.entities_extraction_status === "validated") && (
-          <CartEntityValidation
-            sessionId={id!}
-            entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
-            extractionStatus={session.entities_extraction_status || "pending"}
-            onExtract={handleExtractEntities}
-            onValidateAndGenerate={handleValidateAndGenerate}
-            extracting={extractingEntities}
-            generating={generatingFinal}
-            isPaid={isPaid}
-            onOpenGate={() => openGate("entities")}
-          />
+          <Suspense fallback={<ContentLoader />}>
+            <CartEntityValidation
+              sessionId={id!}
+              entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
+              extractionStatus={session.entities_extraction_status || "pending"}
+              onExtract={handleExtractEntities}
+              onValidateAndGenerate={handleValidateAndGenerate}
+              extracting={extractingEntities}
+              generating={generatingFinal}
+              isPaid={isPaid}
+              onOpenGate={() => openGate("entities")}
+            />
+          </Suspense>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -1820,7 +2032,9 @@ const CartSessionDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <OrgMiniMap processus={mapProcessus} outils={mapOutils} equipes={mapEquipes} irritants={irritants} />
+            <Suspense fallback={<ContentLoader />}>
+              <OrgMiniMap processus={mapProcessus} outils={mapOutils} equipes={mapEquipes} irritants={irritants} />
+            </Suspense>
           </CardContent>
         </Card>
       </main>

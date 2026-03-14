@@ -1,8 +1,10 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, ArrowRight, Mail, BarChart3 } from "lucide-react";
+import { CheckCircle, ArrowRight, Mail, BarChart3, Calendar } from "lucide-react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+
+const CALENDLY_URL = "https://calendly.com/solutio-expert/diagnostic";
 
 export default function CartPaymentSuccess() {
   usePageTitle("Paiement confirme");
@@ -71,6 +73,29 @@ export default function CartPaymentSuccess() {
                 </div>
               )}
             </div>
+
+            {/* Calendly CTA for Accompagnee plan */}
+            {isAccompagnee && (
+              <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-amber-100/50 p-5 text-left space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <Calendar className="w-5 h-5 text-amber-700" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-amber-900">Votre RDV expert est inclus</p>
+                    <p className="text-xs text-amber-700/80">Planifiez votre session d'1h avec un consultant pour maximiser vos resultats</p>
+                  </div>
+                </div>
+                <Button
+                  className="w-full h-11 bg-amber-600 hover:bg-amber-700 text-white font-medium"
+                  onClick={() => window.open(CALENDLY_URL, "_blank")}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Reserver un creneau maintenant
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            )}
 
             <div className="flex flex-col gap-2 pt-2">
               <Button

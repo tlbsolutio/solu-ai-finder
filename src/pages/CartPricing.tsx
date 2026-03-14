@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import {
   CheckCircle, X, Sparkles, ArrowRight, Crown,
   FileText, Users, Zap, Brain, Phone, Shield,
@@ -56,6 +58,13 @@ const ACCOMPAGNEE_FEATURES: PlanFeature[] = [
 export default function CartPricing() {
   usePageTitle("Tarifs");
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session") || undefined;
+  const { track } = useAnalytics(sessionId);
+
+  useEffect(() => {
+    track("pricing_viewed");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex-1 bg-background">
@@ -156,7 +165,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-gradient-primary hover:opacity-90"
-                onClick={() => window.open(AUTONOME_LINK, "_blank")}
+                onClick={() => { track("payment_started", { plan: "autonome" }); window.open(AUTONOME_LINK, "_blank"); }}
               >
                 Debloquer la cartographie
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -199,7 +208,7 @@ export default function CartPricing() {
 
               <Button
                 className="w-full mt-6 h-11 bg-amber-600 hover:bg-amber-700 text-white"
-                onClick={() => window.open(ACCOMPAGNEE_LINK, "_blank")}
+                onClick={() => { track("payment_started", { plan: "accompagnee" }); window.open(ACCOMPAGNEE_LINK, "_blank"); }}
               >
                 Choisir l'accompagnement
                 <ArrowRight className="w-4 h-4 ml-2" />

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud, FileText } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
 
@@ -62,6 +63,7 @@ const CartPackWizard = () => {
   const { id, packId } = useParams<{ id: string; packId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { track } = useAnalytics(id);
 
   const bloc = parseInt(packId || "0");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
@@ -285,6 +287,7 @@ const CartPackWizard = () => {
       localStorage.removeItem(getDraftKey(id!, bloc));
       setDrafts({});
       setLastSavedAt(null);
+      track("pack_completed", { bloc, packTitle: packDef?.title });
       navigate(`/cartographie/sessions/${id}/pack/${bloc}/results`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });

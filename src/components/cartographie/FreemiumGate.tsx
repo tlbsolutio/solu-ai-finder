@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle, ArrowRight, Crown, Lock, Shield, Users, X, Zap, TrendingUp, AlertTriangle } from "lucide-react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 interface FreemiumGateProps {
   open: boolean;
@@ -33,7 +34,13 @@ const TAB_VALUE_MAP: Record<string, string> = {
 
 export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: FreemiumGateProps) {
   const navigate = useNavigate();
+  const { track } = useAnalytics(sessionId);
   const contextMessage = tabName ? TAB_VALUE_MAP[tabName] : null;
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) track("gate_dismissed", { tab: tabName });
+    onOpenChange(isOpen);
+  };
 
   const irritantCount = stats?.irritants ?? 0;
   const quickwinCount = stats?.quickwins ?? 0;
@@ -47,7 +54,7 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
     : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-lg max-w-[calc(100vw-2rem)] p-0 overflow-hidden border-0 shadow-2xl">
         {/* Blurred content teaser behind header */}
         <div className="relative">
@@ -205,7 +212,7 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
             <p className="text-xs text-emerald-800 font-medium">Garantie satisfait ou rembourse 30 jours</p>
           </div>
 
-          <Button variant="ghost" size="sm" className="w-full text-muted-foreground text-xs" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" size="sm" className="w-full text-muted-foreground text-xs" onClick={() => handleOpenChange(false)}>
             Continuer en version gratuite
           </Button>
         </div>

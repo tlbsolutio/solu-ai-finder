@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle, Moon, Sun } from "lucide-react";
+import { ChevronRight, LogOut, User, Shield, LayoutDashboard, Crown, HelpCircle, Moon, Sun, CreditCard } from "lucide-react";
 import { CartoLogo } from "@/components/cartographie/CartoLogo";
 import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+const STRIPE_PORTAL_URL = "https://billing.stripe.com/p/login/6oE7vT1Qs0gYf4c288";
 
 interface Crumb {
   label: string;
@@ -50,9 +54,23 @@ interface CartLayoutProps {
 
 export default function CartLayout({ children }: CartLayoutProps) {
   const navigate = useNavigate();
-  const { userEmail, userName, signOut } = useCartContext();
+  const { userEmail, userName, signOut, ownerId } = useCartContext();
   const crumbs = useBreadcrumbs();
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+
+  useEffect(() => {
+    if (!ownerId) return;
+    supabase
+      .from("cart_subscriptions")
+      .select("id")
+      .eq("user_id", ownerId)
+      .eq("status", "active")
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) setHasActiveSubscription(true);
+      });
+  }, [ownerId]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -129,6 +147,11 @@ export default function CartLayout({ children }: CartLayoutProps) {
             <DropdownMenuItem onClick={() => navigate("/cartographie/pricing")}>
               <Crown className="w-3.5 h-3.5 mr-2 text-amber-500" /> Passer en Premium
             </DropdownMenuItem>
+            {hasActiveSubscription && (
+              <DropdownMenuItem onClick={() => window.open(STRIPE_PORTAL_URL, "_blank")}>
+                <CreditCard className="w-3.5 h-3.5 mr-2" /> Gerer l'abonnement
+              </DropdownMenuItem>
+            )}
             {userEmail === "tlb@solutio.work" && (
               <DropdownMenuItem onClick={() => navigate("/cartographie/admin")}>
                 <Shield className="w-3.5 h-3.5 mr-2" /> Administration

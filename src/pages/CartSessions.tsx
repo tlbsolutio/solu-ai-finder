@@ -15,11 +15,14 @@ import {
   Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3,
   Settings, Users, Layers, AlertTriangle, CheckCircle, FileText, Brain,
   HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare, Search, Copy,
-  MoreVertical, Archive, Trash2, RotateCcw,
+  MoreVertical, Archive, Trash2, RotateCcw, CreditCard,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
+import { useAnalytics } from "@/hooks/useAnalytics";
+
+const STRIPE_PORTAL_URL = "https://billing.stripe.com/p/login/6oE7vT1Qs0gYf4c288";
 
 interface CartSession {
   id: string;
@@ -56,6 +59,7 @@ const CartSessions = () => {
   const location = useLocation();
   const { ownerId, userName, userEmail, ensureSession, isAdmin } = useCartContext();
   const { toast } = useToast();
+  const { track } = useAnalytics();
 
   const [sessions, setSessions] = useState<CartSession[]>([]);
   const [sessionStats, setSessionStats] = useState<Record<string, SessionStats>>({});
@@ -209,6 +213,7 @@ const CartSessions = () => {
         .single();
       if (error) throw error;
       toast({ title: "Diagnostic cree" });
+      track("session_created", { sessionId: data.id });
       navigate(`/cartographie/sessions/${data.id}`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
@@ -274,6 +279,7 @@ const CartSessions = () => {
       }).select("id").single();
       if (error) throw error;
       toast({ title: "Diagnostic duplique" });
+      track("session_duplicated", { sourceSessionId: session.id, newSessionId: data.id });
       navigate(`/cartographie/sessions/${data.id}`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
@@ -343,6 +349,17 @@ const CartSessions = () => {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {paidSessionIds.size > 0 && (
+              <Button
+                onClick={() => window.open(STRIPE_PORTAL_URL, "_blank")}
+                size="sm"
+                variant="outline"
+                className="text-xs"
+              >
+                <CreditCard className="w-3.5 h-3.5 mr-1" />
+                <span className="hidden sm:inline">Gerer l'abonnement</span>
+              </Button>
+            )}
             {sessions.filter(s => s.final_generation_done).length >= 2 && (
               <Button
                 onClick={() => { setCompareMode(!compareMode); setCompareIds(new Set()); }}
