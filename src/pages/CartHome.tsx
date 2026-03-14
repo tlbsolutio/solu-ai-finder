@@ -471,6 +471,16 @@ const CartHome = () => {
                     <ArrowRight className="w-5 h-5 ml-1" />
                   </Button>
                 </Link>
+                <Link to="/cartographie/scan">
+                  <Button
+                    size="xl"
+                    variant="outline"
+                    className="w-full sm:w-auto hover:bg-muted/50"
+                  >
+                    <Zap className="w-4 h-4 mr-1.5" />
+                    Scan rapide gratuit
+                  </Button>
+                </Link>
                 <Button
                   size="xl"
                   variant="outline"

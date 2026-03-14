@@ -331,10 +331,12 @@ function drawCartoLogo(doc: jsPDF, cx: number, cy: number, size: number) {
 export function useCartPdfExport() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string>("");
 
   const generatePdf = useCallback(async (data: CartDataForPdf) => {
     setIsLoading(true);
     setError(null);
+    setProgress("Preparation du document...");
 
     try {
       const { session, packResumes, processus, outils, equipes, irritants, taches, quickwins } = data;
@@ -432,6 +434,7 @@ export function useCartPdfExport() {
       doc.setFont("helvetica", "normal");
       doc.text("solutio.work  |  Transformation Digitale & Cartographie Organisationnelle", PAGE_W / 2, PAGE_H - 20, { align: "center" });
 
+      setProgress("Page de couverture..."); await new Promise(r => setTimeout(r, 0));
       // ═══════════ PAGE 2: SYNTHESE ═════════════════════════════════
       doc.addPage();
       drawPageChrome(doc);
@@ -535,6 +538,7 @@ export function useCartPdfExport() {
         y += 6;
       }
 
+      setProgress("Synthese et diagnostic..."); await new Promise(r => setTimeout(r, 0));
       // ═══════════ PROCESSUS ════════════════════════════════════════
       if (processus.length > 0) {
         doc.addPage();
@@ -656,6 +660,7 @@ export function useCartPdfExport() {
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
+      setProgress("Entites et irritants..."); await new Promise(r => setTimeout(r, 0));
       // ═══════════ QUICK WINS ═══════════════════════════════════════
       if (quickwins.length > 0) {
         doc.addPage();
@@ -697,6 +702,7 @@ export function useCartPdfExport() {
         y = (doc as any).lastAutoTable?.finalY + 8 || y + 40;
       }
 
+      setProgress("Quick wins et plan d'actions..."); await new Promise(r => setTimeout(r, 0));
       // ═══════════ ANALYSE TRANSVERSALE ═════════════════════════════
       const analyseTransText = normalizeAiText(session.ai_analyse_transversale);
       if (analyseTransText) {
@@ -737,10 +743,35 @@ export function useCartPdfExport() {
         y += 6;
       }
 
+      // ═══════════ COUT D'INACTION & KPIs ═══════════════════════════
+      const coutInactionText = normalizeAiText(session.ai_cout_inaction_annuel);
+      if (coutInactionText) {
+        y = ensureSpace(doc, y, 40);
+        if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
+        y = drawSectionHeader(doc, y, "Cout Annuel de l'Inaction", C.red);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "normal");
+        y = drawWrappedText(doc, coutInactionText, ML + 2, y + 2, CONTENT_W - 4);
+        y += 6;
+      }
+
+      const kpisText = normalizeAiText(session.ai_kpis_de_suivi);
+      if (kpisText) {
+        y = ensureSpace(doc, y, 40);
+        if (y < 20) { doc.addPage(); drawPageChrome(doc); y = 16; }
+        y = drawSectionHeader(doc, y, "KPIs de Suivi", C.green);
+        doc.setFontSize(8);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "normal");
+        y = drawWrappedText(doc, kpisText, ML + 2, y + 2, CONTENT_W - 4);
+        y += 6;
+      }
+
       // ═══════════ ENRICHED ANALYSIS ════════════════════════════════
-      const crossPackText = normalizeAiText((session as any).ai_cross_pack_analysis);
-      const impactQuantText = normalizeAiText((session as any).ai_impact_quantification);
-      const targetVisionText = normalizeAiText((session as any).ai_target_vision);
+      const crossPackText = normalizeAiText(session.ai_cross_pack_analysis);
+      const impactQuantText = normalizeAiText(session.ai_impact_quantification);
+      const targetVisionText = normalizeAiText(session.ai_target_vision);
 
       if (crossPackText || impactQuantText || targetVisionText) {
         doc.addPage();
@@ -803,6 +834,7 @@ export function useCartPdfExport() {
         });
       }
 
+      setProgress("Finalisation du rapport..."); await new Promise(r => setTimeout(r, 0));
       // ═══════════ BACK COVER ═══════════════════════════════════════
       doc.addPage();
       doc.setFillColor(...C.navy);
@@ -888,13 +920,162 @@ export function useCartPdfExport() {
       const fileName = `Cartographie_${session.nom.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
       doc.save(fileName);
 
+      setProgress("Telechargement...");
+
     } catch (err: unknown) {
       console.error("Erreur export PDF:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
     } finally {
       setIsLoading(false);
+      setProgress("");
     }
   }, []);
 
-  return { generatePdf, isLoading, error };
+  const generateBrief = useCallback(async (data: CartDataForPdf) => {
+    setIsLoading(true);
+    setError(null);
+    setProgress("Generation du brief executif...");
+
+    try {
+      const { session, packResumes, quickwins } = data;
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+      // Header bar
+      doc.setFillColor(...C.navy);
+      doc.rect(0, 0, PAGE_W, 28, "F");
+      doc.setFillColor(...C.blue);
+      doc.rect(0, 0, PAGE_W, 1.5, "F");
+
+      doc.setFontSize(14);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      doc.text("BRIEF EXECUTIF", ML, 14);
+      doc.setFontSize(9);
+      doc.setTextColor(...C.blueLight);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${session.nom} — ${new Date().toLocaleDateString("fr-FR")}`, ML, 22);
+
+      let y = 36;
+
+      // Maturity scores row
+      doc.setFontSize(10);
+      doc.setTextColor(...C.text);
+      doc.setFont("helvetica", "bold");
+      doc.text("Scores de maturite", ML, y);
+      y += 6;
+
+      const scores = Object.values(
+        packResumes.reduce((acc, pr) => {
+          if (pr.score_maturite != null) acc[pr.bloc] = pr.score_maturite;
+          return acc;
+        }, {} as Record<number, number>)
+      );
+      const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+
+      // Score bar
+      const barW = PAGE_W - ML - MR;
+      doc.setFillColor(...C.bg);
+      doc.roundedRect(ML, y, barW, 8, 2, 2, "F");
+      const fillW = Math.max(0, (avg / 5) * barW);
+      const barColor: [number, number, number] = avg >= 3.5 ? C.green : avg >= 2.5 ? C.amber : C.red;
+      doc.setFillColor(...barColor);
+      doc.roundedRect(ML, y, fillW, 8, 2, 2, "F");
+      doc.setFontSize(8);
+      doc.setTextColor(...C.white);
+      doc.setFont("helvetica", "bold");
+      if (fillW > 20) doc.text(`${avg.toFixed(1)}/5`, ML + fillW - 12, y + 5.5);
+      y += 14;
+
+      // Resume executif
+      const resumeText = normalizeAiText(session.ai_resume_executif);
+      if (resumeText) {
+        doc.setFontSize(10);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "bold");
+        doc.text("Resume executif", ML, y);
+        y += 5;
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...C.textMuted);
+        const lines = doc.splitTextToSize(resumeText, PAGE_W - ML - MR);
+        doc.text(lines.slice(0, 10), ML, y);
+        y += Math.min(lines.length, 10) * 3.5 + 6;
+      }
+
+      // Top 5 quickwins
+      const topQW = quickwins
+        .filter(q => q.priorite_calculee === "P1" || q.priorite_calculee === "Top Priority")
+        .slice(0, 5);
+      if (topQW.length > 0) {
+        doc.setFontSize(10);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "bold");
+        doc.text("Quick wins prioritaires", ML, y);
+        y += 6;
+        topQW.forEach((qw, i) => {
+          doc.setFillColor(i % 2 === 0 ? 248 : 240, i % 2 === 0 ? 250 : 244, 252);
+          doc.rect(ML, y - 3, PAGE_W - ML - MR, 7, "F");
+          doc.setFontSize(8);
+          doc.setTextColor(...C.text);
+          doc.setFont("helvetica", "normal");
+          doc.text(`${i + 1}. ${qw.intitule || ""}`.slice(0, 90), ML + 2, y + 1);
+          y += 8;
+        });
+        y += 4;
+      }
+
+      // Axes critiques
+      const axesCritiques = (session as any).ai_axes_critiques;
+      if (Array.isArray(axesCritiques) && axesCritiques.length > 0) {
+        doc.setFontSize(10);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "bold");
+        doc.text("Axes critiques", ML, y);
+        y += 6;
+        axesCritiques.slice(0, 3).forEach((axe: string, i: number) => {
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(...C.red);
+          doc.text(`• ${axe.slice(0, 100)}`, ML + 2, y);
+          y += 4;
+        });
+        y += 4;
+      }
+
+      // Cout d'inaction
+      const coutText = normalizeAiText(session.ai_cout_inaction_annuel);
+      if (coutText) {
+        doc.setFontSize(10);
+        doc.setTextColor(...C.text);
+        doc.setFont("helvetica", "bold");
+        doc.text("Cout de l'inaction", ML, y);
+        y += 5;
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...C.textMuted);
+        const cLines = doc.splitTextToSize(coutText, PAGE_W - ML - MR);
+        doc.text(cLines.slice(0, 5), ML, y);
+        y += Math.min(cLines.length, 5) * 3.5 + 6;
+      }
+
+      // Footer
+      doc.setFillColor(...C.navy);
+      doc.rect(0, PAGE_H - 12, PAGE_W, 12, "F");
+      doc.setFontSize(7);
+      doc.setTextColor(...C.blueLight);
+      doc.text("solutio.work | Cartographie Organisationnelle", PAGE_W / 2, PAGE_H - 5, { align: "center" });
+
+      const fileName = `Brief_${session.nom.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      doc.save(fileName);
+
+    } catch (err: unknown) {
+      console.error("Erreur brief PDF:", err);
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+    } finally {
+      setIsLoading(false);
+      setProgress("");
+    }
+  }, []);
+
+  return { generatePdf, generateBrief, isLoading, error, progress };
 }

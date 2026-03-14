@@ -21,8 +21,21 @@ const CartPackWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const bloc = parseInt(packId || "1");
+  const bloc = parseInt(packId || "0");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
+
+  // Guard: invalid pack ID
+  if (!packDef || isNaN(bloc) || bloc < 1 || bloc > 10) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="text-destructive font-medium">Pack introuvable</p>
+          <p className="text-sm text-muted-foreground">Le pack "{packId}" n'existe pas (packs 1-10 disponibles)</p>
+          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au diagnostic</Button>
+        </div>
+      </div>
+    );
+  }
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [existingReponses, setExistingReponses] = useState<Record<string, string>>({});

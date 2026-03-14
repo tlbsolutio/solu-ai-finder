@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,7 +58,7 @@ interface Props {
   locked?: boolean;
 }
 
-export function PackCard({ sessionId, packDef, status, answeredQuestions, packResume, realTotalQuestions, locked }: Props) {
+export const PackCard = React.memo(function PackCard({ sessionId, packDef, status, answeredQuestions, packResume, realTotalQuestions, locked }: Props) {
   const navigate = useNavigate();
   const totalQ = realTotalQuestions ?? packDef.totalQuestions;
   const progress = totalQ > 0 ? Math.round((answeredQuestions / totalQ) * 100) : 0;
@@ -154,4 +155,4 @@ export function PackCard({ sessionId, packDef, status, answeredQuestions, packRe
       </CardContent>
     </Card>
   );
-}
+});

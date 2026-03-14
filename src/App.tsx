@@ -73,7 +73,7 @@ const App = () => (
                   <Route path="/cartographie/pricing" element={<AuthGuard><CartLayout><CartPricing /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/payment-success" element={<AuthGuard><CartLayout><CartPaymentSuccess /></CartLayout></AuthGuard>} />
                   {/* Cartographie routes - protected (CartLayout provides header + breadcrumbs) */}
-                  <Route path="/cartographie/scan" element={<AuthGuard><CartLayout><CartQuickScan /></CartLayout></AuthGuard>} />
+                  <Route path="/cartographie/scan" element={<CartLayout><CartQuickScan /></CartLayout>} />
                   <Route path="/cartographie/sessions" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/new" element={<AuthGuard><CartLayout><CartSessions /></CartLayout></AuthGuard>} />
                   <Route path="/cartographie/sessions/:id" element={<AuthGuard><CartLayout><CartSessionDashboard /></CartLayout></AuthGuard>} />

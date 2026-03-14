@@ -443,6 +443,22 @@ const CartQuickScan = () => {
           </Card>
         </div>
         </div>
+
+        {/* Sticky bottom CTA for mobile */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/95 backdrop-blur-sm border-t shadow-lg px-4 py-3 safe-area-pb">
+          <div className="container mx-auto max-w-3xl flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-medium truncate">Pret pour l'analyse complete ?</p>
+              <p className="text-[10px] text-muted-foreground">150 questions · 10 axes · rapport PDF</p>
+            </div>
+            <Link to="/cartographie/login">
+              <Button size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white h-9 px-4 text-xs shrink-0">
+                <Sparkles className="w-3.5 h-3.5 mr-1" />
+                Commencer gratuitement
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }

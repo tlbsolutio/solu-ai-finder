@@ -33,6 +33,10 @@ export interface CartSessionV2 {
     processus: Array<{ id: string; nom: string; description: string; source_packs: string[] }>;
     outils: Array<{ id: string; nom: string; description: string; categorie: string; source_packs: string[] }>;
   } | null;
+  share_token: string | null;
+  share_enabled: boolean;
+  last_extraction_at: string | null;
+  last_generation_at: string | null;
   created_at: string;
   updated_at: string;
 }

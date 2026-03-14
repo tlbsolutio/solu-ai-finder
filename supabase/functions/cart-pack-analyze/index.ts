@@ -81,7 +81,8 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
 
 serve(async (req) => {
   const origin = req.headers.get("Origin") || "";
-  if (origin) corsHeaders["Access-Control-Allow-Origin"] = origin;
+  const ALLOWED_ORIGINS = ["https://solutio.work", "https://www.solutio.work", "http://localhost:5173", "http://localhost:8080"];
+  if (origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o))) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization");
@@ -274,7 +275,7 @@ Ne JAMAIS inventer de donnees absentes des reponses.`;
       }
     }
 
-    // Delete previous AI-generated objects for this pack/session to avoid duplicates
+    // Delete previous AI-generated quickwins for this pack to avoid duplicates on re-analysis
     await supabase.from("cart_quickwins").delete().eq("session_id", session_id).eq("bloc_source", bloc_number).eq("ai_generated", true);
 
     // Insert detected objects (irritants, taches, quickwins only — entities extracted separately)

@@ -81,7 +81,8 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
 
 serve(async (req) => {
   const origin = req.headers.get("Origin") || "";
-  if (origin) corsHeaders["Access-Control-Allow-Origin"] = origin;
+  const ALLOWED_ORIGINS = ["https://solutio.work", "https://www.solutio.work", "http://localhost:5173", "http://localhost:8080"];
+  if (origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o))) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization");
@@ -100,15 +101,17 @@ serve(async (req) => {
   }
 
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY") || "";
+  let session_id: string | undefined;
 
   try {
-    const { session_id } = await req.json();
+    const body = await req.json();
+    session_id = body.session_id;
     if (!session_id) throw new Error("Missing session_id");
 
     // Verify session ownership
     const { data: session, error: sessionError } = await supabase
       .from("cart_sessions")
-      .select("id, owner_id, nom, sector_id")
+      .select("id, owner_id, nom, sector_id, last_extraction_at")
       .eq("id", session_id)
       .single();
 
@@ -118,6 +121,17 @@ serve(async (req) => {
     if (session.owner_id !== user.id) {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+
+    // Rate limit: 1 extraction per 2 minutes per session
+    if (session.last_extraction_at) {
+      const elapsed = (Date.now() - new Date(session.last_extraction_at).getTime()) / 1000;
+      if (elapsed < 120) {
+        return new Response(JSON.stringify({ error: `Veuillez patienter ${Math.ceil(120 - elapsed)}s avant de relancer l'extraction` }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // Mark extraction timestamp
+    await supabase.from("cart_sessions").update({ last_extraction_at: new Date().toISOString() }).eq("id", session_id);
 
     // Set status to extracting
     await supabase.from("cart_sessions").update({ entities_extraction_status: "extracting" }).eq("id", session_id);
@@ -232,6 +246,12 @@ IMPORTANT :
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {
     console.error("cart-extract-entities error:", e);
+    // Reset status so user can retry
+    if (session_id) {
+      try {
+        await supabase.from("cart_sessions").update({ entities_extraction_status: "pending" }).eq("id", session_id);
+      } catch {}
+    }
     return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

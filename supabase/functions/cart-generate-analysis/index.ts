@@ -68,7 +68,8 @@ async function generate(prompt: string, geminiApiKey: string, maxTokens = 12000)
 
 serve(async (req) => {
   const origin = req.headers.get("Origin") || "";
-  if (origin) corsHeaders["Access-Control-Allow-Origin"] = origin;
+  const ALLOWED_ORIGINS = ["https://solutio.work", "https://www.solutio.work", "http://localhost:5173", "http://localhost:8080"];
+  if (origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o))) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization");
@@ -93,7 +94,7 @@ serve(async (req) => {
     if (!sessionId) throw new Error("Missing sessionId");
 
     const { data: session, error: sessionError } = await supabase
-      .from("cart_sessions").select("id, owner_id, nom, sector_id, ai_extracted_entities, entities_extraction_status").eq("id", sessionId).single();
+      .from("cart_sessions").select("id, owner_id, nom, sector_id, ai_extracted_entities, entities_extraction_status, last_generation_at").eq("id", sessionId).single();
     if (sessionError || !session) {
       return new Response(JSON.stringify({ error: "Session not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -101,7 +102,18 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const [reponsesRes, packResumesRes, processusRes, outilsRes, equipesRes, irritantsRes, tachesRes, quickwinsRes] = await Promise.all([
+    // Rate limit: 1 generation per 3 minutes per session
+    if (session.last_generation_at) {
+      const elapsed = (Date.now() - new Date(session.last_generation_at).getTime()) / 1000;
+      if (elapsed < 180) {
+        return new Response(JSON.stringify({ error: `Veuillez patienter ${Math.ceil(180 - elapsed)}s avant de relancer l'analyse` }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // Mark generation timestamp
+    await supabase.from("cart_sessions").update({ last_generation_at: new Date().toISOString() }).eq("id", sessionId);
+
+    const settled = await Promise.allSettled([
       supabase.from("cart_reponses").select("*, question:cart_questions(texte, section, type_reponse)").eq("session_id", sessionId).order("bloc"),
       supabase.from("cart_pack_resumes").select("*").eq("session_id", sessionId).order("bloc"),
       supabase.from("cart_processus").select("*").eq("session_id", sessionId),
@@ -111,6 +123,18 @@ serve(async (req) => {
       supabase.from("cart_taches").select("*").eq("session_id", sessionId),
       supabase.from("cart_quickwins").select("*").eq("session_id", sessionId),
     ]);
+    const getSettled = (idx: number) => {
+      const r = settled[idx];
+      return r.status === "fulfilled" ? (r.value.data || []) : [];
+    };
+    const reponsesRes = { data: getSettled(0) };
+    const packResumesRes = { data: getSettled(1) };
+    const processusRes = { data: getSettled(2) };
+    const outilsRes = { data: getSettled(3) };
+    const equipesRes = { data: getSettled(4) };
+    const irritantsRes = { data: getSettled(5) };
+    const tachesRes = { data: getSettled(6) };
+    const quickwinsRes = { data: getSettled(7) };
 
     const sectorInfo = session.sector_id ? `Secteur : ${session.sector_id}. ` : "";
 

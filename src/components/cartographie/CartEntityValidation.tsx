@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,6 +56,7 @@ export function CartEntityValidation({
 }: CartEntityValidationProps) {
   const { toast } = useToast();
   const [localEntities, setLocalEntities] = useState<ExtractedEntities>(entities);
+  useEffect(() => { setLocalEntities(entities); }, [entities]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ nom: string; description: string; categorie?: string }>({ nom: "", description: "" });
   const [mergeMode, setMergeMode] = useState<{ sourceId: string; type: keyof ExtractedEntities } | null>(null);
@@ -69,18 +70,21 @@ export function CartEntityValidation({
   const saveEntities = useCallback(async (updated: ExtractedEntities) => {
     setSaving(true);
     try {
-      await supabase.from("cart_sessions").update({
+      const { error } = await supabase.from("cart_sessions").update({
         ai_extracted_entities: updated,
       }).eq("id", sessionId);
+      if (error) throw error;
       setLocalEntities(updated);
     } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      toast({ title: "Erreur de sauvegarde", description: e.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
   }, [sessionId, toast]);
 
   const handleDelete = (type: keyof ExtractedEntities, id: string) => {
+    const entity = localEntities[type].find(e => e.id === id);
+    if (!entity || !confirm(`Supprimer "${entity.nom}" ?`)) return;
     const updated = {
       ...localEntities,
       [type]: localEntities[type].filter(e => e.id !== id),
@@ -148,12 +152,15 @@ export function CartEntityValidation({
   };
 
   const handleValidate = async () => {
-    // Mark as validated and trigger final analysis
-    await supabase.from("cart_sessions").update({
+    const { error } = await supabase.from("cart_sessions").update({
       ai_extracted_entities: localEntities,
       entities_extraction_status: "validated",
       entities_validated_at: new Date().toISOString(),
     }).eq("id", sessionId);
+    if (error) {
+      toast({ title: "Erreur", description: error.message, variant: "destructive" });
+      return;
+    }
     onValidateAndGenerate();
   };
 
@@ -240,7 +247,7 @@ export function CartEntityValidation({
           {saving && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
           <Button
             onClick={onExtract}
-            disabled={extracting}
+            disabled={extracting || saving}
             variant="outline"
             size="sm"
             className="text-xs"
@@ -250,7 +257,7 @@ export function CartEntityValidation({
           </Button>
           <Button
             onClick={handleValidate}
-            disabled={generating || isValidated}
+            disabled={generating || isValidated || saving}
             className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white text-xs"
             size="sm"
           >
@@ -314,7 +321,11 @@ export function CartEntityValidation({
             <CardContent className="space-y-2">
               {/* Add form */}
               {addingTo === key && (
-                <div className={`p-3 rounded-lg border-2 border-dashed border-${color}-200 bg-${color}-50/30 space-y-2`}>
+                <div className={`p-3 rounded-lg border-2 border-dashed space-y-2 ${
+                    key === "equipes" ? "border-orange-200 bg-orange-50/30" :
+                    key === "processus" ? "border-blue-200 bg-blue-50/30" :
+                    "border-green-200 bg-green-50/30"
+                  }`}>
                   <Input
                     placeholder="Nom"
                     value={addForm.nom}

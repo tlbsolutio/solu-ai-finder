@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCartContext } from "@/contexts/CartSessionContext";
@@ -12,7 +12,7 @@ import { ContentLoader } from "@/components/cartographie/ContentLoader";
 import {
   Plus, Network, Calendar, ChevronRight, Sparkles, Crown, BarChart3, Zap,
   Settings, Users, Layers, AlertTriangle, CheckCircle, FileText, Brain,
-  HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target,
+  HelpCircle, Mail, MessageSquare, X, BookOpen, ArrowRight, Target, GitCompare,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -60,6 +60,16 @@ const CartSessions = () => {
   const [showTutorial, setShowTutorial] = useState(() => {
     return localStorage.getItem("carto_tutorial_dismissed") !== "true";
   });
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareIds, setCompareIds] = useState<Set<string>>(new Set());
+
+  const toggleCompare = (id: string) => {
+    setCompareIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) { next.delete(id); } else if (next.size < 2) { next.add(id); }
+      return next;
+    });
+  };
 
   useEffect(() => { loadSessions(); }, [ownerId]);
 
@@ -205,11 +215,24 @@ const CartSessions = () => {
               }
             </p>
           </div>
-          <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shrink-0">
-            <Plus className="w-4 h-4 mr-1.5" />
-            <span className="hidden sm:inline">Nouveau diagnostic</span>
-            <span className="sm:hidden">Nouveau</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            {sessions.filter(s => s.final_generation_done).length >= 2 && (
+              <Button
+                onClick={() => { setCompareMode(!compareMode); setCompareIds(new Set()); }}
+                size="sm"
+                variant={compareMode ? "default" : "outline"}
+                className={`text-xs ${compareMode ? "bg-purple-600 hover:bg-purple-700 text-white" : ""}`}
+              >
+                <GitCompare className="w-3.5 h-3.5 mr-1" />
+                {compareMode ? "Annuler" : "Comparer"}
+              </Button>
+            )}
+            <Button onClick={() => setShowNewDialog(true)} size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
+              <Plus className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Nouveau diagnostic</span>
+              <span className="sm:hidden">Nouveau</span>
+            </Button>
+          </div>
         </div>
 
         {/* Quick stats (only if sessions exist) */}
@@ -312,11 +335,17 @@ const CartSessions = () => {
                 const totalObj = stats ? stats.proc_count + stats.outils_count + stats.equipes_count + stats.irritants_count : 0;
                 const progressPct = (s.packs_completed / 10) * 100;
 
+                const isSelected = compareIds.has(s.id);
                 return (
                   <Card
                     key={s.id}
-                    className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-cyan-300/50 active:scale-[0.99] overflow-hidden"
-                    onClick={() => navigate(`/cartographie/sessions/${s.id}`)}
+                    className={`group cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.99] overflow-hidden ${
+                      isSelected ? "border-purple-400 ring-2 ring-purple-200" : "hover:border-cyan-300/50"
+                    }`}
+                    onClick={() => {
+                      if (compareMode && s.final_generation_done) { toggleCompare(s.id); }
+                      else if (!compareMode) { navigate(`/cartographie/sessions/${s.id}`); }
+                    }}
                   >
                     {/* Top accent bar */}
                     <div className={`h-1 w-full bg-gradient-to-r ${
@@ -414,6 +443,57 @@ const CartSessions = () => {
           </div>
         )}
 
+        {/* Comparison panel */}
+        {compareMode && compareIds.size === 2 && (() => {
+          const [id1, id2] = [...compareIds];
+          const s1 = sessions.find(s => s.id === id1)!;
+          const s2 = sessions.find(s => s.id === id2)!;
+          const st1 = sessionStats[id1];
+          const st2 = sessionStats[id2];
+          const metrics = [
+            { label: "Score moyen", v1: st1?.avg_score?.toFixed(1) || "--", v2: st2?.avg_score?.toFixed(1) || "--", better: (st1?.avg_score || 0) > (st2?.avg_score || 0) ? 1 : (st1?.avg_score || 0) < (st2?.avg_score || 0) ? 2 : 0 },
+            { label: "Packs completes", v1: `${s1.packs_completed}/10`, v2: `${s2.packs_completed}/10`, better: s1.packs_completed > s2.packs_completed ? 1 : s1.packs_completed < s2.packs_completed ? 2 : 0 },
+            { label: "Processus", v1: st1?.proc_count?.toString() || "0", v2: st2?.proc_count?.toString() || "0", better: 0 },
+            { label: "Outils", v1: st1?.outils_count?.toString() || "0", v2: st2?.outils_count?.toString() || "0", better: 0 },
+            { label: "Equipes", v1: st1?.equipes_count?.toString() || "0", v2: st2?.equipes_count?.toString() || "0", better: 0 },
+            { label: "Irritants", v1: st1?.irritants_count?.toString() || "0", v2: st2?.irritants_count?.toString() || "0", better: (st1?.irritants_count || 0) < (st2?.irritants_count || 0) ? 1 : (st1?.irritants_count || 0) > (st2?.irritants_count || 0) ? 2 : 0 },
+          ];
+          return (
+            <Card className="border-purple-200 bg-purple-50/30">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <GitCompare className="w-4 h-4 text-purple-600" />
+                    <h3 className="text-sm font-semibold">Comparaison</h3>
+                  </div>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setCompareMode(false); setCompareIds(new Set()); }}>
+                    <X className="w-3 h-3 mr-1" /> Fermer
+                  </Button>
+                </div>
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-x-4 gap-y-2 text-xs">
+                  <div className="font-semibold text-center truncate text-purple-700">{s1.nom}</div>
+                  <div />
+                  <div className="font-semibold text-center truncate text-purple-700">{s2.nom}</div>
+                  {metrics.map(m => (
+                    <React.Fragment key={m.label}>
+                      <div className={`text-center py-1 px-2 rounded ${m.better === 1 ? "bg-emerald-100 text-emerald-700 font-bold" : ""}`}>{m.v1}</div>
+                      <div className="text-center text-muted-foreground py-1 whitespace-nowrap">{m.label}</div>
+                      <div className={`text-center py-1 px-2 rounded ${m.better === 2 ? "bg-emerald-100 text-emerald-700 font-bold" : ""}`}>{m.v2}</div>
+                    </React.Fragment>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
+        {compareMode && compareIds.size < 2 && (
+          <div className="text-center py-4 text-sm text-muted-foreground">
+            <GitCompare className="w-5 h-5 mx-auto mb-2 text-purple-400" />
+            Selectionnez {2 - compareIds.size} diagnostic{compareIds.size === 0 ? "s" : ""} a comparer
+          </div>
+        )}
+
         {/* Support & Contact section */}
         <div className="border-t pt-5 mt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -465,14 +545,15 @@ const CartSessions = () => {
               <Label className="text-xs font-medium">Nom du diagnostic</Label>
               <Input
                 value={newSessionName}
-                onChange={e => setNewSessionName(e.target.value)}
+                onChange={e => setNewSessionName(e.target.value.slice(0, 80))}
                 placeholder="Ex: Audit Q1 2026 — Mon entreprise"
                 onKeyDown={e => e.key === "Enter" && createSession()}
                 className="mt-1.5"
+                maxLength={80}
                 autoFocus
               />
               <p className="text-[11px] text-muted-foreground mt-1.5">
-                Choisissez un nom descriptif pour retrouver facilement ce diagnostic.
+                {newSessionName.length}/80 — Choisissez un nom descriptif pour retrouver facilement ce diagnostic.
               </p>
             </div>
           </div>

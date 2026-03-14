@@ -401,6 +401,8 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
     );
   }
 
+  const isSparse = totalNodes > 0 && totalNodes < 5 && !aiCartographyJson;
+
   const legendItems = [
     { type: "team", color: "bg-orange-500", label: "Equipes", count: equipes.length },
     { type: "process", color: "bg-blue-500", label: "Processus", count: processus.length },
@@ -524,6 +526,14 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
           </div>
         </Panel>
       </ReactFlow>
+
+      {isSparse && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 bg-slate-800/95 backdrop-blur-sm border border-slate-600/50 rounded-lg px-4 py-2.5 shadow-xl max-w-sm">
+          <p className="text-xs text-slate-300 text-center">
+            <span className="text-amber-400 font-medium">Carte partielle</span> — Completez plus de packs pour enrichir la cartographie ({totalNodes} element{totalNodes > 1 ? "s" : ""} detecte{totalNodes > 1 ? "s" : ""})
+          </p>
+        </div>
+      )}
 
       {selectedNode && (
         <NodeDetailPanel

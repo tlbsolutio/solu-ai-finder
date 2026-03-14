@@ -18,7 +18,7 @@ import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
-  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info,
+  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info, Share2, Copy, Check,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
@@ -26,6 +26,13 @@ import { CartPlanActionsTab } from "@/components/cartographie/CartPlanActionsTab
 import { CartRecommandationsTab } from "@/components/cartographie/CartRecommandationsTab";
 import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
 import { CartEntityValidation } from "@/components/cartographie/CartEntityValidation";
+import { CartProcessusSection } from "@/components/cartographie/CartProcessusSection";
+import { CartOutilsSection } from "@/components/cartographie/CartOutilsSection";
+import { CartEquipesSection } from "@/components/cartographie/CartEquipesSection";
+import { CartIrritantsSection } from "@/components/cartographie/CartIrritantsSection";
+import { CartAnalyseSection } from "@/components/cartographie/CartAnalyseSection";
+import { CartSectionHeader } from "@/components/cartographie/CartSectionHeader";
+import { CartEmptyState } from "@/components/cartographie/CartEmptyState";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
@@ -140,8 +147,9 @@ const CartSessionDashboard = () => {
   const [extractingEntities, setExtractingEntities] = useState(false);
   const [showGate, setShowGate] = useState(false);
   const [gateTab, setGateTab] = useState<string | undefined>();
+  const [shareCopied, setShareCopied] = useState(false);
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
-  const { generatePdf, isLoading: pdfLoading } = useCartPdfExport();
+  const { generatePdf, generateBrief, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
 
   if (loading) return <ContentLoader />;
   if (error || !session) {
@@ -181,11 +189,11 @@ const CartSessionDashboard = () => {
   // Before final analysis, DB tables are empty — use ai_extracted_entities instead
   const extracted = session.ai_extracted_entities;
   const mapProcessus = processus.length > 0 ? processus :
-    (extracted?.processus || []).map((p: any) => ({ id: p.id, session_id: id!, nom: p.nom, description: p.description, type: "Metier", niveau_criticite: "Medium", ai_generated: true } as CartProcessusV2));
+    (extracted?.processus || []).filter((p: any) => p?.id && p?.nom).map((p: any) => ({ id: p.id, session_id: id!, nom: p.nom, description: p.description || "", type: "Metier", niveau_criticite: "Medium", ai_generated: true } as CartProcessusV2));
   const mapOutils = outils.length > 0 ? outils :
-    (extracted?.outils || []).map((o: any) => ({ id: o.id, session_id: id!, nom: o.nom, type_outil: o.categorie || "Autre", niveau_usage: 3, problemes: o.description, ai_generated: true } as CartOutilV2));
+    (extracted?.outils || []).filter((o: any) => o?.id && o?.nom).map((o: any) => ({ id: o.id, session_id: id!, nom: o.nom, type_outil: o.categorie || "Autre", niveau_usage: 3, problemes: o.description || "", ai_generated: true } as CartOutilV2));
   const mapEquipes = equipes.length > 0 ? equipes :
-    (extracted?.equipes || []).map((e: any) => ({ id: e.id, session_id: id!, nom: e.nom, mission: e.description, charge_estimee: 3, ai_generated: true } as CartEquipeV2));
+    (extracted?.equipes || []).filter((e: any) => e?.id && e?.nom).map((e: any) => ({ id: e.id, session_id: id!, nom: e.nom, mission: e.description || "", charge_estimee: 3, ai_generated: true } as CartEquipeV2));
 
   const totalObjects = mapProcessus.length + mapOutils.length + mapEquipes.length + irritants.length + taches.length;
   const estimatedTimeRemaining = PACK_DEFINITIONS
@@ -205,6 +213,10 @@ const CartSessionDashboard = () => {
 
   const handleGenerateFinal = async () => {
     if (!id) return;
+    if (packsCompleted < 5) {
+      toast({ title: "Packs insuffisants", description: `Completez au moins 5 packs avant de generer l'analyse (${packsCompleted}/5 actuellement)`, variant: "destructive" });
+      return;
+    }
     setGeneratingFinal(true);
     try {
       const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
@@ -261,6 +273,44 @@ const CartSessionDashboard = () => {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally {
       setGeneratingFinal(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!id) return;
+    try {
+      let token = session.share_token;
+      if (!token) {
+        token = crypto.randomUUID();
+        const { error } = await supabase.from("cart_sessions").update({
+          share_token: token,
+          share_enabled: true,
+        }).eq("id", id);
+        if (error) throw error;
+      } else if (!session.share_enabled) {
+        const { error } = await supabase.from("cart_sessions").update({ share_enabled: true }).eq("id", id);
+        if (error) throw error;
+      }
+      const shareUrl = `${window.location.origin}/cartographie/sessions/${id}?share=${token}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+      toast({ title: "Lien copie", description: "Le lien de partage en lecture seule a ete copie" });
+      await reload();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleDisableShare = async () => {
+    if (!id) return;
+    try {
+      const { error } = await supabase.from("cart_sessions").update({ share_enabled: false }).eq("id", id);
+      if (error) throw error;
+      toast({ title: "Partage desactive" });
+      await reload();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
     }
   };
 
@@ -333,12 +383,12 @@ const CartSessionDashboard = () => {
                 </div>
               )}
             </div>
-            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-muted rounded shrink-0 mt-0.5">
+            <button onClick={() => setSidebarCollapsed(true)} className="p-1 hover:bg-muted rounded shrink-0 mt-0.5" aria-label="Reduire le menu">
               <ChevronLeft className="w-3.5 h-3.5 text-muted-foreground" />
             </button>
           </div>
         ) : (
-          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-muted rounded">
+          <button onClick={() => setSidebarCollapsed(false)} className="w-full flex justify-center p-1 hover:bg-muted rounded" aria-label="Agrandir le menu">
             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
@@ -403,7 +453,7 @@ const CartSessionDashboard = () => {
 
       {/* Sidebar footer: actions */}
       {isFinalGenerated && !sidebarCollapsed && isPaid && (
-        <div className="p-3 border-t">
+        <div className="p-3 border-t space-y-1.5">
           <Button
             size="sm"
             variant="outline"
@@ -412,8 +462,32 @@ const CartSessionDashboard = () => {
             onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            {pdfLoading ? "Export..." : "Export PDF"}
+            {pdfLoading ? (pdfProgress || "Export...") : "Rapport complet PDF"}
           </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="w-full h-7 text-[11px] justify-start text-muted-foreground"
+            disabled={pdfLoading}
+            onClick={() => generateBrief({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+          >
+            <FileText className="w-3.5 h-3.5 mr-1.5" />
+            Brief executif (1 page)
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="w-full h-7 text-[11px] justify-start text-muted-foreground"
+            onClick={handleShare}
+          >
+            {shareCopied ? <Check className="w-3.5 h-3.5 mr-1.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
+            {shareCopied ? "Lien copie !" : session.share_enabled ? "Copier le lien" : "Partager (lecture seule)"}
+          </Button>
+          {session.share_enabled && (
+            <button onClick={handleDisableShare} className="w-full text-[10px] text-muted-foreground/60 hover:text-red-500 text-left px-2 transition-colors">
+              Desactiver le partage
+            </button>
+          )}
         </div>
       )}
     </aside>
@@ -425,17 +499,25 @@ const CartSessionDashboard = () => {
       <div className="flex gap-0.5 py-1.5 w-max">
         {SECTIONS.map((group, gi) => (
           <div key={group.group} className="flex items-center gap-0.5">
-            {gi > 0 && <div className="w-px h-5 bg-border mx-1 shrink-0" />}
+            {gi > 0 && (
+              <div className="flex items-center gap-1 mx-1.5 shrink-0">
+                <div className="w-px h-5 bg-border" />
+                <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-wider">{group.group}</span>
+                <div className="w-px h-5 bg-border" />
+              </div>
+            )}
             {group.items.map((item) => {
               const isActive = activeSection === item.id;
               const isLocked = !item.free && !isPaid;
+              const count = sectionCounts[item.id];
               return (
                 <button
                   key={item.id}
+                  ref={isActive ? (el) => el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }) : undefined}
                   onClick={() => handleSectionClick(item.id, item.free)}
                   className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs whitespace-nowrap transition-colors ${
                     isActive
-                      ? "bg-cyan-50 text-cyan-700 font-medium"
+                      ? "bg-cyan-50 text-cyan-700 font-medium shadow-sm"
                       : isLocked
                       ? "text-muted-foreground/50"
                       : "text-muted-foreground hover:bg-muted"
@@ -444,6 +526,9 @@ const CartSessionDashboard = () => {
                   <item.icon className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">{item.label}</span>
                   <span className="sm:hidden">{item.shortLabel}</span>
+                  {!isLocked && count !== undefined && count > 0 && (
+                    <span className="text-[9px] bg-muted rounded-full px-1 py-0.5 leading-none">{count}</span>
+                  )}
                   {isLocked && <Lock className="w-3 h-3 ml-0.5" />}
                 </button>
               );
@@ -468,8 +553,63 @@ const CartSessionDashboard = () => {
     return "from-emerald-500/10 to-emerald-500/5 border-emerald-200";
   };
 
+  const WhatsNextBanner = () => {
+    if (!isFinalGenerated) return null;
+    const steps = [
+      { done: quickwins.filter(q => q.statut === "fait").length > 0, label: "Realisez vos premiers quick wins", section: "quickwins" },
+      { done: !!session.ai_plan_optimisation, label: "Consultez le plan d'actions", section: "plan" },
+      { done: false, label: "Exportez le rapport PDF", section: null },
+    ];
+    const nextStep = steps.find(s => !s.done);
+    if (!nextStep) return null;
+    return (
+      <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-gradient-to-r from-emerald-50/80 to-cyan-50/60 px-4 py-3">
+        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+          <Target className="w-4 h-4 text-emerald-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-emerald-800">Prochaine etape recommandee</p>
+          <p className="text-sm text-emerald-700 font-semibold">{nextStep.label}</p>
+        </div>
+        {nextStep.section && (
+          <Button size="sm" variant="outline" className="shrink-0 h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-100" onClick={() => setActiveSection(nextStep.section!)}>
+            <ArrowRight className="w-3.5 h-3.5 mr-1" /> Voir
+          </Button>
+        )}
+        {!nextStep.section && isPaid && (
+          <Button size="sm" variant="outline" className="shrink-0 h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-100"
+            disabled={pdfLoading}
+            onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
+          >
+            <Download className="w-3.5 h-3.5 mr-1" /> PDF
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   const renderOverview = () => (
     <div className="space-y-5">
+      {/* First-time user CTA */}
+      {packsCompleted === 0 && (
+        <div className="rounded-xl border-2 border-dashed border-cyan-300 bg-gradient-to-br from-cyan-50/60 to-blue-50/40 p-6 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-100 flex items-center justify-center mx-auto">
+            <Play className="w-5 h-5 text-cyan-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold">Commencez votre diagnostic</h3>
+            <p className="text-sm text-muted-foreground mt-1">Completez votre premier pack thematique (~5 min) pour voir apparaitre vos premiers resultats</p>
+          </div>
+          <Button size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white" onClick={() => setActiveSection("questionnaire")}>
+            <ArrowRight className="w-3.5 h-3.5 mr-1.5" />
+            Demarrer le Pack 1
+          </Button>
+        </div>
+      )}
+
+      {/* What's Next guidance */}
+      <WhatsNextBanner />
+
       {/* Quick Stats Banner */}
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 border text-sm">
         <div className="flex items-center gap-1.5">
@@ -752,7 +892,7 @@ const CartSessionDashboard = () => {
 
   const renderQuestionnaire = () => (
     <div>
-      <SectionHeader title="Questionnaire" description="Resultats detailles par pack thematique" icon={FileText} count={packResumes.length} />
+      <CartSectionHeader title="Questionnaire" description="Resultats detailles par pack thematique" icon={FileText} count={packResumes.length} />
       <div className="space-y-3">
       {packResumes.length === 0 ? (
         <EmptyState message="Aucun pack complete pour le moment" icon={FileText} />
@@ -790,253 +930,9 @@ const CartSessionDashboard = () => {
     </div>
   );
 
-  const EmptyState = ({ message, icon: EmptyIcon }: { message: string; icon: React.ElementType }) => (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="w-12 h-12 rounded-2xl bg-muted/50 flex items-center justify-center mb-3">
-        <EmptyIcon className="w-5 h-5 text-muted-foreground/60" />
-      </div>
-      <p className="text-sm text-muted-foreground max-w-xs">{message}</p>
-      <p className="text-xs text-muted-foreground/60 mt-1">Commencez par completer votre premier pack pour debloquer cette section</p>
-    </div>
-  );
-
-  const SectionHeader = ({ title, description, icon: SIcon, count, actionLabel, onAction }: {
-    title: string; description?: string; icon: React.ElementType; count?: number; actionLabel?: string; onAction?: () => void;
-  }) => (
-    <div className="flex items-start justify-between gap-3 mb-4">
-      <div className="flex items-start gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/10 to-blue-500/10 flex items-center justify-center shrink-0 mt-0.5">
-          <SIcon className="w-4 h-4 text-cyan-600" />
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold flex items-center gap-2">
-            {title}
-            {count !== undefined && count > 0 && (
-              <Badge variant="secondary" className="text-xs font-normal">{count}</Badge>
-            )}
-          </h2>
-          {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
-        </div>
-      </div>
-      {actionLabel && onAction && (
-        <Button size="sm" variant="outline" className="shrink-0 text-xs h-8" onClick={onAction}>
-          {actionLabel}
-        </Button>
-      )}
-    </div>
-  );
-
-  const renderProcessus = () => (
-    <div>
-      <SectionHeader title="Processus" description="Processus metiers detectes dans votre organisation" icon={Settings} count={processus.length} />
-      <Card>
-        <CardContent className="px-4 py-4 space-y-2">
-          {processus.length === 0 ? (
-            <EmptyState message="Aucun processus detecte pour le moment" icon={Settings} />
-          ) : processus.map((p) => (
-          <div key={p.id} className="flex items-start gap-3 p-3 rounded-md bg-blue-50/50 border border-blue-100">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-medium">{p.nom}</p>
-                {p.type && <Badge variant="outline" className="text-xs">{p.type}</Badge>}
-                {p.niveau_criticite && (
-                  <Badge className={`text-xs ${p.niveau_criticite === "High" ? "bg-red-100 text-red-800 border-red-200" : p.niveau_criticite === "Medium" ? "bg-orange-100 text-orange-800 border-orange-200" : "bg-green-100 text-green-800 border-green-200"} border`}>
-                    {p.niveau_criticite}
-                  </Badge>
-                )}
-              </div>
-              {p.description && <p className="text-xs text-muted-foreground mt-1">{p.description}</p>}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-    </div>
-  );
-
-  const renderOutils = () => (
-    <div>
-      <SectionHeader title="Outils & SI" description="Logiciels et systemes d'information utilises" icon={Layers} count={outils.length} />
-      <Card>
-        <CardContent className="px-4 py-4 space-y-2">
-          {outils.length === 0 ? (
-            <EmptyState message="Aucun outil detecte pour le moment" icon={Layers} />
-          ) : outils.map((o) => (
-          <div key={o.id} className="flex items-start gap-3 p-3 rounded-md bg-green-50/50 border border-green-100">
-            <div className="w-2 h-2 rounded-full bg-green-500 mt-2 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-medium">{o.nom}</p>
-                {o.type_outil && <Badge variant="outline" className="text-xs">{o.type_outil}</Badge>}
-                {o.niveau_usage && (
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <Star key={i} className={`w-3 h-3 ${i < (o.niveau_usage || 0) ? "fill-yellow-400 text-yellow-400" : "text-muted"}`} />
-                    ))}
-                  </div>
-                )}
-              </div>
-              {o.problemes && <p className="text-xs text-muted-foreground mt-1">{o.problemes}</p>}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-    </div>
-  );
-
-  const renderEquipes = () => (
-    <div>
-      <SectionHeader title="Equipes" description="Structure et organisation des equipes" icon={Users} count={equipes.length} />
-      <Card>
-        <CardContent className="px-4 py-4 space-y-2">
-          {equipes.length === 0 ? (
-            <EmptyState message="Aucune equipe detectee pour le moment" icon={Users} />
-          ) : equipes.map((e) => (
-          <div key={e.id} className="flex items-start gap-3 p-3 rounded-md bg-orange-50/50 border border-orange-100">
-            <div className="w-2 h-2 rounded-full bg-orange-500 mt-2 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-medium">{e.nom}</p>
-                {e.charge_estimee && (
-                  <Badge variant="outline" className="text-xs">Charge : {e.charge_estimee}/5</Badge>
-                )}
-              </div>
-              {e.mission && <p className="text-xs text-muted-foreground mt-1">{e.mission}</p>}
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-    </div>
-  );
-
-  const renderIrritants = () => (
-    <div>
-      <SectionHeader title="Irritants & Risques" description="Points de friction et risques operationnels identifies" icon={AlertTriangle} count={irritants.length + taches.length} />
-      <div className="space-y-4">
-        <Card>
-          <CardContent className="px-4 py-4 space-y-2">
-            {irritants.length === 0 ? (
-              <EmptyState message="Aucun irritant detecte pour le moment" icon={AlertTriangle} />
-            ) : irritants.map((i) => (
-            <div key={i.id} className="flex items-start gap-3 p-3 rounded-md bg-red-50/50 border border-red-100">
-              <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${(i.gravite || 0) >= 4 ? "bg-red-600" : (i.gravite || 0) >= 3 ? "bg-orange-500" : "bg-yellow-400"}`} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium">{i.intitule}</p>
-                  {i.type && <Badge variant="outline" className="text-xs">{i.type}</Badge>}
-                  {i.gravite && <Badge className="text-xs bg-red-100 text-red-800 border border-red-200">Gravite {i.gravite}/5</Badge>}
-                </div>
-                {i.impact && <p className="text-xs text-muted-foreground mt-1">Impact : {i.impact}</p>}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {taches.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm">Taches manuelles ({taches.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4 space-y-2">
-            {taches.map((t) => (
-              <div key={t.id} className="flex items-start gap-3 p-3 rounded-md bg-muted/30 border">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium">{t.nom}</p>
-                    {t.frequence && <Badge variant="outline" className="text-xs">{t.frequence}</Badge>}
-                    {t.double_saisie && <Badge className="text-xs bg-orange-100 text-orange-800 border border-orange-200">Double saisie</Badge>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-      </div>
-    </div>
-  );
-
-  const renderAnalyse = () => (
-    <div>
-      <SectionHeader title="Analyse IA" description="Analyse generee par intelligence artificielle" icon={Brain} />
-      <div className="space-y-4">
-      {[
-        { key: "ai_resume_executif" as const, label: "Resume executif" },
-        { key: "ai_forces" as const, label: "Forces identifiees" },
-        { key: "ai_dysfonctionnements" as const, label: "Dysfonctionnements" },
-        { key: "ai_analyse_transversale" as const, label: "Analyse transversale" },
-        { key: "ai_plan_optimisation" as const, label: "Plan d'optimisation" },
-        { key: "ai_vision_cible" as const, label: "Vision cible" },
-        { key: "ai_cout_inaction_annuel" as const, label: "Cout d'inaction annuel" },
-        { key: "ai_kpis_de_suivi" as const, label: "KPIs de suivi" },
-      ].map(({ key, label }) => {
-        const content = session[key];
-        if (!content) return null;
-        return (
-          <Card key={key}>
-            <CardHeader className="pb-2 px-4 pt-4">
-              <CardTitle className="text-sm">{label}</CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <FormattedText text={typeof content === "string" ? content : JSON.stringify(content, null, 2)} />
-            </CardContent>
-          </Card>
-        );
-      })}
-
-      {session.ai_cross_pack_analysis && (
-        <Card className="border-purple-200">
-          <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Brain className="w-4 h-4 text-purple-500" />
-              Analyse causale inter-packs
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof session.ai_cross_pack_analysis === "string"
-              ? session.ai_cross_pack_analysis
-              : JSON.stringify(session.ai_cross_pack_analysis, null, 2)} />
-          </CardContent>
-        </Card>
-      )}
-
-      {session.ai_impact_quantification && (
-        <Card className="border-green-200">
-          <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-green-500" />
-              Quantification d'impact
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof session.ai_impact_quantification === "string"
-              ? session.ai_impact_quantification
-              : JSON.stringify(session.ai_impact_quantification, null, 2)} />
-          </CardContent>
-        </Card>
-      )}
-
-      {session.ai_target_vision && (
-        <Card className="border-blue-200">
-          <CardHeader className="pb-2 px-4 pt-4">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-500" />
-              Vision cible 18 mois
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-4 pb-4">
-            <FormattedText text={typeof session.ai_target_vision === "string"
-              ? session.ai_target_vision
-              : JSON.stringify(session.ai_target_vision, null, 2)} />
-          </CardContent>
-        </Card>
-      )}
-      </div>
-    </div>
+  // Use extracted section components (with memoized renders)
+  const EmptyState = ({ message, icon }: { message: string; icon: React.ElementType }) => (
+    <CartEmptyState message={message} icon={icon} activeSection={activeSection} packsCompleted={packsCompleted} />
   );
 
   const renderSectionContent = () => {
@@ -1096,13 +992,13 @@ const CartSessionDashboard = () => {
         />
       );
       case "quickwins": return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
-      case "processus": return renderProcessus();
-      case "outils": return renderOutils();
-      case "equipes": return renderEquipes();
-      case "irritants": return renderIrritants();
+      case "processus": return <CartProcessusSection processus={processus} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      case "outils": return <CartOutilsSection outils={outils} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      case "equipes": return <CartEquipesSection equipes={equipes} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      case "irritants": return <CartIrritantsSection irritants={irritants} taches={taches} activeSection={activeSection} packsCompleted={packsCompleted} />;
       case "plan": return <CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} />;
       case "recommandations": return <AIContentBoundary label="Recommandations"><CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} /></AIContentBoundary>;
-      case "analyse": return <AIContentBoundary label="Analyse IA">{renderAnalyse()}</AIContentBoundary>;
+      case "analyse": return <AIContentBoundary label="Analyse IA"><CartAnalyseSection session={session} /></AIContentBoundary>;
       default: return renderOverview();
     }
   };
@@ -1146,7 +1042,14 @@ const CartSessionDashboard = () => {
                       disabled={pdfLoading}
                       onClick={() => generatePdf({ session, packResumes, processus, outils, equipes, irritants, taches, quickwins })}
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      {pdfLoading ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                          <span className="max-w-[100px] truncate">{pdfProgress || "Export..."}</span>
+                        </>
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
                     </Button>
                   </div>
                 )}
@@ -1302,6 +1205,29 @@ const CartSessionDashboard = () => {
           ))}
         </div>
 
+        {/* Progress Milestones */}
+        <div className="flex items-center gap-2 px-2">
+          {[
+            { threshold: 1, label: "1er pack", icon: Play },
+            { threshold: 3, label: "3 packs", icon: TrendingUp },
+            { threshold: 5, label: "5 packs", icon: Star },
+            { threshold: 10, label: "Complet", icon: CheckCircle },
+          ].map(({ threshold, label, icon: MIcon }, i) => {
+            const reached = packsCompleted >= threshold;
+            return (
+              <div key={threshold} className="flex items-center gap-2 flex-1">
+                {i > 0 && <div className={`flex-1 h-0.5 rounded-full ${reached ? "bg-cyan-400" : "bg-muted"}`} />}
+                <div className={`flex items-center gap-1.5 shrink-0 ${reached ? "text-cyan-700" : "text-muted-foreground/50"}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${reached ? "bg-cyan-100" : "bg-muted/50"}`}>
+                    <MIcon className="w-3 h-3" />
+                  </div>
+                  <span className="text-[11px] font-medium hidden sm:inline">{label}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Analysis Flow Card */}
         <Card className={`overflow-hidden ${packsCompleted >= 5 ? "border-cyan-300 bg-gradient-to-br from-cyan-50/80 to-blue-50/50" : "border-slate-200 bg-slate-50/30"}`}>
           <CardContent className="p-5">
@@ -1372,7 +1298,7 @@ const CartSessionDashboard = () => {
                 </Button>
               ) : packsCompleted >= 5 && (session.entities_extraction_status === "extracted") ? (
                 <Button
-                  onClick={() => setActiveSection("entities")}
+                  onClick={() => document.getElementById("entity-validation-section")?.scrollIntoView({ behavior: "smooth", block: "start" })}
                   className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
                 >
                   <ShieldCheck className="w-4 h-4 mr-2" />
@@ -1412,6 +1338,9 @@ const CartSessionDashboard = () => {
         </Card>
 
         {/* Entity Validation (visible when entities are extracted) */}
+        {(session.entities_extraction_status === "extracted" || session.entities_extraction_status === "validated") && (
+          <div id="entity-validation-section" />
+        )}
         {(session.entities_extraction_status === "extracted" || session.entities_extraction_status === "validated") && (
           <CartEntityValidation
             sessionId={id!}

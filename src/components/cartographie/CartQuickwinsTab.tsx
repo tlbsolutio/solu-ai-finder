@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import type { CartQuickwinV2 } from "@/lib/cartTypes";
-import { Zap, ArrowUpDown, CheckCircle, Clock, Loader } from "lucide-react";
+import { Zap, ArrowUpDown, CheckCircle, Clock, Loader, Download } from "lucide-react";
 
 interface CartQuickwinsTabProps {
   sessionId: string;
@@ -15,9 +15,13 @@ interface CartQuickwinsTabProps {
 }
 
 const PRIORITY_CONFIG: Record<string, { label: string; className: string }> = {
-  "Top Priority": { label: "Top Priority", className: "bg-green-100 text-green-800 border-green-200" },
-  "Important": { label: "Important", className: "bg-blue-100 text-blue-800 border-blue-200" },
-  "Nice to have": { label: "Nice to have", className: "bg-gray-100 text-gray-700 border-gray-200" },
+  "P1": { label: "P1 — Priorite haute", className: "bg-red-100 text-red-800 border-red-200" },
+  "P2": { label: "P2 — Important", className: "bg-amber-100 text-amber-800 border-amber-200" },
+  "P3": { label: "P3 — Quick win", className: "bg-gray-100 text-gray-700 border-gray-200" },
+  // Legacy mappings for older data
+  "Top Priority": { label: "P1 — Priorite haute", className: "bg-red-100 text-red-800 border-red-200" },
+  "Important": { label: "P2 — Important", className: "bg-amber-100 text-amber-800 border-amber-200" },
+  "Nice to have": { label: "P3 — Quick win", className: "bg-gray-100 text-gray-700 border-gray-200" },
 };
 
 const IMPACT_COLOR: Record<string, string> = { Fort: "bg-green-500", Moyen: "bg-yellow-400", Faible: "bg-gray-300" };
@@ -48,7 +52,7 @@ export function CartQuickwinsTab({ sessionId, quickwins, onReload }: CartQuickwi
 
   const sortedQW = [...quickwins].sort((a, b) => {
     if (sortBy === "priority") {
-      const order: Record<string, number> = { "Top Priority": 0, "Important": 1, "Nice to have": 2 };
+      const order: Record<string, number> = { "P1": 0, "Top Priority": 0, "P2": 1, "Important": 1, "P3": 2, "Nice to have": 2 };
       return (order[a.priorite_calculee || ""] ?? 3) - (order[b.priorite_calculee || ""] ?? 3);
     }
     if (sortBy === "impact") {
@@ -127,6 +131,22 @@ export function CartQuickwinsTab({ sessionId, quickwins, onReload }: CartQuickwi
         </div>
       )}
 
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button size="sm" variant="ghost" className="h-7 text-xs ml-auto" onClick={() => {
+          const csvRows = [["Intitule","Priorite","Impact","Effort","Categorie","Pack","Statut","Description"].join(";")];
+          quickwins.forEach(qw => csvRows.push([
+            `"${(qw.intitule || "").replace(/"/g, '""')}"`,
+            qw.priorite_calculee || "", qw.impact || "", qw.effort || "",
+            qw.categorie || "", qw.bloc_source?.toString() || "", qw.statut || "",
+            `"${(qw.description || "").replace(/"/g, '""')}"`,
+          ].join(";")));
+          const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: "text/csv;charset=utf-8" });
+          const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+          a.download = "quickwins.csv"; a.click();
+        }}>
+          <Download className="w-3.5 h-3.5 mr-1" /> CSV
+        </Button>
+      </div>
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-muted-foreground flex items-center gap-1"><ArrowUpDown className="w-3.5 h-3.5" /> Trier par :</span>
         {(["priority", "impact", "effort", "bloc"] as const).map(s => (

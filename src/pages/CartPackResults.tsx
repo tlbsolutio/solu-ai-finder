@@ -53,9 +53,20 @@ const CartPackResults = () => {
 
   useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
 
-  const bloc = parseInt(packId || "1");
+  const bloc = parseInt(packId || "0");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
   const scoreConfig = (score: number) => SCORE_CONFIG[Math.min(5, Math.max(1, score))] || SCORE_CONFIG[3];
+
+  if (!packDef || isNaN(bloc) || bloc < 1 || bloc > 10) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <p className="text-destructive font-medium">Pack introuvable</p>
+          <Button onClick={() => navigate(`/cartographie/sessions/${id}`)}>Retour au diagnostic</Button>
+        </div>
+      </div>
+    );
+  }
 
   const [analyzing, setAnalyzing] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(true);
