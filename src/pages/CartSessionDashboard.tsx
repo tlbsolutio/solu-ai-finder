@@ -18,7 +18,7 @@ import {
   Network, Sparkles, CheckCircle, AlertCircle,
   Zap, Clock, Layers, Map, BarChart3, Settings, Users,
   AlertTriangle, ClipboardList, FileText, Brain, Star, Laptop, Loader2, Lock, ShieldCheck,
-  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info, Share2, Copy, Check,
+  Download, ChevronLeft, ChevronRight, TrendingUp, Target, ArrowRight, Play, Info, Share2, Copy, Check, RefreshCw,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { CartQuickwinsTab } from "@/components/cartographie/CartQuickwinsTab";
@@ -138,7 +138,7 @@ const CartSessionDashboard = () => {
 
   const {
     session, packResumes, processus, outils, equipes, irritants, taches, quickwins,
-    totalReponses, loading, error, reload, getPackProgress, getPackResume, getPackStatus, getPackTotalQuestions,
+    totalReponses, loading, error, partialErrors, reload, getPackProgress, getPackResume, getPackStatus, getPackTotalQuestions,
   } = useCartSessionV2(id);
 
   const [activeSection, setActiveSection] = useState("overview");
@@ -148,6 +148,7 @@ const CartSessionDashboard = () => {
   const [showGate, setShowGate] = useState(false);
   const [gateTab, setGateTab] = useState<string | undefined>();
   const [shareCopied, setShareCopied] = useState(false);
+  const [lastError, setLastError] = useState<{ action: "generate" | "extract"; message: string } | null>(null);
   const openGate = (tab?: string) => { setGateTab(tab); setShowGate(true); };
   const { generatePdf, generateBrief, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
 
@@ -231,6 +232,7 @@ const CartSessionDashboard = () => {
       return;
     }
     setGeneratingFinal(true);
+    setLastError(null);
     try {
       const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
         body: { sessionId: id },
@@ -243,7 +245,19 @@ const CartSessionDashboard = () => {
       await reload();
     } catch (e: any) {
       console.error("cart-generate-analysis error:", e);
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      setLastError({ action: "generate", message: e.message });
+      toast({
+        title: "Erreur de generation",
+        description: (
+          <div className="space-y-2">
+            <p>{e.message}</p>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleGenerateFinal}>
+              <RefreshCw className="w-3 h-3 mr-1" /> Reessayer
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+      });
     } finally {
       setGeneratingFinal(false);
     }
@@ -252,6 +266,7 @@ const CartSessionDashboard = () => {
   const handleExtractEntities = async () => {
     if (!id) return;
     setExtractingEntities(true);
+    setLastError(null);
     try {
       const { data, error } = await supabase.functions.invoke("cart-extract-entities", {
         body: { session_id: id },
@@ -263,7 +278,19 @@ const CartSessionDashboard = () => {
       toast({ title: "Entites extraites", description: `${data.stats?.equipes || 0} equipes, ${data.stats?.processus || 0} processus, ${data.stats?.outils || 0} outils` });
       await reload();
     } catch (e: any) {
-      toast({ title: "Erreur extraction", description: e.message, variant: "destructive" });
+      setLastError({ action: "extract", message: e.message });
+      toast({
+        title: "Erreur d'extraction",
+        description: (
+          <div className="space-y-2">
+            <p>{e.message}</p>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleExtractEntities}>
+              <RefreshCw className="w-3 h-3 mr-1" /> Reessayer
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+      });
     } finally {
       setExtractingEntities(false);
     }
@@ -272,6 +299,7 @@ const CartSessionDashboard = () => {
   const handleValidateAndGenerate = async () => {
     if (!id) return;
     setGeneratingFinal(true);
+    setLastError(null);
     try {
       const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
         body: { sessionId: id },
@@ -283,7 +311,19 @@ const CartSessionDashboard = () => {
       toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
       await reload();
     } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      setLastError({ action: "generate", message: e.message });
+      toast({
+        title: "Erreur de generation",
+        description: (
+          <div className="space-y-2">
+            <p>{e.message}</p>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleValidateAndGenerate}>
+              <RefreshCw className="w-3 h-3 mr-1" /> Reessayer
+            </Button>
+          </div>
+        ),
+        variant: "destructive",
+      });
     } finally {
       setGeneratingFinal(false);
     }
@@ -1082,6 +1122,21 @@ const CartSessionDashboard = () => {
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
                 <ShieldCheck className="w-4 h-4 shrink-0" />
                 <span>Vue admin — Session de <strong>{session.owner_id?.slice(0, 8)}...</strong></span>
+              </div>
+            </div>
+          )}
+
+          {/* Partial data loading warning */}
+          {partialErrors.length > 0 && (
+            <div className="px-4 sm:px-6 pt-2">
+              <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>Certaines donnees n'ont pas pu etre chargees ({partialErrors.join(", ")})</span>
+                </div>
+                <Button size="sm" variant="ghost" className="h-6 text-[11px] text-amber-700 hover:bg-amber-100" onClick={reload}>
+                  <RefreshCw className="w-3 h-3 mr-1" /> Recharger
+                </Button>
               </div>
             </div>
           )}

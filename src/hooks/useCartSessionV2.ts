@@ -19,6 +19,7 @@ export function useCartSessionV2(sessionId: string | undefined) {
   const [totalReponses, setTotalReponses] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [partialErrors, setPartialErrors] = useState<string[]>([]);
 
   const loadAll = useCallback(async () => {
     if (!sessionId) return;
@@ -44,9 +45,19 @@ export function useCartSessionV2(sessionId: string | undefined) {
         supabase.from("cart_questions").select("bloc").eq("actif", true),
       ]);
 
+      const TABLE_NAMES = ["pack_resumes", "processus", "outils", "equipes", "irritants", "taches", "quickwins", "reponses", "questions"];
+      const errors: string[] = [];
       const getData = (idx: number) => {
         const r = results[idx];
-        return r.status === "fulfilled" ? (r.value.data || []) : [];
+        if (r.status === "rejected") {
+          errors.push(TABLE_NAMES[idx] || `table ${idx}`);
+          return [];
+        }
+        if (r.value.error) {
+          errors.push(TABLE_NAMES[idx] || `table ${idx}`);
+          return [];
+        }
+        return r.value.data || [];
       };
 
       setPackResumes(getData(0).map((pr: any) => ({
@@ -77,6 +88,7 @@ export function useCartSessionV2(sessionId: string | undefined) {
         byBloc[b].push(r as CartReponseV2);
       }
       setReponsesByBloc(byBloc);
+      setPartialErrors(errors);
     } catch (e: any) {
       setError(e.message || "Erreur de chargement");
     } finally {
@@ -104,7 +116,7 @@ export function useCartSessionV2(sessionId: string | undefined) {
   return {
     session, packResumes, processus, outils, equipes, irritants, taches, quickwins,
     reponsesByBloc, questionCountsByBloc, totalReponses,
-    loading, error, reload: loadAll,
+    loading, error, partialErrors, reload: loadAll,
     getPackProgress, getPackResume, getPackStatus, getPackTotalQuestions,
   };
 }

@@ -114,6 +114,17 @@ const CartPackWizard = () => {
     return () => { if (syncTimer.current) clearInterval(syncTimer.current); };
   }, [drafts, questions]);
 
+  // Warn on page unload if unsaved drafts exist
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (Object.keys(drafts).length > 0) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [drafts]);
+
   const getValue = useCallback((q: any) => {
     const key = q.id;
     if (drafts[key] !== undefined) return drafts[key];
@@ -162,11 +173,20 @@ const CartPackWizard = () => {
     // Validate at least 3 answers before completing
     const answered = questions.filter((q) => getValue(q).trim()).length;
     if (answered < 3) {
+      const unanswered = questions.filter((q) => !getValue(q).trim());
+      const firstUnansweredSection = unanswered.length > 0
+        ? (unanswered[0].section || "Questions")
+        : null;
       toast({
         title: "Reponses insuffisantes",
-        description: `Veuillez repondre a au moins 3 questions avant de terminer ce pack (${answered} actuellement).`,
+        description: `Veuillez repondre a au moins 3 questions (${answered} actuellement). ${firstUnansweredSection ? `Commencez par la section "${firstUnansweredSection}".` : ""}`,
         variant: "destructive",
       });
+      // Navigate to section with first unanswered question
+      if (firstUnansweredSection) {
+        const idx = sections.indexOf(firstUnansweredSection);
+        if (idx >= 0) setCurrentSectionIndex(idx);
+      }
       return;
     }
     setCompleting(true);

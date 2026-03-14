@@ -103,7 +103,7 @@ function buildRecommandations(outils: CartOutilV2[]) {
     const typeKeywords = [outil.type_outil, outil.nom].filter(Boolean).map(s => s!.toLowerCase());
     const suggestions = SAAS_CATALOG.filter(saas => {
       const searchText = [saas.categorie, saas.sous_categorie, ...saas.cas_usage, ...saas.alternative_a].join(" ").toLowerCase();
-      return typeKeywords.some(kw => searchText.includes(kw.split(" ")[0]));
+      return typeKeywords.some(kw => searchText.includes(kw));
     }).slice(0, 3);
 
     recos.push({
@@ -471,7 +471,7 @@ export function CartRecommandationsTab({
         for (const saas of SAAS_CATALOG) {
           if (seen.has(saas.nom)) continue;
           const searchText = [saas.categorie, saas.sous_categorie, ...saas.cas_usage, ...saas.alternative_a].join(" ").toLowerCase();
-          if (keywords.some(kw => searchText.includes(kw.split(" ")[0]))) {
+          if (keywords.some(kw => searchText.includes(kw))) {
             seen.add(saas.nom);
             results.push({ saas, matchReason: `Alternative a ${outil.nom}` });
           }

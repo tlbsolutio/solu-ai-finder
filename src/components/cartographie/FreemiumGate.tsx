@@ -47,7 +47,7 @@ export function FreemiumGate({ open, onOpenChange, stats, tabName, sessionId }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden border-0 shadow-2xl">
+      <DialogContent className="sm:max-w-lg max-w-[calc(100vw-2rem)] p-0 overflow-hidden border-0 shadow-2xl">
         {/* Blurred content teaser behind header */}
         <div className="relative">
           <div className="absolute inset-0 overflow-hidden">
