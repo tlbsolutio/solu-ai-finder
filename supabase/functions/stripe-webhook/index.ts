@@ -147,6 +147,84 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 
+  // ── Handle expired checkout session (abandoned cart) ──
+  if (event.type === "checkout.session.expired") {
+    const checkoutSession = event.data.object;
+    const customerEmail = checkoutSession.customer_details?.email || checkoutSession.customer_email;
+    const cartSessionId = checkoutSession.client_reference_id;
+
+    console.log(`Checkout expired: session=${cartSessionId}, email=${customerEmail}`);
+
+    // Log for analytics — could trigger follow-up email later
+    if (cartSessionId) {
+      await supabase.from("cart_analytics_events").insert({
+        session_id: cartSessionId,
+        event_name: "checkout_expired",
+        metadata: { customer_email: customerEmail, stripe_checkout_id: checkoutSession.id },
+      }).then(() => {}).catch(() => {});
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, event: "checkout_expired", cartSessionId }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Handle subscription updates (plan change, renewal) ──
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object;
+    const stripeSubscriptionId = subscription.id;
+    const customerEmail = subscription.customer_email || subscription.metadata?.email;
+    const status = subscription.status; // active, past_due, canceled, unpaid, etc.
+
+    console.log(`Subscription updated: ${stripeSubscriptionId}, status=${status}, email=${customerEmail}`);
+
+    // Map Stripe status to our internal status
+    const statusMap: Record<string, string> = {
+      active: "active",
+      past_due: "payment_failed",
+      canceled: "cancelled",
+      unpaid: "payment_failed",
+      incomplete_expired: "cancelled",
+    };
+    const mappedStatus = statusMap[status] || status;
+
+    // Detect plan change from amount
+    const amountTotal = subscription.items?.data?.[0]?.price?.unit_amount || 0;
+    const planType = amountTotal >= 80000 ? "accompanee" : "autonome";
+
+    let updateResult;
+    if (stripeSubscriptionId) {
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: mappedStatus, plan_type: planType, updated_at: new Date().toISOString() })
+        .eq("stripe_subscription_id", stripeSubscriptionId);
+    }
+
+    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+      console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: mappedStatus, plan_type: planType, updated_at: new Date().toISOString() })
+        .eq("customer_email", customerEmail)
+        .eq("status", "active");
+    }
+
+    if (updateResult?.error) {
+      console.error("Error updating subscription:", updateResult.error);
+      return new Response(JSON.stringify({ error: "Failed to update subscription" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`Subscription ${stripeSubscriptionId} updated to status=${mappedStatus}, plan=${planType}`);
+    return new Response(
+      JSON.stringify({ success: true, event: "subscription_updated", stripeSubscriptionId, status: mappedStatus, planType }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   // ── Handle checkout completion (existing logic) ──
   if (event.type !== "checkout.session.completed") {
     // Unhandled event type — acknowledge receipt
