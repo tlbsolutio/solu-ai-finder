@@ -343,17 +343,17 @@ const CartSessionDashboard = () => {
 
   const isActionBusy = generatingFinal || extractingEntities;
 
-  const handleGenerateFinal = async () => {
+  const runGenerateAnalysis = async (actionLabel: string, { requireMinPacks }: { requireMinPacks: boolean }) => {
     if (!id) return;
     if (actionInProgress.current) {
       toast({ title: "Une action est deja en cours", variant: "destructive" });
       return;
     }
-    if (packsCompleted < 5) {
+    if (requireMinPacks && packsCompleted < 5) {
       toast({ title: "Packs insuffisants", description: `Completez au moins 5 packs avant de generer l'analyse (${packsCompleted}/5 actuellement)`, variant: "destructive" });
       return;
     }
-    actionInProgress.current = "generateFinal";
+    actionInProgress.current = actionLabel;
     setGeneratingFinal(true);
     setLastError(null);
     startStepProgress(GENERATION_STEPS);
@@ -395,7 +395,7 @@ const CartSessionDashboard = () => {
         description: (
           <div className="space-y-2">
             <p>{e.message}</p>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleGenerateFinal}>
+            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => runGenerateAnalysis(actionLabel, { requireMinPacks })}>
               <RefreshCw className="w-3 h-3 mr-1" /> Reessayer
             </Button>
           </div>
@@ -408,6 +408,9 @@ const CartSessionDashboard = () => {
       actionInProgress.current = null;
     }
   };
+
+  const handleGenerateFinal = () => runGenerateAnalysis("generateFinal", { requireMinPacks: true });
+  const handleValidateAndGenerate = () => runGenerateAnalysis("validateAndGenerate", { requireMinPacks: false });
 
   const handleExtractEntities = async () => {
     if (!id) return;
@@ -453,67 +456,6 @@ const CartSessionDashboard = () => {
       });
     } finally {
       setExtractingEntities(false);
-      clearStepProgress();
-      actionInProgress.current = null;
-    }
-  };
-
-  const handleValidateAndGenerate = async () => {
-    if (!id) return;
-    if (actionInProgress.current) {
-      toast({ title: "Une action est deja en cours", variant: "destructive" });
-      return;
-    }
-    actionInProgress.current = "validateAndGenerate";
-    setGeneratingFinal(true);
-    setLastError(null);
-    startStepProgress(GENERATION_STEPS);
-    try {
-      const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
-        body: { sessionId: id },
-      });
-      if (isSubscriptionError(error, data)) {
-        openGate("analyse");
-        return;
-      }
-      if (error) {
-        const msg = await extractFnError(error, data);
-        throw new Error(msg);
-      }
-      if (data?.error?.includes?.("Subscription required")) {
-        openGate("analyse");
-        return;
-      }
-      toast({ title: "Analyse generee", description: "La cartographie complete a ete generee" });
-      track("analysis_generated");
-      // Fire and forget email notification
-      if (userEmail) {
-        supabase.functions.invoke("send-diagnostic-email", {
-          body: {
-            email: userEmail,
-            type: "analysis_complete",
-            sessionName: session.nom,
-            sessionUrl: `${window.location.origin}/cartographie/sessions/${id}`,
-          },
-        }).catch(() => {}); // silent fail
-      }
-      await reload();
-    } catch (e: any) {
-      setLastError({ action: "generate", message: e.message });
-      toast({
-        title: "Erreur de generation",
-        description: (
-          <div className="space-y-2">
-            <p>{e.message}</p>
-            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={handleValidateAndGenerate}>
-              <RefreshCw className="w-3 h-3 mr-1" /> Reessayer
-            </Button>
-          </div>
-        ),
-        variant: "destructive",
-      });
-    } finally {
-      setGeneratingFinal(false);
       clearStepProgress();
       actionInProgress.current = null;
     }
@@ -571,19 +513,19 @@ const CartSessionDashboard = () => {
     setActiveSection(sectionId);
   };
 
-  // Counts for sidebar badges
+  // Counts for sidebar badges (memoized to avoid invalidating sidebar/mobileNav useMemo)
   const entityCount = (extracted?.equipes?.length || 0) + (extracted?.processus?.length || 0) + (extracted?.outils?.length || 0);
-  const sectionCounts: Record<string, number> = {
+  const sectionCounts = useMemo<Record<string, number>>(() => ({
     entities: entityCount,
     quickwins: quickwins.length,
     processus: processus.length,
     outils: outils.length,
     equipes: equipes.length,
     irritants: irritants.length + taches.length,
-  };
+  }), [entityCount, quickwins.length, processus.length, outils.length, equipes.length, irritants.length, taches.length]);
 
-  // Section completion indicators
-  const sectionCompleted: Record<string, boolean> = {
+  // Section completion indicators (memoized to avoid invalidating sidebar useMemo)
+  const sectionCompleted = useMemo<Record<string, boolean>>(() => ({
     overview: packsCompleted >= 1,
     carte: mapProcessus.length > 0 || mapOutils.length > 0,
     questionnaire: packResumes.length > 0,
@@ -596,7 +538,7 @@ const CartSessionDashboard = () => {
     plan: !!(session.ai_plan_optimisation),
     recommandations: !!(session.ai_analyse_transversale),
     analyse: !!(session.ai_resume_executif),
-  };
+  }), [packsCompleted, mapProcessus.length, mapOutils.length, packResumes.length, session.entities_extraction_status, quickwins.length, processus.length, outils.length, equipes.length, irritants.length, taches.length, session.ai_plan_optimisation, session.ai_analyse_transversale, session.ai_resume_executif]);
 
   const isAdminViewing = isAdmin && session.owner_id !== ownerId;
 
@@ -1218,7 +1160,7 @@ const CartSessionDashboard = () => {
       <CartSectionHeader title="Questionnaire" description="Resultats detailles par pack thematique" icon={FileText} count={packResumes.length} />
       <div className="space-y-3">
       {packResumes.length === 0 ? (
-        <EmptyState message="Aucun pack complete pour le moment" icon={FileText} />
+        renderEmptyState("Aucun pack complete pour le moment", FileText)
       ) : PACK_DEFINITIONS.map((packDef) => {
         const pr = packResumes.find((r) => r.bloc === packDef.bloc);
         if (!pr) return null;
@@ -1253,8 +1195,8 @@ const CartSessionDashboard = () => {
     </div>
   );
 
-  // Use extracted section components (with memoized renders)
-  const EmptyState = ({ message, icon }: { message: string; icon: React.ElementType }) => (
+  // Inline helper — delegates to the extracted CartEmptyState component
+  const renderEmptyState = (message: string, icon: React.ElementType) => (
     <CartEmptyState message={message} icon={icon} activeSection={activeSection} packsCompleted={packsCompleted} />
   );
 

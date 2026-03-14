@@ -80,6 +80,7 @@ const CartSessions = () => {
   const [statusFilter, setStatusFilter] = useState<"all" | "nouveau" | "en_cours" | "analyse_generee" | "archivees">("all");
   const [deleteTarget, setDeleteTarget] = useState<CartSession | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [actionPending, setActionPending] = useState(false);
 
   const toggleCompare = (id: string) => {
     setCompareIds(prev => {
@@ -268,8 +269,10 @@ const CartSessions = () => {
   }, [sessions, activeSessions, archivedSessions, searchQuery, statusFilter]);
 
   const duplicateSession = async (session: CartSession) => {
+    if (actionPending) return;
     const uid = ownerId || await ensureSession();
     if (!uid) return;
+    setActionPending(true);
     try {
       const { data, error } = await supabase.from("cart_sessions").insert({
         nom: `${session.nom} (copie)`,
@@ -283,10 +286,14 @@ const CartSessions = () => {
       navigate(`/cartographie/sessions/${data.id}`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setActionPending(false);
     }
   };
 
   const archiveSession = async (session: CartSession) => {
+    if (actionPending) return;
+    setActionPending(true);
     try {
       const { error } = await supabase
         .from("cart_sessions")
@@ -297,10 +304,14 @@ const CartSessions = () => {
       await loadSessions();
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setActionPending(false);
     }
   };
 
   const unarchiveSession = async (session: CartSession) => {
+    if (actionPending) return;
+    setActionPending(true);
     try {
       const { error } = await supabase
         .from("cart_sessions")
@@ -311,10 +322,14 @@ const CartSessions = () => {
       await loadSessions();
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setActionPending(false);
     }
   };
 
   const deleteSession = async (session: CartSession) => {
+    if (actionPending) return;
+    setActionPending(true);
     try {
       const { error } = await supabase
         .from("cart_sessions")
@@ -326,6 +341,8 @@ const CartSessions = () => {
       await loadSessions();
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setActionPending(false);
     }
   };
 
@@ -585,18 +602,18 @@ const CartSessions = () => {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                              <DropdownMenuItem onClick={() => duplicateSession(s)}>
+                              <DropdownMenuItem disabled={actionPending} onClick={() => duplicateSession(s)}>
                                 <Copy className="w-3.5 h-3.5 mr-2" />
                                 Dupliquer
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               {s.archived_at ? (
-                                <DropdownMenuItem onClick={() => unarchiveSession(s)}>
+                                <DropdownMenuItem disabled={actionPending} onClick={() => unarchiveSession(s)}>
                                   <RotateCcw className="w-3.5 h-3.5 mr-2" />
                                   Desarchiver
                                 </DropdownMenuItem>
                               ) : (
-                                <DropdownMenuItem onClick={() => archiveSession(s)}>
+                                <DropdownMenuItem disabled={actionPending} onClick={() => archiveSession(s)}>
                                   <Archive className="w-3.5 h-3.5 mr-2" />
                                   Archiver
                                 </DropdownMenuItem>
@@ -730,7 +747,7 @@ const CartSessions = () => {
                                   Dupliquer
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => unarchiveSession(s)}>
+                                <DropdownMenuItem disabled={actionPending} onClick={() => unarchiveSession(s)}>
                                   <RotateCcw className="w-3.5 h-3.5 mr-2" />
                                   Desarchiver
                                 </DropdownMenuItem>
@@ -838,6 +855,7 @@ const CartSessions = () => {
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={actionPending}
               onClick={() => { if (deleteTarget) deleteSession(deleteTarget); }}
             >
               Supprimer

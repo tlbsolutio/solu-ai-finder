@@ -86,6 +86,8 @@ const CartPackWizard = () => {
   const autoSaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!id || !bloc) return;
+    const sessionId = id;
     const load = async () => {
       setLoading(true);
       try {
@@ -99,7 +101,7 @@ const CartPackWizard = () => {
           supabase
             .from("cart_reponses")
             .select("*")
-            .eq("session_id", id!)
+            .eq("session_id", sessionId)
             .eq("bloc", bloc),
         ]);
 
@@ -124,13 +126,13 @@ const CartPackWizard = () => {
         }
         setExistingReponses(repMap);
 
-        const draftPayload = readDraftPayload(id!, bloc);
+        const draftPayload = readDraftPayload(sessionId, bloc);
         if (draftPayload) {
           const hasContent = Object.values(draftPayload.answers).some((v) => v.trim() !== "");
           const isStale = Date.now() - draftPayload.savedAt > SEVEN_DAYS_MS;
           if (isStale) {
             // Auto-clear stale drafts
-            localStorage.removeItem(getDraftKey(id!, bloc));
+            localStorage.removeItem(getDraftKey(sessionId, bloc));
           } else if (hasContent) {
             // Show recovery prompt instead of auto-loading
             setPendingDraftAnswers(draftPayload.answers);
@@ -144,12 +146,12 @@ const CartPackWizard = () => {
         setLoading(false);
       }
     };
-    if (id && bloc) load();
+    load();
   }, [id, bloc]);
 
   useEffect(() => {
-    if (Object.keys(drafts).length > 0) {
-      writeDraftPayload(id!, bloc, drafts);
+    if (id && Object.keys(drafts).length > 0) {
+      writeDraftPayload(id, bloc, drafts);
       const now = Date.now();
       setLastSavedAt(now);
       // Show auto-save indicator briefly
@@ -212,7 +214,7 @@ const CartPackWizard = () => {
     setDrafts((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const syncToSupabase = async (showFeedback = true) => {
+  const syncToSupabase = useCallback(async (showFeedback = true) => {
     if (!id || Object.keys(drafts).length === 0) return;
     const syncedDrafts = { ...drafts };
     setSyncing(true);
@@ -251,7 +253,7 @@ const CartPackWizard = () => {
         }
         return remaining;
       });
-      localStorage.removeItem(getDraftKey(id!, bloc));
+      localStorage.removeItem(getDraftKey(id, bloc));
 
       if (showFeedback) toast({ title: "Sauvegarde effectuee" });
     } catch (e: any) {
@@ -259,7 +261,7 @@ const CartPackWizard = () => {
     } finally {
       setSyncing(false);
     }
-  };
+  }, [id, bloc, drafts, questions, toast]);
 
   const handleComplete = async () => {
     // Validate at least 3 answers before completing
@@ -281,10 +283,11 @@ const CartPackWizard = () => {
       }
       return;
     }
+    if (!id) return;
     setCompleting(true);
     try {
       await syncToSupabase(false);
-      localStorage.removeItem(getDraftKey(id!, bloc));
+      localStorage.removeItem(getDraftKey(id, bloc));
       setDrafts({});
       setLastSavedAt(null);
       track("pack_completed", { bloc, packTitle: packDef?.title });
@@ -511,7 +514,7 @@ const CartPackWizard = () => {
                 variant="ghost"
                 className="text-xs"
                 onClick={() => {
-                  localStorage.removeItem(getDraftKey(id!, bloc));
+                  if (id) localStorage.removeItem(getDraftKey(id, bloc));
                   setShowDraftRecovery(false);
                   setPendingDraftAnswers(null);
                   setLastSavedAt(null);
