@@ -34,6 +34,7 @@ import { CartIrritantsSection } from "@/components/cartographie/CartIrritantsSec
 import { CartAnalyseSection } from "@/components/cartographie/CartAnalyseSection";
 import { CartSectionHeader } from "@/components/cartographie/CartSectionHeader";
 import { CartEmptyState } from "@/components/cartographie/CartEmptyState";
+import { PaywallOverlay } from "@/components/cartographie/PaywallOverlay";
 import { useCartPdfExport } from "@/hooks/useCartPdfExport";
 import { useCartDataExport } from "@/hooks/useCartDataExport";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -42,13 +43,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
-const FREE_TABS = new Set(["overview", "carte", "questionnaire"]);
+const FREE_TABS = new Set(["overview", "questionnaire"]);
+const TEASER_TABS = new Set(["carte"]); // Show blurred teaser instead of full lock
 
 // Sidebar section definitions
 const SECTIONS = [
   { group: "Synthese", items: [
     { id: "overview", label: "Vue d'ensemble", shortLabel: "Resume", icon: BarChart3, free: true },
-    { id: "carte", label: "Carte interactive", shortLabel: "Carte", icon: Map, free: true },
+    { id: "carte", label: "Carte interactive", shortLabel: "Carte", icon: Map, free: false },
     { id: "questionnaire", label: "Questionnaire", shortLabel: "Q&A", icon: FileText, free: true },
   ]},
   { group: "Diagnostic", items: [
@@ -437,7 +439,7 @@ const CartSessionDashboard = () => {
   };
 
   const handleSectionClick = (sectionId: string, isFree: boolean) => {
-    if (!isFree && !isPaid) {
+    if (!isFree && !isPaid && !TEASER_TABS.has(sectionId)) {
       openGate(sectionId);
       return;
     }
@@ -1130,71 +1132,185 @@ const CartSessionDashboard = () => {
   );
 
   const renderSectionContent = () => {
-    // Check premium lock
-    if (!FREE_TABS.has(activeSection) && !isPaid) {
-      const items: Array<{ label: string; sub?: string }> = [];
-      let count = 0;
-      let tabLabel = "";
-
-      switch (activeSection) {
-        case "quickwins":
-          count = quickwins.length; tabLabel = "quick wins";
-          items.push(...quickwins.slice(0, 3).map(qw => ({ label: qw.intitule, sub: qw.impact ? `Impact : ${qw.impact}` : undefined })));
-          break;
-        case "processus":
-          count = processus.length; tabLabel = "processus";
-          items.push(...processus.slice(0, 3).map(p => ({ label: p.nom, sub: p.type || undefined })));
-          break;
-        case "outils":
-          count = outils.length; tabLabel = "outils";
-          items.push(...outils.slice(0, 3).map(o => ({ label: o.nom, sub: o.type_outil || undefined })));
-          break;
-        case "equipes":
-          count = equipes.length; tabLabel = "equipes";
-          items.push(...equipes.slice(0, 3).map(e => ({ label: e.nom, sub: e.mission || undefined })));
-          break;
-        case "irritants":
-          count = irritants.length + taches.length; tabLabel = "irritants & taches";
-          items.push(...irritants.slice(0, 3).map(i => ({ label: i.intitule, sub: i.type || undefined })));
-          break;
-        case "plan":
-          count = quickwins.length; tabLabel = "actions";
-          items.push(...quickwins.slice(0, 2).map(qw => ({ label: qw.intitule, sub: `Priorite : ${qw.priorite || "P2"}` })));
-          break;
-        case "recommandations": tabLabel = "recommandations"; break;
-        case "analyse": tabLabel = "analyses IA"; break;
+    // Carte teaser: show blurred map with overlay for free users
+    if (activeSection === "carte" && !isPaid) {
+      const hasCarteData = mapProcessus.length > 0 || mapOutils.length > 0;
+      if (!hasCarteData) {
+        return <LockedTabContent onUnlock={() => openGate("carte")} items={[]} count={0} tabLabel="carte interactive" />;
       }
-
-      return <LockedTabContent onUnlock={() => openGate(activeSection)} items={items} count={count} tabLabel={tabLabel} />;
+      return (
+        <div className="relative min-h-[400px]">
+          <div className="filter blur-[6px] pointer-events-none select-none" aria-hidden="true">
+            {renderCarte()}
+          </div>
+          <div className="absolute inset-0 z-10 flex items-center justify-center">
+            <div className="max-w-sm w-full text-center space-y-4 bg-card/80 backdrop-blur-md rounded-2xl border border-cyan-200/40 shadow-2xl p-7">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mx-auto">
+                <Lock className="w-5 h-5 text-cyan-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base">Votre carte interactive est prete</h3>
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  Debloquez l'acces pour explorer et editer votre cartographie
+                </p>
+              </div>
+              <Button
+                onClick={() => openGate("carte")}
+                className="w-full h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white text-sm font-medium"
+              >
+                <Map className="w-4 h-4 mr-2" />
+                Debloquer la carte
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
     }
+
+    // Teaser preview config: how many items free users see per tab
+    const PREVIEW_LIMITS: Record<string, number> = {
+      quickwins: 3, irritants: 1, processus: 2, outils: 2, equipes: 1,
+      plan: 0, recommandations: 2, analyse: 0, entities: 0,
+    };
+    const PREVIEW_LABELS: Record<string, string> = {
+      quickwins: "quick wins", irritants: "irritants", processus: "processus",
+      outils: "outils", equipes: "equipes", plan: "actions",
+      recommandations: "recommandations", analyse: "analyses IA", entities: "entites",
+    };
+
+    const isLocked = !FREE_TABS.has(activeSection) && !isPaid;
+    const previewLimit = PREVIEW_LIMITS[activeSection] ?? 0;
+    const previewLabel = PREVIEW_LABELS[activeSection] ?? "elements";
+
+    const wrapWithTeaser = (content: React.ReactNode, totalCount: number, limit: number, label: string) => {
+      const remaining = totalCount - limit;
+      if (remaining <= 0 && limit > 0) return content;
+      return (
+        <div className="relative overflow-hidden" style={{ maxHeight: limit > 0 ? 420 : 320 }}>
+          {content}
+          <PaywallOverlay
+            onUnlock={() => openGate(activeSection)}
+            itemCount={remaining > 0 ? remaining : undefined}
+            label={label}
+          />
+        </div>
+      );
+    };
 
     switch (activeSection) {
       case "overview": return <AIContentBoundary label="Overview">{renderOverview()}</AIContentBoundary>;
       case "carte": return <AIContentBoundary label="Carte">{renderCarte()}</AIContentBoundary>;
       case "questionnaire": return renderQuestionnaire();
-      case "entities": return (
-        <AIContentBoundary label="Entites">
-          <CartEntityValidation
-            sessionId={id!}
-            entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }}
-            extractionStatus={session.entities_extraction_status || "pending"}
-            onExtract={handleExtractEntities}
-            onValidateAndGenerate={handleValidateAndGenerate}
-            extracting={extractingEntities}
-            generating={generatingFinal}
-            isPaid={isPaid}
-            onOpenGate={() => openGate("entities")}
-          />
-        </AIContentBoundary>
-      );
-      case "quickwins": return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
-      case "processus": return <CartProcessusSection processus={processus} activeSection={activeSection} packsCompleted={packsCompleted} />;
-      case "outils": return <CartOutilsSection outils={outils} activeSection={activeSection} packsCompleted={packsCompleted} />;
-      case "equipes": return <CartEquipesSection equipes={equipes} activeSection={activeSection} packsCompleted={packsCompleted} />;
-      case "irritants": return <CartIrritantsSection irritants={irritants} taches={taches} activeSection={activeSection} packsCompleted={packsCompleted} />;
-      case "plan": return <AIContentBoundary label="Plan d'actions"><CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} /></AIContentBoundary>;
-      case "recommandations": return <AIContentBoundary label="Recommandations"><CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} /></AIContentBoundary>;
-      case "analyse": return <AIContentBoundary label="Analyse IA"><CartAnalyseSection session={session} /></AIContentBoundary>;
+
+      case "entities": {
+        if (isLocked) {
+          const entities = session.ai_extracted_entities as { equipes?: unknown[]; processus?: unknown[]; outils?: unknown[] } | null;
+          const hasEntities = entities &&
+            ((entities.equipes?.length ?? 0) > 0 ||
+             (entities.processus?.length ?? 0) > 0 ||
+             (entities.outils?.length ?? 0) > 0);
+          if (!hasEntities) {
+            return <LockedTabContent onUnlock={() => openGate("entities")} tabLabel="entites" />;
+          }
+          return wrapWithTeaser(
+            <AIContentBoundary label="Entites">
+              <CartEntityValidation sessionId={id!} entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }} extractionStatus={session.entities_extraction_status || "pending"} onExtract={handleExtractEntities} onValidateAndGenerate={handleValidateAndGenerate} extracting={extractingEntities} generating={generatingFinal} isPaid={isPaid} onOpenGate={() => openGate("entities")} />
+            </AIContentBoundary>,
+            1, 0, previewLabel
+          );
+        }
+        return (
+          <AIContentBoundary label="Entites">
+            <CartEntityValidation sessionId={id!} entities={session.ai_extracted_entities || { equipes: [], processus: [], outils: [] }} extractionStatus={session.entities_extraction_status || "pending"} onExtract={handleExtractEntities} onValidateAndGenerate={handleValidateAndGenerate} extracting={extractingEntities} generating={generatingFinal} isPaid={isPaid} onOpenGate={() => openGate("entities")} />
+          </AIContentBoundary>
+        );
+      }
+
+      case "quickwins": {
+        if (isLocked) {
+          if (quickwins.length === 0) return <LockedTabContent onUnlock={() => openGate("quickwins")} tabLabel="quick wins" />;
+          return wrapWithTeaser(
+            <CartQuickwinsTab sessionId={id!} quickwins={quickwins.slice(0, previewLimit)} onReload={reload} />,
+            quickwins.length, previewLimit, previewLabel
+          );
+        }
+        return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
+      }
+
+      case "processus": {
+        if (isLocked) {
+          if (processus.length === 0) return <LockedTabContent onUnlock={() => openGate("processus")} tabLabel="processus" />;
+          return wrapWithTeaser(
+            <CartProcessusSection processus={processus.slice(0, previewLimit)} activeSection={activeSection} packsCompleted={packsCompleted} />,
+            processus.length, previewLimit, previewLabel
+          );
+        }
+        return <CartProcessusSection processus={processus} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      }
+
+      case "outils": {
+        if (isLocked) {
+          if (outils.length === 0) return <LockedTabContent onUnlock={() => openGate("outils")} tabLabel="outils" />;
+          return wrapWithTeaser(
+            <CartOutilsSection outils={outils.slice(0, previewLimit)} activeSection={activeSection} packsCompleted={packsCompleted} />,
+            outils.length, previewLimit, previewLabel
+          );
+        }
+        return <CartOutilsSection outils={outils} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      }
+
+      case "equipes": {
+        if (isLocked) {
+          if (equipes.length === 0) return <LockedTabContent onUnlock={() => openGate("equipes")} tabLabel="equipes" />;
+          return wrapWithTeaser(
+            <CartEquipesSection equipes={equipes.slice(0, previewLimit)} activeSection={activeSection} packsCompleted={packsCompleted} />,
+            equipes.length, previewLimit, previewLabel
+          );
+        }
+        return <CartEquipesSection equipes={equipes} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      }
+
+      case "irritants": {
+        if (isLocked) {
+          const totalIrritants = irritants.length + taches.length;
+          if (totalIrritants === 0) return <LockedTabContent onUnlock={() => openGate("irritants")} tabLabel="irritants" />;
+          return wrapWithTeaser(
+            <CartIrritantsSection irritants={irritants.slice(0, previewLimit)} taches={[]} activeSection={activeSection} packsCompleted={packsCompleted} />,
+            totalIrritants, previewLimit, previewLabel
+          );
+        }
+        return <CartIrritantsSection irritants={irritants} taches={taches} activeSection={activeSection} packsCompleted={packsCompleted} />;
+      }
+
+      case "plan": {
+        if (isLocked) {
+          return <LockedTabContent onUnlock={() => openGate("plan")} count={quickwins.length} tabLabel="actions" />;
+        }
+        return <AIContentBoundary label="Plan d'actions"><CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} /></AIContentBoundary>;
+      }
+
+      case "recommandations": {
+        if (isLocked) {
+          if (outils.length === 0 && irritants.length === 0) {
+            return <LockedTabContent onUnlock={() => openGate("recommandations")} tabLabel="recommandations" />;
+          }
+          return wrapWithTeaser(
+            <AIContentBoundary label="Recommandations">
+              <CartRecommandationsTab outils={outils.slice(0, previewLimit)} irritants={irritants.slice(0, previewLimit)} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} />
+            </AIContentBoundary>,
+            outils.length + irritants.length, previewLimit, previewLabel
+          );
+        }
+        return <AIContentBoundary label="Recommandations"><CartRecommandationsTab outils={outils} irritants={irritants} packResumes={packResumes} aiAnalyseTransversale={session.ai_analyse_transversale} aiPlanOptimisation={session.ai_plan_optimisation} aiCoutInaction={session.ai_cout_inaction_annuel} aiKpis={session.ai_kpis_de_suivi} /></AIContentBoundary>;
+      }
+
+      case "analyse": {
+        if (isLocked) {
+          return <LockedTabContent onUnlock={() => openGate("analyse")} tabLabel="analyses IA" />;
+        }
+        return <AIContentBoundary label="Analyse IA"><CartAnalyseSection session={session} /></AIContentBoundary>;
+      }
+
       default: return <AIContentBoundary label="Overview">{renderOverview()}</AIContentBoundary>;
     }
   };
@@ -1342,11 +1458,18 @@ const CartSessionDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            {packsCompleted >= 5 && (
+            {packsCompleted >= 5 && isPaid && (
               <Button size="sm" onClick={handleGenerateFinal} disabled={isActionBusy} className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
                 <Sparkles className="w-3.5 h-3.5 mr-1" />
                 <span className="hidden sm:inline">{generatingFinal ? "Generation..." : "Generer analyse"}</span>
                 <span className="sm:hidden">{generatingFinal ? "..." : "Analyser"}</span>
+              </Button>
+            )}
+            {packsCompleted >= 5 && !isPaid && (
+              <Button size="sm" onClick={() => openGate("analyse")} className="h-8 text-xs bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white">
+                <Lock className="w-3.5 h-3.5 mr-1" />
+                <span className="hidden sm:inline">Debloquer l'analyse complete</span>
+                <span className="sm:hidden">Debloquer</span>
               </Button>
             )}
           </div>
@@ -1503,7 +1626,7 @@ const CartSessionDashboard = () => {
                   )}
                 </div>
               </div>
-              {packsCompleted >= 5 && session.entities_extraction_status === "validated" ? (
+              {packsCompleted >= 5 && session.entities_extraction_status === "validated" && isPaid ? (
                 <Button
                   data-tour="step-3"
                   onClick={handleValidateAndGenerate}
@@ -1522,6 +1645,15 @@ const CartSessionDashboard = () => {
                     </>
                   )}
                 </Button>
+              ) : packsCompleted >= 5 && session.entities_extraction_status === "validated" && !isPaid ? (
+                <Button
+                  data-tour="step-3"
+                  onClick={() => openGate("analyse")}
+                  className="shrink-0 h-10 px-5 text-sm bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white shadow-md shadow-cyan-500/20"
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  Debloquer l'analyse complete
+                </Button>
               ) : packsCompleted >= 5 && (session.entities_extraction_status === "extracted") ? (
                 <Button
                   data-tour="step-3"
@@ -1534,7 +1666,7 @@ const CartSessionDashboard = () => {
               ) : (
                 <Button
                   data-tour="step-3"
-                  onClick={isPaid ? handleExtractEntities : () => openGate()}
+                  onClick={isPaid ? handleExtractEntities : () => openGate("analyse")}
                   disabled={isActionBusy || packsCompleted < 5}
                   className={`shrink-0 h-10 px-5 text-sm ${
                     packsCompleted >= 5
@@ -1551,7 +1683,7 @@ const CartSessionDashboard = () => {
                   ) : !isPaid && packsCompleted >= 5 ? (
                     <>
                       <Lock className="w-4 h-4 mr-2" />
-                      Extraire (Premium)
+                      Debloquer l'analyse complete
                     </>
                   ) : (
                     <>
