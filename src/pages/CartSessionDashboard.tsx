@@ -1119,6 +1119,8 @@ const CartSessionDashboard = () => {
           onValidateAndGenerate={handleValidateAndGenerate}
           extracting={extractingEntities}
           generating={generatingFinal}
+          isPaid={isPaid}
+          onOpenGate={() => openGate("entities")}
         />
       );
       case "quickwins": return <CartQuickwinsTab sessionId={id!} quickwins={quickwins} onReload={reload} />;
@@ -1468,6 +1470,8 @@ const CartSessionDashboard = () => {
             onValidateAndGenerate={handleValidateAndGenerate}
             extracting={extractingEntities}
             generating={generatingFinal}
+            isPaid={isPaid}
+            onOpenGate={() => openGate("entities")}
           />
         )}
 

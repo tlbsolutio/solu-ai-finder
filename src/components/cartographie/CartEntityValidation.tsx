@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   Users, Settings, Layers, Trash2, Pencil, Plus, Check, X, Merge,
-  Loader2, Sparkles, ShieldCheck, ArrowRight,
+  Loader2, Sparkles, ShieldCheck, ArrowRight, Lock,
 } from "lucide-react";
 
 interface Entity {
@@ -33,6 +33,8 @@ interface CartEntityValidationProps {
   onValidateAndGenerate: () => Promise<void>;
   extracting: boolean;
   generating: boolean;
+  isPaid?: boolean;
+  onOpenGate?: () => void;
 }
 
 const ENTITY_SECTIONS = [
@@ -49,6 +51,8 @@ export function CartEntityValidation({
   onValidateAndGenerate,
   extracting,
   generating,
+  isPaid = true,
+  onOpenGate,
 }: CartEntityValidationProps) {
   const { toast } = useToast();
   const [localEntities, setLocalEntities] = useState<ExtractedEntities>(entities);
@@ -167,7 +171,7 @@ export function CartEntityValidation({
           </p>
         </div>
         <Button
-          onClick={onExtract}
+          onClick={isPaid ? onExtract : onOpenGate}
           disabled={extracting}
           className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white px-6"
         >
@@ -175,6 +179,11 @@ export function CartEntityValidation({
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Extraction en cours...
+            </>
+          ) : !isPaid ? (
+            <>
+              <Lock className="w-4 h-4 mr-2" />
+              Extraire (Premium)
             </>
           ) : (
             <>
