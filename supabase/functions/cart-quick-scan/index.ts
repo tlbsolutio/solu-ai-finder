@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-let corsHeaders: Record<string, string> = {
+const DEFAULT_CORS = {
   "Access-Control-Allow-Origin": "https://solutio.work",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
@@ -61,6 +61,7 @@ async function callGeminiFallback(prompt: string, apiKey: string): Promise<strin
 serve(async (req) => {
   const origin = req.headers.get("Origin") || "";
   const ALLOWED_ORIGINS = ["https://solutio.work", "https://www.solutio.work", "http://localhost:5173", "http://localhost:8080"];
+  const corsHeaders = { ...DEFAULT_CORS };
   if (origin && ALLOWED_ORIGINS.some(o => origin.startsWith(o))) corsHeaders["Access-Control-Allow-Origin"] = origin;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
