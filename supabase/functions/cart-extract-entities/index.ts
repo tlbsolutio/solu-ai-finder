@@ -122,6 +122,20 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Subscription check
+    const { data: sub } = await supabase
+      .from("cart_subscriptions")
+      .select("id, status")
+      .eq("session_id", session_id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    const isAdmin = user.email === "tlb@solutio.work";
+
+    if (!sub && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Subscription required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Rate limit: 1 extraction per 2 minutes per session
     if (session.last_extraction_at) {
       const elapsed = (Date.now() - new Date(session.last_extraction_at).getTime()) / 1000;
