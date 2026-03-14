@@ -61,8 +61,95 @@ serve(async (req: Request): Promise<Response> => {
   const event = JSON.parse(body);
   console.log("Stripe event:", event.type, event.id);
 
-  // Only handle successful checkout completions
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  // ── Handle subscription cancellation/deletion ──
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object;
+    const stripeSubscriptionId = subscription.id;
+    const customerEmail = subscription.customer_email || subscription.metadata?.email;
+
+    console.log(`Subscription deleted: ${stripeSubscriptionId}, customer email: ${customerEmail}`);
+
+    // Try to find by stripe_subscription_id first, fall back to customer_email
+    let updateResult;
+    if (stripeSubscriptionId) {
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("stripe_subscription_id", stripeSubscriptionId);
+    }
+
+    // If no rows matched by subscription ID, try by customer email
+    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+      console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("customer_email", customerEmail)
+        .eq("status", "active");
+    }
+
+    if (updateResult?.error) {
+      console.error("Error cancelling subscription:", updateResult.error);
+      return new Response(JSON.stringify({ error: "Failed to cancel subscription" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`Subscription ${stripeSubscriptionId} marked as cancelled`);
+    return new Response(
+      JSON.stringify({ success: true, event: "subscription_cancelled", stripeSubscriptionId }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Handle payment failure ──
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object;
+    const stripeSubscriptionId = invoice.subscription;
+    const customerEmail = invoice.customer_email;
+
+    console.log(`Payment failed for subscription: ${stripeSubscriptionId}, customer email: ${customerEmail}`);
+
+    // Try to find by stripe_subscription_id first, fall back to customer_email
+    let updateResult;
+    if (stripeSubscriptionId) {
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: "payment_failed", updated_at: new Date().toISOString() })
+        .eq("stripe_subscription_id", stripeSubscriptionId);
+    }
+
+    // If no rows matched by subscription ID, try by customer email
+    if ((!updateResult || updateResult.error || updateResult.count === 0) && customerEmail) {
+      console.log(`No match by subscription ID, trying customer email: ${customerEmail}`);
+      updateResult = await supabase
+        .from("cart_subscriptions")
+        .update({ status: "payment_failed", updated_at: new Date().toISOString() })
+        .eq("customer_email", customerEmail)
+        .eq("status", "active");
+    }
+
+    if (updateResult?.error) {
+      console.error("Error updating subscription for payment failure:", updateResult.error);
+      return new Response(JSON.stringify({ error: "Failed to update subscription status" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`Subscription ${stripeSubscriptionId} marked as payment_failed`);
+    return new Response(
+      JSON.stringify({ success: true, event: "payment_failed", stripeSubscriptionId }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Handle checkout completion (existing logic) ──
   if (event.type !== "checkout.session.completed") {
+    // Unhandled event type — acknowledge receipt
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -94,8 +181,6 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   console.log(`Activating subscription for ${customerEmail}, session: ${cartSessionId}, plan: ${planType}, ref: ${paymentRef}`);
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Get the session's owner_id from cart_sessions (the actual user who owns the diagnostic)
   const { data: cartSession, error: sessionError } = await supabase
