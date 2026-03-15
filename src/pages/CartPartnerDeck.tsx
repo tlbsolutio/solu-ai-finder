@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PptxGenJS from "pptxgenjs";
+import type PptxGenJS from "pptxgenjs";
 import { COLORS, createPptx } from "@/lib/pptxUtils";
 import { SAAS_CATALOG } from "@/lib/saasRecommendations";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,7 @@ function addBulletList(
 }
 
 async function generatePartnerDeck() {
-  const pptx = createPptx();
+  const pptx = await createPptx();
   pptx.title = "Solutio Partner Deck";
   pptx.subject = "SaaS Partnership Program";
 

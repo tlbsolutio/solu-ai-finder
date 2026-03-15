@@ -32,7 +32,7 @@ export function useCartPptxExport() {
 
     try {
       const { session } = data;
-      const pptx = createPptx();
+      const pptx = await createPptx();
       let page = 1;
 
       // SLIDE 1: Title

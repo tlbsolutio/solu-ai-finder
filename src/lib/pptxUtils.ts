@@ -1,4 +1,4 @@
-import PptxGenJS from "pptxgenjs";
+import type PptxGenJS from "pptxgenjs";
 
 export const COLORS = {
   primary: "1E3A5F",
@@ -95,8 +95,10 @@ export function formatPercent(value: number): string {
   return new Intl.NumberFormat("fr-FR", { style: "percent", minimumFractionDigits: 0, maximumFractionDigits: 1 }).format(value / 100);
 }
 
-export function createPptx(): PptxGenJS {
-  const pptx = new PptxGenJS();
+// Dynamic import — pptxgenjs (~400KB) only loaded when generating a deck
+export async function createPptx(): Promise<PptxGenJS> {
+  const { default: PptxGenJSLib } = await import("pptxgenjs");
+  const pptx = new PptxGenJSLib();
   pptx.layout = "LAYOUT_WIDE";
   pptx.author = "Solutio";
   pptx.company = "Solutio";

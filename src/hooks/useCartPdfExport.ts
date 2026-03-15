@@ -1,6 +1,12 @@
 import { useState, useCallback } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// jsPDF + autotable loaded dynamically — only needed on export click
+async function loadJsPDF() {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
+  return { jsPDF, autoTable };
+}
 import type {
   CartSessionV2, CartPackResume, CartProcessusV2, CartOutilV2,
   CartEquipeV2, CartIrritantV2, CartTacheV2, CartQuickwinV2,
@@ -339,6 +345,7 @@ export function useCartPdfExport() {
     setProgress("Preparation du document...");
 
     try {
+      const { jsPDF, autoTable } = await loadJsPDF();
       const { session, packResumes, processus, outils, equipes, irritants, taches, quickwins } = data;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
@@ -937,6 +944,7 @@ export function useCartPdfExport() {
     setProgress("Generation du brief executif...");
 
     try {
+      const { jsPDF, autoTable } = await loadJsPDF();
       const { session, packResumes, quickwins } = data;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -1083,6 +1091,7 @@ export function useCartPdfExport() {
     setProgress("Generation de l'apercu...");
 
     try {
+      const { jsPDF, autoTable } = await loadJsPDF();
       const { session, packResumes, processus, outils, equipes, irritants, quickwins } = data;
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });

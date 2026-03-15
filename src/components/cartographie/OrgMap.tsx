@@ -15,7 +15,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 // ELK loaded dynamically to keep main bundle small (~1.6MB)
-import { toPng } from "html-to-image";
+// html-to-image loaded dynamically (201KB) — only used on export click
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Download, Eye, EyeOff, Maximize2, LayoutGrid } from "lucide-react";
@@ -374,7 +374,7 @@ export function OrgMap({ processus, outils, equipes, irritants, packResumes, aiC
   const handleExportPng = useCallback(() => {
     const el = document.querySelector(".react-flow") as HTMLElement;
     if (!el) return;
-    toPng(el, { backgroundColor: "#0f172a", quality: 0.95 }).then((dataUrl) => {
+    import("html-to-image").then(({ toPng }) => toPng(el, { backgroundColor: "#0f172a", quality: 0.95 })).then((dataUrl) => {
       const a = document.createElement("a");
       a.href = dataUrl;
       a.download = "cartographie-organisationnelle.png";
