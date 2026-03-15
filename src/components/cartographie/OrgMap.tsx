@@ -54,8 +54,8 @@ const NODE_HEIGHT = 80;
 let elkInstance: any = null;
 async function getElk() {
   if (!elkInstance) {
-    const ELK = (await import("elkjs/lib/elk.bundled.js")).default;
-    elkInstance = new ELK();
+    const ELK = (await import("elkjs/lib/elk-api.js")).default;
+    elkInstance = new ELK({ workerUrl: "/elk-worker.min.js" });
   }
   return elkInstance;
 }
