@@ -158,12 +158,17 @@ function buildRecommandations(outils: CartOutilV2[]) {
 // Parse AI text helpers
 // ---------------------------------------------------------------------------
 
+function extractText(val: unknown): string {
+  if (typeof val === "string") return val;
+  if (val && typeof val === "object" && "content" in (val as any)) return String((val as any).content);
+  return val ? JSON.stringify(val) : "";
+}
+
 function renderInlineText(text: string | unknown) {
-  if (typeof text !== "string") {
-    const str = text ? JSON.stringify(text) : "";
-    return [<span key={0}>{str}</span>];
-  }
-  const parts = text.split(/(Pack\s*\d+|→|->)/gi);
+  const resolved = extractText(text);
+  if (!resolved) return [<span key={0}></span>];
+  const textStr = resolved;
+  const parts = textStr.split(/(Pack\s*\d+|→|->)/gi);
   return parts.map((part, i) => {
     if (/^Pack\s*\d+$/i.test(part)) {
       return (
@@ -198,7 +203,7 @@ function renderInlineText(text: string | unknown) {
 }
 
 function parseAITextBlock(text: string | unknown) {
-  const str = typeof text === "string" ? text : (text ? JSON.stringify(text, null, 2) : "");
+  const str = extractText(text);
   const lines = str.split("\n").filter((l) => l.trim().length > 0);
   const items: Array<{ kind: "heading" | "bullet" | "subbullet" | "paragraph"; text: string }> = [];
 

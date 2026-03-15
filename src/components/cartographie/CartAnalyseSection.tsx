@@ -32,11 +32,6 @@ const SPECIAL_FIELDS: Array<{
   { key: "ai_target_vision", label: "Vision cible 18 mois", icon: Sparkles, borderColor: "border-blue-200", iconColor: "text-blue-500" },
 ];
 
-function formatContent(content: unknown): string {
-  if (typeof content === "string") return content;
-  return JSON.stringify(content, null, 2);
-}
-
 export const CartAnalyseSection = React.memo(function CartAnalyseSection({ session }: Props) {
   return (
     <div>
@@ -51,7 +46,7 @@ export const CartAnalyseSection = React.memo(function CartAnalyseSection({ sessi
                 <CardTitle className="text-sm">{label}</CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4">
-                <FormattedText text={formatContent(content)} />
+                <FormattedText text={content} />
               </CardContent>
             </Card>
           );
@@ -69,7 +64,7 @@ export const CartAnalyseSection = React.memo(function CartAnalyseSection({ sessi
                 </CardTitle>
               </CardHeader>
               <CardContent className="px-4 pb-4">
-                <FormattedText text={formatContent(content)} />
+                <FormattedText text={content} />
               </CardContent>
             </Card>
           );

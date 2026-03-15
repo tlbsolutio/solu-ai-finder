@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface FormattedTextProps {
-  text: string;
+  text: string | unknown;
   variant?: "success" | "destructive" | "warning" | "default";
   collapseThreshold?: number;
 }
