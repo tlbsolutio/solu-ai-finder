@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ContentLoader } from "@/components/cartographie/ContentLoader";
-import { Users, FileText, BarChart3, CreditCard, ShieldCheck, RefreshCw, Mail, Eye, ExternalLink } from "lucide-react";
+import { Users, FileText, BarChart3, CreditCard, ShieldCheck, RefreshCw, Mail, Eye, ExternalLink, Link2, Presentation } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageTitle } from "@/hooks/usePageTitle";
 
@@ -193,10 +193,20 @@ const CartAdmin = () => {
               <p className="text-sm text-muted-foreground">Vue globale de tous les utilisateurs et sessions</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-            Actualiser
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate("/cartographie/admin/affiliates")}>
+              <Link2 className="w-4 h-4 mr-1.5" />
+              Gestion Affiliations
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/cartographie/admin/partner-deck")}>
+              <Presentation className="w-4 h-4 mr-1.5" />
+              Partner Deck
+            </Button>
+            <Button variant="outline" size="sm" onClick={loadData} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-1.5 ${loading ? "animate-spin" : ""}`} />
+              Actualiser
+            </Button>
+          </div>
         </div>
       </div>
 

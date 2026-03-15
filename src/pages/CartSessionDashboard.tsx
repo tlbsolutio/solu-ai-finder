@@ -23,6 +23,7 @@ import {
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Progress } from "@/components/ui/progress";
 import { AIContentBoundary } from "@/components/cartographie/AIContentBoundary";
+import { getSectorById } from "@/data/sectors";
 
 // ─── Lazy-loaded tab components (code splitting) ───────────────────
 const CartQuickwinsTab = lazy(() =>
@@ -1083,6 +1084,75 @@ const CartSessionDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Sector Benchmark */}
+      {session.sector_id && avgScore && (() => {
+        const sectorData = getSectorById(session.sector_id!);
+        if (!sectorData) return null;
+        const userScore = parseFloat(avgScore);
+        // Simulated sector average: 2.8 for most sectors, adjusted by sector type
+        const sectorAvg: Record<string, number> = {
+          btp: 2.4, commerce: 2.7, services: 3.0, sante: 2.6, industrie: 2.5,
+          tech: 3.3, restauration: 2.3, immobilier: 2.6, transport: 2.5,
+        };
+        const avg = sectorAvg[sectorData.id] ?? 2.7;
+        const diff = userScore - avg;
+        const pctDiff = Math.round((diff / avg) * 100);
+        return (
+          <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/30">
+            <CardHeader className="pb-2 px-4 pt-4">
+              <CardTitle className="text-sm flex items-center gap-1.5">
+                <BarChart3 className="w-4 h-4 text-indigo-500" />
+                Benchmark sectoriel — {sectorData.nom}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="flex items-center gap-6">
+                {/* Your score vs sector */}
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Votre score</span>
+                    <span className={`font-bold ${scoreColor(userScore)}`}>{avgScore}/5</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-700 ${userScore >= 3.5 ? "bg-emerald-500" : userScore >= 2.5 ? "bg-amber-500" : "bg-red-500"}`} style={{ width: `${(userScore / 5) * 100}%` }} />
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Moyenne {sectorData.nom}</span>
+                    <span className="font-semibold text-indigo-600">{avg.toFixed(1)}/5</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted/30 overflow-hidden">
+                    <div className="h-full rounded-full bg-indigo-400 transition-all duration-700" style={{ width: `${(avg / 5) * 100}%` }} />
+                  </div>
+                </div>
+                {/* Comparison badge */}
+                <div className="text-center shrink-0">
+                  <div className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-bold ${diff >= 0 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                    <TrendingUp className={`w-3.5 h-3.5 ${diff < 0 ? "rotate-180" : ""}`} />
+                    {diff >= 0 ? "+" : ""}{pctDiff}%
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {diff >= 0.5 ? "Au-dessus du secteur" : diff >= 0 ? "Dans la moyenne" : diff >= -0.5 ? "Legerement en-dessous" : "En-dessous du secteur"}
+                  </p>
+                </div>
+              </div>
+              {/* Sector KPIs teaser */}
+              {sectorData.kpis.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-indigo-100">
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1.5">KPIs cles du secteur</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sectorData.kpis.slice(0, 4).map((kpi, i) => (
+                      <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100/60 text-indigo-700 border border-indigo-200/60">
+                        {kpi.nom}: {kpi.benchmark}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Pack Progress Visualization */}
       <div>

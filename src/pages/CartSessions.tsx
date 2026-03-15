@@ -36,6 +36,7 @@ interface CartSession {
   created_at: string;
   updated_at: string;
   archived_at: string | null;
+  sector_id: string | null;
 }
 
 interface SessionStats {
@@ -274,16 +275,39 @@ const CartSessions = () => {
     if (!uid) return;
     setActionPending(true);
     try {
-      const { data, error } = await supabase.from("cart_sessions").insert({
+      // 1. Create new session with same name + (copie), same sector, fresh status
+      const { data: newSession, error } = await supabase.from("cart_sessions").insert({
         nom: `${session.nom} (copie)`,
         owner_id: uid,
         status: "brouillon",
         packs_completed: 0,
-      }).select("id").single();
+        pack_status_json: {},
+        sector_id: session.sector_id,
+      } as any).select("id").single();
       if (error) throw error;
-      toast({ title: "Diagnostic duplique" });
-      track("session_duplicated", { sourceSessionId: session.id, newSessionId: data.id });
-      navigate(`/cartographie/sessions/${data.id}`);
+
+      // 2. Copy cart_reponses from original session
+      const { data: reponses } = await supabase
+        .from("cart_reponses")
+        .select("question_id, code_question, bloc, reponse_brute, importance")
+        .eq("session_id", session.id);
+
+      if (reponses && reponses.length > 0) {
+        const copies = reponses.map(r => ({
+          session_id: newSession.id,
+          question_id: r.question_id,
+          code_question: r.code_question,
+          bloc: r.bloc,
+          reponse_brute: r.reponse_brute,
+          importance: r.importance,
+        }));
+        const { error: copyError } = await supabase.from("cart_reponses").insert(copies as any);
+        if (copyError) throw copyError;
+      }
+
+      toast({ title: "Session dupliquee avec succes" });
+      track("session_duplicated", { sourceSessionId: session.id, newSessionId: newSession.id });
+      navigate(`/cartographie/sessions/${newSession.id}`);
     } catch (e: any) {
       toast({ title: "Erreur", description: e.message, variant: "destructive" });
     } finally {

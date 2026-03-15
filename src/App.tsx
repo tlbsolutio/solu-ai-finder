@@ -36,6 +36,8 @@ const CartPackWizard = React.lazy(() => import("./pages/CartPackWizard"));
 const CartPackResults = React.lazy(() => import("./pages/CartPackResults"));
 const CartAdmin = React.lazy(() => import("./pages/CartAdmin"));
 const CartQuickScan = React.lazy(() => import("./pages/CartQuickScan"));
+const CartAffiliateManager = React.lazy(() => import("./pages/CartAffiliateManager"));
+const CartPartnerDeck = React.lazy(() => import("./pages/CartPartnerDeck"));
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,8 @@ const App = () => (
                   <Route path="/cartographie/sessions/:id/pack/:packId" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartPackWizard /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
                   <Route path="/cartographie/sessions/:id/pack/:packId/results" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartPackResults /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
                   <Route path="/cartographie/admin" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartAdmin /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/admin/affiliates" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartAffiliateManager /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
+                  <Route path="/cartographie/admin/partner-deck" element={<AuthGuard><KeyedRouteErrorBoundary><CartLayout><CartPartnerDeck /></CartLayout></KeyedRouteErrorBoundary></AuthGuard>} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
                 </Routes>
