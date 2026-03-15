@@ -76,7 +76,8 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
-  return geminiResult || "{}";
+  if (geminiResult) return geminiResult;
+  throw new Error("Les deux services IA (Claude et Gemini) sont indisponibles. Veuillez reessayer dans quelques minutes.");
 }
 
 serve(async (req) => {
@@ -341,12 +342,16 @@ Ne JAMAIS inventer de donnees absentes des reponses.`;
 
     const objetsCount = Object.values(insertResults).reduce((acc: number, arr: any) => acc + arr.length, 0);
 
-    await supabase.from("cart_pack_resumes").upsert({
+    const { error: upsertError } = await supabase.from("cart_pack_resumes").upsert({
       session_id, bloc: bloc_number, resume: analysis.resume || "",
       score_maturite: analysis.score_maturite || 3, alertes: analysis.alertes || [],
       quickwins_ids: quickwinIds, objets_generes_count: objetsCount,
       generated_at: new Date().toISOString(),
     }, { onConflict: "session_id,bloc" });
+    if (upsertError) {
+      console.error("Pack resume upsert failed:", upsertError);
+      throw new Error("Echec de la sauvegarde du resume de pack. Veuillez reessayer.");
+    }
 
     // Update session pack status
     const { data: sessionData } = await supabase

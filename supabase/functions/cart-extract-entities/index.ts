@@ -76,7 +76,8 @@ async function generate(prompt: string, geminiApiKey: string): Promise<string> {
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
-  return geminiResult || "{}";
+  if (geminiResult) return geminiResult;
+  throw new Error("Les deux services IA (Claude et Gemini) sont indisponibles. Veuillez reessayer dans quelques minutes.");
 }
 
 serve(async (req) => {
@@ -160,6 +161,11 @@ serve(async (req) => {
     const packResumes = packResumesRes.data || [];
     const reponses = reponsesRes.data || [];
 
+    if (packResumes.length === 0) {
+      await supabase.from("cart_sessions").update({ entities_extraction_status: "pending" }).eq("id", session_id);
+      return new Response(JSON.stringify({ error: "Aucun pack analyse. Completez au moins un pack avant d'extraire les entites." }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Build per-pack response summaries
     const packContexts = packResumes.map((pr: any) => {
       const packReponses = reponses
@@ -242,11 +248,22 @@ IMPORTANT :
       outils: Array.isArray(parsed.outils) ? parsed.outils : [],
     };
 
+    // Validate we got meaningful content
+    const totalEntities = entities.equipes.length + entities.processus.length + entities.outils.length;
+    if (totalEntities === 0) {
+      console.warn("AI returned zero entities — likely a parsing failure");
+      throw new Error("L'extraction n'a produit aucune entite. Verifiez que des packs ont ete analyses avant de relancer.");
+    }
+
     // Store in session
-    await supabase.from("cart_sessions").update({
+    const { error: updateError } = await supabase.from("cart_sessions").update({
       ai_extracted_entities: entities,
       entities_extraction_status: "extracted",
     }).eq("id", session_id);
+    if (updateError) {
+      console.error("DB update failed:", updateError);
+      throw new Error("Echec de la sauvegarde des entites. Veuillez reessayer.");
+    }
 
     console.log(`✅ Extracted entities: ${entities.equipes.length} equipes, ${entities.processus.length} processus, ${entities.outils.length} outils`);
 

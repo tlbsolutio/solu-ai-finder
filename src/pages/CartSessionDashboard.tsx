@@ -350,6 +350,41 @@ const CartSessionDashboard = () => {
     return error?.message || "Erreur inconnue";
   };
 
+  // Invoke an edge function with a timeout (default 120s)
+  const invokeWithTimeout = async (fnName: string, body: Record<string, unknown>, timeoutMs = 120_000) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body,
+        // @ts-expect-error - signal is supported but not in types
+        signal: controller.signal,
+      });
+      return { data, error };
+    } catch (e: any) {
+      if (e?.name === "AbortError" || controller.signal.aborted) {
+        throw new Error("L'operation a depasse le delai maximum. Veuillez reessayer.");
+      }
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  // Auto-recover stuck status (extracting/generating for > 5 minutes)
+  useEffect(() => {
+    if (!session || !id) return;
+    const status = session.entities_extraction_status;
+    const lastAt = session.last_extraction_at;
+    if (status === "extracting" && lastAt) {
+      const elapsed = (Date.now() - new Date(lastAt).getTime()) / 1000;
+      if (elapsed > 300) { // 5 minutes = stuck
+        console.warn("Auto-resetting stuck extraction status");
+        supabase.from("cart_sessions").update({ entities_extraction_status: "pending" }).eq("id", id).then(() => reload());
+      }
+    }
+  }, [session?.entities_extraction_status, session?.last_extraction_at, id]);
+
   const isActionBusy = generatingFinal || extractingEntities;
 
   const runGenerateAnalysis = async (actionLabel: string, { requireMinPacks }: { requireMinPacks: boolean }) => {
@@ -367,9 +402,7 @@ const CartSessionDashboard = () => {
     setLastError(null);
     startStepProgress(GENERATION_STEPS);
     try {
-      const { data, error } = await supabase.functions.invoke("cart-generate-analysis", {
-        body: { sessionId: id },
-      });
+      const { data, error } = await invokeWithTimeout("cart-generate-analysis", { sessionId: id }, 180_000);
       if (isSubscriptionError(error, data)) {
         openGate("analyse");
         return;
@@ -432,9 +465,7 @@ const CartSessionDashboard = () => {
     setLastError(null);
     startStepProgress(EXTRACTION_STEPS);
     try {
-      const { data, error } = await supabase.functions.invoke("cart-extract-entities", {
-        body: { session_id: id },
-      });
+      const { data, error } = await invokeWithTimeout("cart-extract-entities", { session_id: id }, 120_000);
       if (isSubscriptionError(error, data)) {
         openGate("analyse");
         return;
@@ -447,7 +478,14 @@ const CartSessionDashboard = () => {
         openGate("analyse");
         return;
       }
-      toast({ title: "Entites extraites", description: `${data.stats?.equipes || 0} equipes, ${data.stats?.processus || 0} processus, ${data.stats?.outils || 0} outils` });
+      if (data?.entities) {
+        const total = (data.entities.equipes?.length || 0) + (data.entities.processus?.length || 0) + (data.entities.outils?.length || 0);
+        if (total === 0) {
+          toast({ title: "Extraction terminee", description: "Aucune entite detectee. Verifiez que vos packs contiennent des reponses detaillees.", variant: "destructive" });
+        } else {
+          toast({ title: "Entites extraites", description: `${data.stats?.equipes || 0} equipes, ${data.stats?.processus || 0} processus, ${data.stats?.outils || 0} outils` });
+        }
+      }
       await reload();
     } catch (e: any) {
       setLastError({ action: "extract", message: e.message });

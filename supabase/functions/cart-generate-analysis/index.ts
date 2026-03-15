@@ -63,7 +63,8 @@ async function generate(prompt: string, geminiApiKey: string, maxTokens = 12000)
   if (claudeResult) return claudeResult;
   console.log("Claude fallback to Gemini");
   const geminiResult = await callGeminiFallback(prompt, geminiApiKey);
-  return geminiResult || "Analyse non disponible";
+  if (geminiResult) return geminiResult;
+  throw new Error("Les deux services IA (Claude et Gemini) sont indisponibles. Veuillez reessayer dans quelques minutes.");
 }
 
 serve(async (req) => {
@@ -418,7 +419,11 @@ Reponds UNIQUEMENT avec du JSON valide, sans markdown :
       console.error("Cartography generation failed (continuing):", cartoErr.message);
     }
 
-    await supabase.from("cart_sessions").update(updatePayload).eq("id", sessionId);
+    const { error: updateError } = await supabase.from("cart_sessions").update(updatePayload).eq("id", sessionId);
+    if (updateError) {
+      console.error("DB update failed:", updateError);
+      throw new Error("Echec de la sauvegarde de l'analyse. Veuillez reessayer.");
+    }
 
     return new Response(JSON.stringify({ success: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: unknown) {
