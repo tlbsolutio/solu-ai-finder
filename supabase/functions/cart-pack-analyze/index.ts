@@ -131,6 +131,25 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Packs 6-10 require paid subscription
+    const FREE_PACK_LIMIT = 5;
+    if (bloc_number > FREE_PACK_LIMIT) {
+      const { data: sub } = await supabase
+        .from("cart_subscriptions")
+        .select("id, status")
+        .eq("session_id", session_id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      const isAdmin = user.email === "tlb@solutio.work";
+      if (!sub && !isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Subscription required for packs 6-10" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Fetch responses if not passed
     let reponsesToAnalyze = reponses;
     if (!reponsesToAnalyze || reponsesToAnalyze.length === 0) {

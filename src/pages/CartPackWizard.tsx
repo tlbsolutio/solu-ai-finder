@@ -15,6 +15,10 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { ChevronLeft, ChevronRight, Save, CheckCircle, Loader2, Cloud, FileText } from "lucide-react";
 import { PACK_DEFINITIONS } from "@/components/cartographie/PackCard";
+import { useCartContext } from "@/contexts/CartSessionContext";
+import { ArrowRight, Lock } from "lucide-react";
+
+const FREE_PACK_ANALYSIS_LIMIT = 5;
 
 const getDraftKey = (sessionId: string, bloc: number) => `cart_pack_draft_${sessionId}_${bloc}`;
 
@@ -64,10 +68,45 @@ const CartPackWizard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { track } = useAnalytics(id);
+  const { isSessionPaid, loadSessionTier } = useCartContext();
+  const isPaid = id ? isSessionPaid(id) : false;
+
+  useEffect(() => { if (id) loadSessionTier(id); }, [id, loadSessionTier]);
 
   const bloc = parseInt(packId || "0");
   const packDef = PACK_DEFINITIONS.find((p) => p.bloc === bloc);
   usePageTitle(packDef ? `Questionnaire - ${packDef.title}` : "Questionnaire");
+
+  // Gate packs 6-10 for free users
+  if (!isPaid && bloc > FREE_PACK_ANALYSIS_LIMIT) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-sm w-full text-center space-y-4 bg-card rounded-2xl border shadow-xl p-8">
+          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">Pack reserve a la version complete</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Les 5 premiers packs sont gratuits. Debloquez les packs 6 a 10 pour un diagnostic approfondi de votre organisation.
+            </p>
+          </div>
+          <div className="space-y-2 pt-2">
+            <Button
+              className="w-full h-11 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white"
+              onClick={() => navigate("/cartographie/pricing")}
+            >
+              Voir les formules
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={() => navigate(`/cartographie/sessions/${id}`)}>
+              Retour au dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const [questions, setQuestions] = useState<any[]>([]);
   const [existingReponses, setExistingReponses] = useState<Record<string, string>>({});

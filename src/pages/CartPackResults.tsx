@@ -74,7 +74,7 @@ const CartPackResults = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(true);
   const [result, setResult] = useState<PackAnalysisResult | null>(null);
-  const [showSaasRecos, setShowSaasRecos] = useState(false);
+  const [showSaasRecos, setShowSaasRecos] = useState(true);
 
   // Get relevant SaaS for this pack
   const saasRecos = getRecommendationsForBloc(bloc);
@@ -238,7 +238,9 @@ const CartPackResults = () => {
     );
   }
 
-  if (!isPaid) {
+  // Free users can analyze up to 5 packs — block packs 6-10
+  const FREE_PACK_ANALYSIS_LIMIT = 5;
+  if (!isPaid && bloc > FREE_PACK_ANALYSIS_LIMIT) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-4 bg-card rounded-2xl border shadow-xl p-8">
@@ -246,9 +248,9 @@ const CartPackResults = () => {
             <Lock className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="font-semibold text-lg">Resultats detailles reserves</h2>
+            <h2 className="font-semibold text-lg">Pack reserve a la version complete</h2>
             <p className="text-sm text-muted-foreground mt-2">
-              L'analyse detaillee par pack (objets detectes, alertes, quick wins) est disponible dans la version complete.
+              Vous avez acces aux 5 premiers packs gratuitement. Debloquez les packs 6 a 10 pour un diagnostic complet.
             </p>
           </div>
           <div className="space-y-2 pt-2">
@@ -532,9 +534,9 @@ const CartPackResults = () => {
                       <p className="text-xs text-muted-foreground mt-1">{saas.description}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">{saas.prix_indicatif}</p>
                     </div>
-                    <a href={saas.site_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                    <a href={saas.affiliate_url || saas.site_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
                       <Button size="sm" variant="outline" className="h-7 text-[10px]">
-                        Voir
+                        Decouvrir
                         <ArrowRight className="w-3 h-3 ml-1" />
                       </Button>
                     </a>

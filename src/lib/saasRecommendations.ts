@@ -17,6 +17,7 @@ export interface SaasRecommendation {
   prix_indicatif: string;
   modele_prix: "Freemium" | "Abonnement" | "Par utilisateur" | "Sur devis";
   site_url: string;
+  affiliate_url?: string; // Affiliate/referral link (used instead of site_url when available)
   origine: "FR" | "EU" | "US" | "Autre";
   hebergement_eu: boolean;
   integration_cles: string[];

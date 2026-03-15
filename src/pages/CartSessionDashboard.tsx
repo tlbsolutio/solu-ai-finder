@@ -69,8 +69,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { CartProcessusV2, CartOutilV2, CartEquipeV2 } from "@/lib/cartTypes";
 
-const FREE_TABS = new Set(["overview", "questionnaire"]);
-const TEASER_TABS = new Set(["carte"]); // Show blurred teaser instead of full lock
+const FREE_TABS = new Set(["overview", "questionnaire", "carte"]);
+const FREE_PACK_ANALYSIS_LIMIT = 5; // Free users can analyze up to 5 packs
 const CALENDLY_URL = "https://calendly.com/solutio-expert/diagnostic";
 
 const GENERATION_STEPS = [
@@ -100,7 +100,7 @@ const isSubscriptionError = (error: any, data: any): boolean => {
 const SECTIONS = [
   { group: "Synthese", items: [
     { id: "overview", label: "Vue d'ensemble", shortLabel: "Resume", icon: BarChart3, free: true },
-    { id: "carte", label: "Carte interactive", shortLabel: "Carte", icon: Map, free: false },
+    { id: "carte", label: "Carte interactive", shortLabel: "Carte", icon: Map, free: true },
     { id: "questionnaire", label: "Questionnaire", shortLabel: "Q&A", icon: FileText, free: true },
   ]},
   { group: "Diagnostic", items: [
@@ -255,15 +255,24 @@ const CartSessionDashboard = () => {
   const { generatePdf, generateBrief, generateTeaser, isLoading: pdfLoading, progress: pdfProgress } = useCartPdfExport();
   const { exportJSON, exportCSV } = useCartDataExport();
 
-  // Progress-triggered freemium nudge at 3 packs
+  // Progress-triggered freemium nudge: soft at 3 packs, hard at 5 (free limit)
   const packsCompletedEarly = session?.packs_completed || 0;
   useEffect(() => {
-    if (!isPaid && packsCompletedEarly >= 3 && id) {
-      const key = `carto_freemium_nudge_${id}`;
-      if (!localStorage.getItem(key)) {
-        localStorage.setItem(key, "1");
-        const timer = setTimeout(() => openGate("progress"), 1500);
-        return () => clearTimeout(timer);
+    if (!isPaid && id) {
+      if (packsCompletedEarly >= FREE_PACK_ANALYSIS_LIMIT) {
+        const key5 = `carto_freemium_nudge_5_${id}`;
+        if (!localStorage.getItem(key5)) {
+          localStorage.setItem(key5, "1");
+          const timer = setTimeout(() => openGate("progress"), 1200);
+          return () => clearTimeout(timer);
+        }
+      } else if (packsCompletedEarly >= 3) {
+        const key3 = `carto_freemium_nudge_3_${id}`;
+        if (!localStorage.getItem(key3)) {
+          localStorage.setItem(key3, "1");
+          const timer = setTimeout(() => openGate("progress"), 1500);
+          return () => clearTimeout(timer);
+        }
       }
     }
   }, [isPaid, packsCompletedEarly, id]);
@@ -506,7 +515,7 @@ const CartSessionDashboard = () => {
   };
 
   const handleSectionClick = (sectionId: string, isFree: boolean) => {
-    if (!isFree && !isPaid && !TEASER_TABS.has(sectionId)) {
+    if (!isFree && !isPaid) {
       openGate(sectionId);
       return;
     }
@@ -1103,6 +1112,7 @@ const CartSessionDashboard = () => {
                 answeredQuestions={getPackProgress(packDef.bloc)}
                 packResume={getPackResume(packDef.bloc)}
                 realTotalQuestions={getPackTotalQuestions(packDef.bloc)}
+                locked={!isPaid && packDef.bloc > FREE_PACK_ANALYSIS_LIMIT}
               />
             ))}
           </div>
@@ -1132,25 +1142,6 @@ const CartSessionDashboard = () => {
             aiCartographyJson={session.ai_cartography_json}
           />
         </Suspense>
-        {!isPaid && (
-          <div className="absolute inset-0 z-10 flex items-end justify-center pointer-events-none" style={{ background: "linear-gradient(to bottom, transparent 30%, hsl(var(--card) / 0.7) 60%, hsl(var(--card) / 0.95) 100%)" }}>
-            <div className="pointer-events-auto mb-8 text-center space-y-3 bg-card/95 backdrop-blur-sm rounded-2xl border shadow-xl p-5 max-w-xs">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto">
-                <Map className="w-4 h-4 text-cyan-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-sm">{totalObjects} objets cartographies</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Debloquez la carte interactive complete avec labels et details
-                </p>
-              </div>
-              <Button onClick={() => openGate()} className="w-full h-9 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white text-xs">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Voir les formules
-              </Button>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
@@ -1201,45 +1192,10 @@ const CartSessionDashboard = () => {
   );
 
   const renderSectionContent = () => {
-    // Carte teaser: show blurred map with overlay for free users
-    if (activeSection === "carte" && !isPaid) {
-      const hasCarteData = mapProcessus.length > 0 || mapOutils.length > 0;
-      if (!hasCarteData) {
-        return <LockedTabContent onUnlock={() => openGate("carte")} items={[]} count={0} tabLabel="carte interactive" />;
-      }
-      return (
-        <div className="relative min-h-[400px]">
-          <div className="filter blur-[6px] pointer-events-none select-none" aria-hidden="true">
-            {renderCarte()}
-          </div>
-          <div className="absolute inset-0 z-10 flex items-center justify-center">
-            <div className="max-w-sm w-full text-center space-y-4 bg-card/80 backdrop-blur-md rounded-2xl border border-cyan-200/40 shadow-2xl p-7">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mx-auto">
-                <Lock className="w-5 h-5 text-cyan-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base">Votre carte interactive est prete</h3>
-                <p className="text-sm text-muted-foreground mt-1.5">
-                  Debloquez l'acces pour explorer et editer votre cartographie
-                </p>
-              </div>
-              <Button
-                onClick={() => openGate("carte")}
-                className="w-full h-10 bg-gradient-to-r from-cyan-600 to-blue-600 hover:opacity-90 text-white text-sm font-medium"
-              >
-                <Map className="w-4 h-4 mr-2" />
-                Debloquer la carte
-              </Button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     // Teaser preview config: how many items free users see per tab
     const PREVIEW_LIMITS: Record<string, number> = {
-      quickwins: 3, irritants: 1, processus: 2, outils: 2, equipes: 1,
-      plan: 0, recommandations: 2, analyse: 0, entities: 0,
+      quickwins: 3, irritants: 2, processus: 2, outils: 2, equipes: 2,
+      plan: 2, recommandations: 2, analyse: 0, entities: 0,
     };
     const PREVIEW_LABELS: Record<string, string> = {
       quickwins: "quick wins", irritants: "irritants", processus: "processus",
@@ -1353,7 +1309,11 @@ const CartSessionDashboard = () => {
 
       case "plan": {
         if (isLocked) {
-          return <LockedTabContent onUnlock={() => openGate("plan")} count={quickwins.length} tabLabel="actions" />;
+          if (quickwins.length === 0) return <LockedTabContent onUnlock={() => openGate("plan")} count={0} tabLabel="actions" />;
+          return wrapWithTeaser(
+            <AIContentBoundary label="Plan d'actions"><CartPlanActionsTab sessionId={id!} quickwins={quickwins.slice(0, previewLimit)} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} /></AIContentBoundary>,
+            quickwins.length, previewLimit, previewLabel
+          );
         }
         return <AIContentBoundary label="Plan d'actions"><CartPlanActionsTab sessionId={id!} quickwins={quickwins} aiPlanOptimisation={session.ai_plan_optimisation} onReload={reload} /></AIContentBoundary>;
       }
@@ -1884,6 +1844,7 @@ const CartSessionDashboard = () => {
                   answeredQuestions={getPackProgress(packDef.bloc)}
                   packResume={getPackResume(packDef.bloc)}
                   realTotalQuestions={getPackTotalQuestions(packDef.bloc)}
+                  locked={!isPaid && packDef.bloc > FREE_PACK_ANALYSIS_LIMIT}
                 />
               ))}
             </div>

@@ -413,7 +413,7 @@ function SaasCard({ saas, matchReason }: { saas: SaasRecommendation; matchReason
             {expanded ? "Moins" : "Plus de details"}
           </button>
           <a
-            href={saas.site_url}
+            href={saas.affiliate_url || saas.site_url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-cyan-600 hover:text-cyan-700 flex items-center gap-1 font-medium"
@@ -657,7 +657,7 @@ export function CartRecommandationsTab({
                               {reco.saas_suggestions.map((saas, j) => (
                                 <a
                                   key={j}
-                                  href={saas.site_url}
+                                  href={saas.affiliate_url || saas.site_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white border hover:border-cyan-300 hover:shadow-sm transition-all text-xs"
